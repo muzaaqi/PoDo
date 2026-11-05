@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/app/routes.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -38,17 +39,29 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    final lecturerId = await AuthRepository.instance.login(email, password);
+    try {
+      final lecturerId = await AuthRepository.instance.login(email, password);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (lecturerId != null) {
-      Navigator.pushReplacementNamed(context, '/main');
-    } else {
+      if (lecturerId != null) {
+        Navigator.pushReplacementNamed(context, AppRoutes.main);
+      } else {
+        setState(() {
+          _errorMessage = 'Email atau password tidak sesuai.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _isLoading = false;
-        _errorMessage = 'Email atau password tidak sesuai.';
+        _errorMessage = 'Terjadi kesalahan saat masuk: $e';
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -98,6 +111,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 FTextField(
                   label: const Text('Email / Username'),
                   hint: 'Contoh: dosen@kampus.id',
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
                   control: FTextFieldControl.managed(controller: _emailController),
                 ),
                 const SizedBox(height: 16),

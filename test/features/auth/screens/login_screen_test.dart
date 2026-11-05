@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:podo/app/routes.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
@@ -26,6 +27,28 @@ void main() {
     await DatabaseHelper.instance.close();
   });
 
+  testWidgets('LoginScreen shows validation error when submitting empty fields', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: FLocalizations.localizationsDelegates,
+        supportedLocales: FLocalizations.supportedLocales,
+        builder: (context, child) => FTheme(
+          data: AppTheme.lightTheme,
+          child: FToaster(
+            child: FTooltipGroup(child: child ?? const SizedBox.shrink()),
+          ),
+        ),
+        home: const LoginScreen(),
+      ),
+    );
+
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FAlert), findsOneWidget);
+    expect(find.text('Email dan password tidak boleh kosong.'), findsOneWidget);
+  });
+
   testWidgets('LoginScreen renders fields, shows error on failure, and navigates on success', (WidgetTester tester) async {
     bool navigatedToMain = false;
 
@@ -41,7 +64,7 @@ void main() {
         ),
         routes: {
           '/': (context) => const LoginScreen(),
-          '/main': (context) {
+          AppRoutes.main: (context) {
             navigatedToMain = true;
             return const Scaffold(body: Text('Main Screen'));
           },

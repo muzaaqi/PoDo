@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/app/routes.dart';
 
 class SplashScreen extends StatefulWidget {
   final bool autoNavigate;
@@ -25,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (widget.autoNavigate) {
       _timer = Timer(widget.duration, () {
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/login');
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
         }
       });
     }

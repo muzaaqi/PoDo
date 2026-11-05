@@ -33,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return FScaffold(
+      childPad: false,
       footer: FBottomNavigationBar(
         index: _currentIndex,
         onChange: (index) {
