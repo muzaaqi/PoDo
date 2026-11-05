@@ -37,12 +37,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       return;
     }
 
-    final schedules = await ScheduleRepository.instance.getSchedulesByLecturer(lecturerId);
-    if (mounted) {
-      setState(() {
-        _schedules = schedules;
-        _isLoading = false;
-      });
+    try {
+      final schedules = await ScheduleRepository.instance.getSchedulesByLecturer(lecturerId);
+      if (mounted) {
+        setState(() {
+          _schedules = schedules;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _schedules = [];
+          _isLoading = false;
+        });
+      }
     }
   }
 
