@@ -13,8 +13,11 @@ class CourseDetailScreen extends StatelessWidget {
     final targetOffering = offering ?? routeOffering;
 
     return FScaffold(
-      header: FHeader(
+      header: FHeader.nested(
         title: Text(targetOffering?.courseName ?? 'Detail Mata Kuliah'),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).maybePop()),
+        ],
       ),
       child: Center(
         child: Text(

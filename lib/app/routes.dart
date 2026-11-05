@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:podo/app/main_screen.dart';
 import 'package:podo/features/auth/screens/login_screen.dart';
+import 'package:podo/features/courses/models/course_offering.dart';
+import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/splash/screens/splash_screen.dart';
 import 'package:podo/features/students/models/student.dart';
 import 'package:podo/features/students/screens/student_biodata_form_screen.dart';
@@ -14,6 +16,7 @@ class AppRoutes {
   static const String main = '/main';
   static const String studentList = '/students';
   static const String studentBiodataForm = '/students/form';
+  static const String courseDetail = '/courses/detail';
 
   static Map<String, WidgetBuilder> get routes => {
     splash: (context) => const SplashScreen(),
@@ -24,6 +27,12 @@ class AppRoutes {
       final args = ModalRoute.of(context)?.settings.arguments;
       return StudentBiodataFormScreen(
         student: args is Student ? args : null,
+      );
+    },
+    courseDetail: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      return CourseDetailScreen(
+        offering: args is CourseOffering ? args : null,
       );
     },
   };

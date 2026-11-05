@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/app/routes.dart';
 import 'package:podo/core/widgets/stat_card.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
@@ -69,7 +70,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
 
   void _navigateToDetail(CourseOffering offering) {
     Navigator.of(context).pushNamed(
-      '/courses/detail',
+      AppRoutes.courseDetail,
       arguments: offering,
     );
   }
