@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/app/routes.dart';
 import 'package:podo/core/theme/app_theme.dart';
 
 class PoDoApp extends StatelessWidget {
@@ -27,11 +28,8 @@ class PoDoApp extends StatelessWidget {
           ),
         );
       },
-      home: const Scaffold(
-        body: Center(
-          child: Text('PoDo (Portal Dosen)'),
-        ),
-      ),
+      initialRoute: AppRoutes.splash,
+      routes: AppRoutes.routes,
     );
   }
 }
