@@ -11,8 +11,27 @@ class SeedData {
 
   static const String initialSeedVersion = '1.0.0';
 
+  static Future<bool> isInitialSeedApplied(DatabaseExecutor db) async {
+    final result = await db.query(
+      'seed_metadata',
+      where: 'key = ?',
+      whereArgs: ['initial_seed'],
+    );
+    return result.isNotEmpty;
+  }
+
   static Future<void> seedInitialData(Database db) async {
+    // Check if initial seed is already applied
+    if (await isInitialSeedApplied(db)) {
+      return;
+    }
+
     await db.transaction((txn) async {
+      // Re-check within transaction to prevent race conditions
+      if (await isInitialSeedApplied(txn)) {
+        return;
+      }
+
       final batch = txn.batch();
 
       // 1. Lecturers
@@ -69,7 +88,7 @@ class SeedData {
         );
       }
 
-      // 7. Seed metadata
+      // 7. Seed metadata record
       batch.insert(
         'seed_metadata',
         {
@@ -81,5 +100,11 @@ class SeedData {
 
       await batch.commit(noResult: true);
     });
+  }
+
+  static Future<void> checkAndApplySeeds(Database db) async {
+    if (!await isInitialSeedApplied(db)) {
+      await seedInitialData(db);
+    }
   }
 }

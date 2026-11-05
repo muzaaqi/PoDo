@@ -4,13 +4,15 @@ import 'seed/seed_data.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
-  static Database? _database;
+  Database? _database;
+  Future<Database>? _initFuture;
 
   DatabaseHelper._internal();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await initDatabase();
+    _initFuture ??= initDatabase();
+    _database = await _initFuture!;
     return _database!;
   }
 
@@ -27,6 +29,7 @@ class DatabaseHelper {
         version: 1,
         onConfigure: _onConfigure,
         onCreate: _onCreate,
+        onOpen: _onOpen,
       ),
     );
 
@@ -97,6 +100,7 @@ class DatabaseHelper {
           room TEXT NOT NULL,
           start_time TEXT NOT NULL,
           end_time TEXT NOT NULL,
+          UNIQUE(offering_id, day_of_week, start_time),
           FOREIGN KEY (offering_id) REFERENCES course_offerings (offering_id) ON DELETE CASCADE
         )
       ''');
@@ -139,10 +143,16 @@ class DatabaseHelper {
     await SeedData.seedInitialData(db);
   }
 
+  Future<void> _onOpen(Database db) async {
+    // Ensure any new seeds or unapplied initial seeds are executed
+    await SeedData.checkAndApplySeeds(db);
+  }
+
   Future<void> close() async {
     if (_database != null) {
       await _database!.close();
       _database = null;
+      _initFuture = null;
     }
   }
 }
