@@ -76,6 +76,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
+  String _formatScore(double? score) {
+    if (score == null) return '-';
+    return score % 1 == 0 ? score.toInt().toString() : score.toStringAsFixed(1);
+  }
+
   Future<void> _openGradeSheet(EnrolledStudent student) async {
     final result = await showFSheet<bool>(
       context: context,
@@ -136,7 +141,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       if (student.isGraded) ...[
                         const SizedBox(height: 4),
                         Text(
-                          'Rata-rata: ${student.averageScore?.toStringAsFixed(1)} (CPMK: ${student.grade?.cpmk1?.toStringAsFixed(0)}, ${student.grade?.cpmk2?.toStringAsFixed(0)}, ${student.grade?.cpmk3?.toStringAsFixed(0)}, ${student.grade?.cpmk4?.toStringAsFixed(0)})',
+                          'Rata-rata: ${student.averageScore?.toStringAsFixed(1)} (CPMK: ${_formatScore(student.grade?.cpmk1)}, ${_formatScore(student.grade?.cpmk2)}, ${_formatScore(student.grade?.cpmk3)}, ${_formatScore(student.grade?.cpmk4)})',
                           style: theme.typography.body.xs.copyWith(
                             color: theme.colors.mutedForeground,
                             fontWeight: FontWeight.w500,

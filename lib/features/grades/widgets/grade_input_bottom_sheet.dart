@@ -57,7 +57,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
   }
 
   String? _validateScore(String text) {
-    final trimmed = text.trim();
+    final trimmed = text.trim().replaceAll(',', '.');
     if (trimmed.isEmpty) {
       return 'Nilai CPMK harus diisi';
     }
@@ -94,10 +94,10 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
       final grade = Grade(
         id: widget.student.grade?.id,
         enrollmentId: widget.student.enrollmentId,
-        cpmk1: double.parse(_cpmk1Controller.text.trim()),
-        cpmk2: double.parse(_cpmk2Controller.text.trim()),
-        cpmk3: double.parse(_cpmk3Controller.text.trim()),
-        cpmk4: double.parse(_cpmk4Controller.text.trim()),
+        cpmk1: double.parse(_cpmk1Controller.text.trim().replaceAll(',', '.')),
+        cpmk2: double.parse(_cpmk2Controller.text.trim().replaceAll(',', '.')),
+        cpmk3: double.parse(_cpmk3Controller.text.trim().replaceAll(',', '.')),
+        cpmk4: double.parse(_cpmk4Controller.text.trim().replaceAll(',', '.')),
       );
 
       await GradeRepository.instance.upsertGrade(grade);
