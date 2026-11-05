@@ -27,13 +27,18 @@ class StatCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: theme.typography.body.sm.copyWith(
-                    color: theme.colors.mutedForeground,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.typography.body.sm.copyWith(
+                      color: theme.colors.mutedForeground,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 4),
                 Icon(
                   icon,
                   size: 16,
