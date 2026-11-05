@@ -4,7 +4,12 @@ import 'package:podo/app/routes.dart';
 import 'package:podo/core/theme/app_theme.dart';
 
 class PoDoApp extends StatelessWidget {
-  const PoDoApp({super.key});
+  final String initialRoute;
+
+  const PoDoApp({
+    super.key,
+    this.initialRoute = AppRoutes.splash,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,7 @@ class PoDoApp extends StatelessWidget {
           ),
         );
       },
-      initialRoute: AppRoutes.splash,
+      initialRoute: initialRoute,
       routes: AppRoutes.routes,
     );
   }
