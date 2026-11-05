@@ -186,6 +186,7 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
             FTextField(
               label: const Text('Nomor Induk Mahasiswa (NIM)'),
               hint: 'Contoh: 2101001',
+              keyboardType: TextInputType.number,
               enabled: !_isEdit,
               error: _nimError != null ? Text(_nimError!) : null,
               control: FTextFieldControl.managed(controller: _nimController),
@@ -213,6 +214,7 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
             FTextField(
               label: const Text('Nomor Telepon'),
               hint: 'Contoh: 081234567890',
+              keyboardType: TextInputType.phone,
               control: FTextFieldControl.managed(controller: _phoneController),
             ),
             const SizedBox(height: 16),
