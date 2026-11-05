@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:podo/app/main_screen.dart';
 import 'package:podo/features/auth/screens/login_screen.dart';
 import 'package:podo/features/splash/screens/splash_screen.dart';
+import 'package:podo/features/students/models/student.dart';
 import 'package:podo/features/students/screens/student_biodata_form_screen.dart';
 import 'package:podo/features/students/screens/student_list_screen.dart';
 
@@ -19,6 +20,11 @@ class AppRoutes {
     login: (context) => const LoginScreen(),
     main: (context) => const MainScreen(),
     studentList: (context) => const StudentListScreen(),
-    studentBiodataForm: (context) => const StudentBiodataFormScreen(),
+    studentBiodataForm: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      return StudentBiodataFormScreen(
+        student: args is Student ? args : null,
+      );
+    },
   };
 }

@@ -8,6 +8,7 @@ import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/dashboard/screens/home_screen.dart';
+import 'package:podo/features/students/screens/student_biodata_form_screen.dart';
 
 void main() {
   setUpAll(() {
@@ -104,6 +105,7 @@ void main() {
     await tester.tap(isiBiodataButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Biodata Mahasiswa'), findsOneWidget);
+    expect(find.byType(StudentBiodataFormScreen), findsOneWidget);
+    expect(find.text('Tambah Mahasiswa'), findsOneWidget);
   });
 }
