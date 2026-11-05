@@ -100,10 +100,17 @@ void main() {
 
     // 5. Tap on "Pemrograman Mobile" card -> opens CourseDetailScreen
     await tester.tap(find.text('Pemrograman Mobile'));
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pump();
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
     await tester.pumpAndSettle();
 
     expect(find.byType(CourseDetailScreen), findsOneWidget);
-    expect(find.text('IF101 - IF-44-01'), findsOneWidget);
+    expect(find.textContaining('IF101 • Kelas IF-44-01'), findsOneWidget);
 
     // 6. Navigate back to MainScreen via back action
     Navigator.of(tester.element(find.byType(CourseDetailScreen))).pop();

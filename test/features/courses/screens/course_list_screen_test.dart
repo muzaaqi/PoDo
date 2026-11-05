@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
+import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/courses/screens/course_list_screen.dart';
 
@@ -40,7 +41,12 @@ void main() {
         ),
       ),
       routes: {
-        '/courses/detail': (context) => const CourseDetailScreen(),
+        '/courses/detail': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          return CourseDetailScreen(
+            offering: args is CourseOffering ? args : null,
+          );
+        },
       },
       home: const CourseListScreen(),
     );
@@ -49,6 +55,10 @@ void main() {
   group('CourseListScreen Widget Tests', () {
     testWidgets('renders header, stat metrics, search field, and course cards for L001', (tester) async {
       await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pump();
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
@@ -136,10 +146,18 @@ void main() {
 
       // Tap on 'Pemrograman Mobile'
       await tester.tap(find.text('Pemrograman Mobile'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
       await tester.pumpAndSettle();
 
-      // CourseDetailScreen stub should be displayed with course info
-      expect(find.text('IF101 - IF-44-01'), findsOneWidget);
+      // CourseDetailScreen should be displayed with course info
+      expect(find.byType(CourseDetailScreen), findsOneWidget);
+      expect(find.textContaining('IF101 • Kelas IF-44-01'), findsOneWidget);
     });
   });
 }
