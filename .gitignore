@@ -54,3 +54,5 @@ app.*.map.json
 
 # Superpowers temporary SDD scratch
 .superpowers/
+
+references
