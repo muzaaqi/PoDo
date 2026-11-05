@@ -190,22 +190,22 @@ class GradeRepository {
 **Interfaces:**
 - Produces: `Grade` entity (dengan `cpmk1`–`cpmk4`, `averageScore`, `isFullyGraded`) dan `EnrolledStudent` entity (dengan relasi mahasiswa, enrollment, dan grade).
 
-- [ ] **Step 1: Write failing unit tests for Grade and EnrolledStudent**
+- [x] **Step 1: Write failing unit tests for Grade and EnrolledStudent**
   - Buat `test/features/grades/models/grade_test.dart` menguji instansiasi, parsing `fromMap`, `toMap`, `copyWith`, perhitungan `averageScore`, status `isFullyGraded`, serta `==` & `hashCode`.
   - Buat `test/features/grades/models/enrolled_student_test.dart` menguji parsing data join SQLite (enrollment + student + grade columns), helper `isGraded`, `copyWith`, dan kesetaraan nilai.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/grades/models/`
   - Expected: Compilation error (classes not found).
-- [ ] **Step 3: Implement Grade & EnrolledStudent models**
+- [x] **Step 3: Implement Grade & EnrolledStudent models**
   - Implementasikan `lib/features/grades/models/grade.dart`.
   - Implementasikan `lib/features/grades/models/enrolled_student.dart`.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `flutter test test/features/grades/models/`
   - Expected: ALL TESTS PASS.
-- [ ] **Step 5: Run static analysis**
+- [x] **Step 5: Run static analysis**
   - Run: `flutter analyze`
   - Expected: No issues found.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Run:
     ```bash
     git add lib/features/grades/models/ test/features/grades/models/
@@ -225,7 +225,7 @@ class GradeRepository {
 - Consumes: `DatabaseHelper.instance.database`
 - Produces: `EnrollmentRepository.instance.getEnrolledStudentsByOffering(offeringId)` & `GradeRepository.instance.upsertGrade(grade)`.
 
-- [ ] **Step 1: Write failing tests for repositories**
+- [x] **Step 1: Write failing tests for repositories**
   - Buat `test/features/grades/repositories/enrollment_repository_test.dart`:
     - Test case 1: Mengambil mahasiswa terdaftar untuk offering `OFF001` (mengembalikan 3 mahasiswa: Ahmad Dahlan, Siti Aisyah, Budi Santoso) dengan status grade awal `null` / belum dinilai.
     - Test case 2: Mengambil mahasiswa terdaftar untuk offering `OFF003` (1 mahasiswa).
@@ -235,19 +235,19 @@ class GradeRepository {
     - Test case 2: `getGradeByEnrollmentId` mengembalikan nilai yang baru disimpan.
     - Test case 3: `upsertGrade` kedua kalinya memperbarui nilai CPMK tanpa duplikasi record (idempotent / update).
     - Test case 4: Memverifikasi `EnrollmentRepository` kini merefleksikan nilai grade terupdate untuk mahasiswa terkait.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/grades/repositories/`
   - Expected: Compilation error (repositories not found).
-- [ ] **Step 3: Implement EnrollmentRepository and GradeRepository**
+- [x] **Step 3: Implement EnrollmentRepository and GradeRepository**
   - Implementasikan `lib/features/grades/repositories/enrollment_repository.dart`.
   - Implementasikan `lib/features/grades/repositories/grade_repository.dart` menggunakan operasi `insert` / `update` berbasis parameterized query SQLite.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `flutter test test/features/grades/repositories/`
   - Expected: ALL TESTS PASS.
-- [ ] **Step 5: Run static analysis**
+- [x] **Step 5: Run static analysis**
   - Run: `flutter analyze`
   - Expected: No issues found.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Run:
     ```bash
     git add lib/features/grades/repositories/ test/features/grades/repositories/
@@ -268,24 +268,24 @@ class GradeRepository {
 - Validasi: Angka numerik wajib dalam rentang 0.0 – 100.0. Menampilkan pesan error spesifik jika field kosong atau di luar rentang.
 - Aksi: `FButton(variant: FButtonVariant.primary)` untuk Simpan Nilai, `FButton(variant: FButtonVariant.outline)` untuk Batal.
 
-- [ ] **Step 1: Write failing widget tests for GradeInputBottomSheet**
+- [x] **Step 1: Write failing widget tests for GradeInputBottomSheet**
   - Buat `test/features/grades/widgets/grade_input_bottom_sheet_test.dart`:
     - Test case 1: Menampilkan form 4 field CPMK dengan nama dan NIM mahasiswa.
     - Test case 2: Menampilkan nilai lama jika mahasiswa sudah pernah dinilai (pre-filled).
     - Test case 3: Validasi form gagal dan menampilkan error saat input kosong atau di luar rentang (< 0 atau > 100).
     - Test case 4: Input valid (misal: 85, 90, 75, 80) menyimpan nilai ke `GradeRepository` dan menutup sheet dengan nilai kembalian `true`.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/grades/widgets/grade_input_bottom_sheet_test.dart`
   - Expected: Compilation error (GradeInputBottomSheet not found).
-- [ ] **Step 3: Implement GradeInputBottomSheet**
+- [x] **Step 3: Implement GradeInputBottomSheet**
   - Implementasikan `lib/features/grades/widgets/grade_input_bottom_sheet.dart` berbasis Forui.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `flutter test test/features/grades/widgets/grade_input_bottom_sheet_test.dart`
   - Expected: ALL TESTS PASS.
-- [ ] **Step 5: Run static analysis**
+- [x] **Step 5: Run static analysis**
   - Run: `flutter analyze`
   - Expected: No issues found.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Run:
     ```bash
     git add lib/features/grades/widgets/ test/features/grades/widgets/
@@ -310,25 +310,25 @@ class GradeRepository {
   - Jika sudah dinilai, tampilkan ringkasan nilai CPMK / rata-rata nilai.
 - Trigger Penilaian: Mengetuk kartu mahasiswa memanggil `showFSheet(context: context, side: FLayout.btt, builder: ...)` menampilkan `GradeInputBottomSheet`. Setelah sheet ditutup (`result == true`), reload daftar mahasiswa dan tampilkan `showFToast`.
 
-- [ ] **Step 1: Write failing widget tests for CourseDetailScreen**
+- [x] **Step 1: Write failing widget tests for CourseDetailScreen**
   - Buat `test/features/courses/screens/course_detail_screen_test.dart`:
     - Test case 1: Menampilkan info kelas perkuliahan (nama, kode, kelas, SKS badge).
     - Test case 2: Menampilkan 3 kartu metrik statistik (Total Mahasiswa: 3, Sudah Dinilai: 0, Belum Dinilai: 3 untuk OFF001 awal).
     - Test case 3: Menampilkan daftar 3 mahasiswa dengan badge "Belum Dinilai".
     - Test case 4: Mengetuk mahasiswa membuka modal sheet `GradeInputBottomSheet`.
     - Test case 5: Setelah nilai disimpan dari sheet, status badge mahasiswa berubah menjadi "Sudah Dinilai" dan ringkasan metrik terupdate (Sudah Dinilai: 1, Belum Dinilai: 2).
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/courses/screens/course_detail_screen_test.dart`
   - Expected: FAIL (stub belum menampilkan daftar mahasiswa dan integrasi sheet).
-- [ ] **Step 3: Implement full CourseDetailScreen**
+- [x] **Step 3: Implement full CourseDetailScreen**
   - Perbarui `lib/features/courses/screens/course_detail_screen.dart` dengan integrasi `EnrollmentRepository`, `showFSheet`, dan `showFToast`.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `flutter test test/features/courses/screens/course_detail_screen_test.dart`
   - Expected: ALL TESTS PASS.
-- [ ] **Step 5: Run static analysis**
+- [x] **Step 5: Run static analysis**
   - Run: `flutter analyze`
   - Expected: No issues found.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Run:
     ```bash
     git add lib/features/courses/screens/course_detail_screen.dart test/features/courses/screens/course_detail_screen_test.dart
@@ -345,15 +345,15 @@ class GradeRepository {
 - Menguji alur lengkap end-to-end:
   Login dosen L001 $\rightarrow$ Buka `CourseListScreen` $\rightarrow$ Pilih kelas "Pemrograman Mobile (IF-44-01)" $\rightarrow$ Terbuka `CourseDetailScreen` $\rightarrow$ Verifikasi 3 mahasiswa terdaftar dengan status "Belum Dinilai" $\rightarrow$ Ketuk mahasiswa pertama ("Ahmad Dahlan") $\rightarrow$ Sheet penilaian terbuka $\rightarrow$ Input CPMK 1=85, CPMK 2=90, CPMK 3=78, CPMK 4=88 $\rightarrow$ Ketuk Simpan Nilai $\rightarrow$ Sheet tertutup $\rightarrow$ Status Ahmad Dahlan berubah menjadi "Sudah Dinilai" $\rightarrow$ Summary metric terupdate (Sudah Dinilai: 1, Belum: 2) $\rightarrow$ Ketuk Ahmad Dahlan lagi $\rightarrow$ Nilai 85, 90, 78, 88 terisi otomatis $\rightarrow$ Ubah CPMK 1=95 $\rightarrow$ Simpan $\rightarrow$ Verifikasi nilai terupdate di database SQLite.
 
-- [ ] **Step 1: Write integration flow test**
+- [x] **Step 1: Write integration flow test**
   - Buat `test/features/grades/grade_flow_test.dart`.
-- [ ] **Step 2: Run test to verify it passes**
+- [x] **Step 2: Run test to verify it passes**
   - Run: `flutter test test/features/grades/grade_flow_test.dart`
   - Expected: ALL TESTS PASS.
-- [ ] **Step 3: Run full project test suite & static analysis**
+- [x] **Step 3: Run full project test suite & static analysis**
   - Run: `flutter test && flutter analyze`
   - Expected: ALL TESTS PASS (100%), 0 issues found.
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
   - Run:
     ```bash
     git add test/features/grades/grade_flow_test.dart
@@ -364,14 +364,14 @@ class GradeRepository {
 
 ## 6. Verification Checklist
 
-- [ ] Seluruh diagram Mermaid dirender valid tanpa sintaks error (`flowchart LR` & `sequenceDiagram`).
-- [ ] Tidak ada penggunaan widget Material/Cupertino yang menggantikan komponen Forui (`FScaffold`, `FHeader.nested`, `showFSheet`, `FTextField`, `FButton`, `FBadge`, `FAvatar`, `showFToast`).
-- [ ] Data mahasiswa dan nilai dibaca murni melalui `EnrollmentRepository` dan `GradeRepository` $\rightarrow$ SQLite.
-- [ ] Nilai disimpan ke tabel `grades` dengan referensi `enrollment_id`.
-- [ ] 4 komponen penilaian yang digunakan murni **CPMK 1, CPMK 2, CPMK 3, CPMK 4** (tanpa UTS/UAS/kehadiran).
-- [ ] Validasi rentang nilai angka 0–100 berfungsi dengan pesan error yang jelas.
-- [ ] Status nilai mahasiswa ditampilkan dengan `FBadge` yang jelas ("Sudah Dinilai" vs "Belum Dinilai").
-- [ ] Form sheet dapat mengedit nilai yang sudah ada sebelumnya (pre-filled).
-- [ ] `flutter analyze` menghasilkan **0 issues**.
-- [ ] `flutter test` lulus **100%**.
-- [ ] Tidak ada `Co-authored-by:` atau atribusi AI pada commit git.
+- [x] Seluruh diagram Mermaid dirender valid tanpa sintaks error (`flowchart LR` & `sequenceDiagram`).
+- [x] Tidak ada penggunaan widget Material/Cupertino yang menggantikan komponen Forui (`FScaffold`, `FHeader.nested`, `showFSheet`, `FTextField`, `FButton`, `FBadge`, `FAvatar`, `showFToast`).
+- [x] Data mahasiswa dan nilai dibaca murni melalui `EnrollmentRepository` dan `GradeRepository` $\rightarrow$ SQLite.
+- [x] Nilai disimpan ke tabel `grades` dengan referensi `enrollment_id`.
+- [x] 4 komponen penilaian yang digunakan murni **CPMK 1, CPMK 2, CPMK 3, CPMK 4** (tanpa UTS/UAS/kehadiran).
+- [x] Validasi rentang nilai angka 0–100 berfungsi dengan pesan error yang jelas.
+- [x] Status nilai mahasiswa ditampilkan dengan `FBadge` yang jelas ("Sudah Dinilai" vs "Belum Dinilai").
+- [x] Form sheet dapat mengedit nilai yang sudah ada sebelumnya (pre-filled).
+- [x] `flutter analyze` menghasilkan **0 issues**.
+- [x] `flutter test` lulus **100%**.
+- [x] Tidak ada `Co-authored-by:` atau atribusi AI pada commit git.
