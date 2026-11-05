@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'seed/seed_data.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -133,6 +134,9 @@ class DatabaseHelper {
         )
       ''');
     });
+
+    // Populate initial demo seed
+    await SeedData.seedInitialData(db);
   }
 
   Future<void> close() async {

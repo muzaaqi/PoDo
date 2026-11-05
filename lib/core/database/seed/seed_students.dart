@@ -1,0 +1,42 @@
+const List<Map<String, dynamic>> seedStudents = [
+  {
+    'nim': '2101001',
+    'full_name': 'Ahmad Fauzi',
+    'study_program': 'Teknik Informatika',
+    'department': 'Teknologi Informasi',
+    'phone': '082111111111',
+    'address': 'Jl. Merdeka No. 10, Bandung',
+  },
+  {
+    'nim': '2101002',
+    'full_name': 'Budi Santoso',
+    'study_program': 'Teknik Informatika',
+    'department': 'Teknologi Informasi',
+    'phone': '082122222222',
+    'address': 'Jl. Dipati Ukur No. 25, Bandung',
+  },
+  {
+    'nim': '2101003',
+    'full_name': 'Citra Dewi',
+    'study_program': 'Teknik Informatika',
+    'department': 'Teknologi Informasi',
+    'phone': '082133333333',
+    'address': 'Jl. Dago Asri No. 5, Bandung',
+  },
+  {
+    'nim': '2101004',
+    'full_name': 'Dewi Lestari',
+    'study_program': 'Teknik Informatika',
+    'department': 'Teknologi Informasi',
+    'phone': '082144444444',
+    'address': 'Jl. Setiabudhi No. 88, Bandung',
+  },
+  {
+    'nim': '2101005',
+    'full_name': 'Eko Prasetyo',
+    'study_program': 'Sistem Informasi',
+    'department': 'Teknologi Informasi',
+    'phone': '082155555555',
+    'address': 'Jl. Riau No. 12, Bandung',
+  },
+];
