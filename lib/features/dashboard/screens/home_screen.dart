@@ -48,10 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final activeId = AuthRepository.instance.activeLecturerId;
     if (activeId != null) {
       try {
-        final lecturer =
-            await LecturerRepository.instance.getLecturerById(activeId);
-        final schedules =
-            await ScheduleRepository.instance.getSchedulesByLecturer(activeId);
+        final results = await Future.wait([
+          LecturerRepository.instance.getLecturerById(activeId),
+          ScheduleRepository.instance.getSchedulesByLecturer(activeId),
+        ]);
+
+        final lecturer = results[0] as Lecturer?;
+        final schedules = results[1] as List<TeachingSchedule>;
 
         if (mounted) {
           setState(() {
@@ -85,43 +88,257 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context, {
     required String label,
     required IconData icon,
+    required Color backgroundColor,
+    required Color iconColor,
     required VoidCallback onTap,
   }) {
     final theme = context.theme;
 
-    return FTappable(
-      onPress: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: theme.colors.secondary,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              icon,
-              size: 24,
-              color: theme.colors.primary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: 90,
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: theme.typography.body.xs.copyWith(
-                fontWeight: FontWeight.w600,
+    return Semantics(
+      button: true,
+      label: label,
+      child: FTappable(
+        onPress: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(16),
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              alignment: Alignment.center,
+              child: Icon(
+                icon,
+                size: 26,
+                color: iconColor,
+              ),
             ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 90,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: theme.typography.body.xs.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroScheduleCard(BuildContext context, TeachingSchedule schedule) {
+    final theme = context.theme;
+
+    return FTappable(
+      onPress: () => MainScreenScope.of(context)?.switchToTab(1),
+      child: FCard(
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFDF7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFFDE68A)),
           ),
-        ],
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: Book icon, Course title, Class & SKS Badges, Chevron
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      FLucideIcons.calendarClock,
+                      size: 22,
+                      color: Color(0xFFD97706),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          schedule.courseName,
+                          style: theme.typography.body.md.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEDE9FE),
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                'Kelas ${schedule.className}',
+                                style: const TextStyle(
+                                  color: Color(0xFF7C3AED),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colors.secondary,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                '${schedule.credits} SKS',
+                                style: TextStyle(
+                                  color: theme.colors.foreground,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Icon(
+                      FLucideIcons.chevronRight,
+                      size: 20,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+              Container(
+                height: 1,
+                color: const Color(0xFFFDE68A).withValues(alpha: 0.6),
+              ),
+              const SizedBox(height: 12),
+
+              // Bottom info row: Day, Time with Clock Icon, Room with MapPin Icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        FLucideIcons.clock,
+                        size: 15,
+                        color: Color(0xFFD97706),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${schedule.dayOfWeek}, ${schedule.startTime} - ${schedule.endTime}',
+                        style: theme.typography.body.xs.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        FLucideIcons.mapPin,
+                        size: 15,
+                        color: theme.colors.mutedForeground,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        schedule.room,
+                        style: theme.typography.body.xs.copyWith(
+                          color: theme.colors.mutedForeground,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyScheduleCard(BuildContext context) {
+    final theme = context.theme;
+
+    return FCard(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1FAE5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                FLucideIcons.calendarCheck,
+                size: 22,
+                color: Color(0xFF059669),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tidak Ada Jadwal Mengajar',
+                    style: theme.typography.body.sm.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Semua kelas telah selesai atau belum terjadwal.',
+                    style: theme.typography.body.xs.copyWith(
+                      color: theme.colors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -162,25 +379,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      FAvatar.raw(
-                        size: 40,
-                        child: Text(
-                          _getInitials(_lecturer?.fullName),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                      Semantics(
+                        label: 'Profil ${_lecturer?.fullName ?? "Dosen"}',
+                        child: FAvatar.raw(
+                          size: 42,
+                          child: Text(
+                            _getInitials(_lecturer?.fullName),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: theme.colors.secondary,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          FLucideIcons.bell,
-                          size: 18,
-                          color: theme.colors.mutedForeground,
+                      Semantics(
+                        button: true,
+                        label: 'Notifikasi',
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: theme.colors.secondary,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            FLucideIcons.bell,
+                            size: 19,
+                            color: theme.colors.mutedForeground,
+                          ),
                         ),
                       ),
                     ],
@@ -193,9 +417,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Selamat Datang,',
                     style: theme.typography.body.sm.copyWith(
                       color: theme.colors.mutedForeground,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     _lecturer?.fullName ?? 'Dosen',
                     style: theme.typography.display.lg.copyWith(
@@ -206,165 +431,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
 
                   // Zone 3: Upcoming Schedule Hero Card (Jadwal Terdekat)
-                  if (_upcomingSchedule != null) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Jadwal Berikutnya',
-                          style: theme.typography.body.md.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        FTappable(
-                          onPress: () =>
-                              MainScreenScope.of(context)?.switchToTab(1),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Lihat Semua',
-                                style: theme.typography.body.xs.copyWith(
-                                  color: theme.colors.mutedForeground,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                FLucideIcons.arrowRight,
-                                size: 14,
-                                color: theme.colors.mutedForeground,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    FTappable(
-                      onPress: () =>
-                          MainScreenScope.of(context)?.switchToTab(1),
-                      child: FCard(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: theme.colors.secondary,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      FLucideIcons.bookOpen,
-                                      size: 22,
-                                      color: theme.colors.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _upcomingSchedule!.courseName,
-                                          style: theme.typography.body.sm
-                                              .copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Kelas ${_upcomingSchedule!.className} • ${_upcomingSchedule!.credits} SKS',
-                                          style: theme.typography.body.xs
-                                              .copyWith(
-                                            color: theme.colors.mutedForeground,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: theme.colors.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      FLucideIcons.arrowUpRight,
-                                      size: 18,
-                                      color: theme.colors.primaryForeground,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              Container(
-                                height: 1,
-                                color: theme.colors.border,
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        FLucideIcons.calendar,
-                                        size: 14,
-                                        color: theme.colors.mutedForeground,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        _upcomingSchedule!.dayOfWeek,
-                                        style:
-                                            theme.typography.body.xs.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        FLucideIcons.clock,
-                                        size: 14,
-                                        color: theme.colors.mutedForeground,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '${_upcomingSchedule!.startTime} - ${_upcomingSchedule!.endTime} (${_upcomingSchedule!.room})',
-                                        style:
-                                            theme.typography.body.xs.copyWith(
-                                          color: theme.colors.mutedForeground,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Jadwal Berikutnya',
+                        style: theme.typography.body.md.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                      FTappable(
+                        onPress: () =>
+                            MainScreenScope.of(context)?.switchToTab(1),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Lihat Semua',
+                              style: theme.typography.body.xs.copyWith(
+                                color: theme.colors.mutedForeground,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              FLucideIcons.arrowRight,
+                              size: 14,
+                              color: theme.colors.mutedForeground,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  if (_upcomingSchedule != null)
+                    _buildHeroScheduleCard(context, _upcomingSchedule!)
+                  else
+                    _buildEmptyScheduleCard(context),
 
-                  // Zone 4: Menu Utama (Quick Actions)
+                  const SizedBox(height: 24),
+
+                  // Zone 4: Menu Utama (Playful Tinted Squircles)
                   Text(
                     'Menu Utama',
                     style: theme.typography.body.md.copyWith(
@@ -380,6 +488,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         label: 'Isi Biodata',
                         icon: FLucideIcons.clipboardEdit,
+                        backgroundColor: const Color(0xFFEDE9FE),
+                        iconColor: const Color(0xFF7C3AED),
                         onTap: () => Navigator.of(context)
                             .pushNamed(AppRoutes.studentBiodataForm),
                       ),
@@ -387,6 +497,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         label: 'Input Nilai',
                         icon: FLucideIcons.award,
+                        backgroundColor: const Color(0xFFD1FAE5),
+                        iconColor: const Color(0xFF059669),
                         onTap: () =>
                             MainScreenScope.of(context)?.switchToTab(2),
                       ),
@@ -394,6 +506,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         label: 'Mahasiswa',
                         icon: FLucideIcons.users,
+                        backgroundColor: const Color(0xFFE0F2FE),
+                        iconColor: const Color(0xFF0284C7),
                         onTap: () => Navigator.of(context)
                             .pushNamed(AppRoutes.studentList),
                       ),
@@ -402,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Zone 5: Pengumuman Kampus Section (NO badge "3 informasi")
+                  // Zone 5: Pengumuman Kampus Section (Vertical Cards, NO badge "3 informasi")
                   Text(
                     'Pengumuman Kampus',
                     style: theme.typography.body.md.copyWith(
@@ -415,7 +529,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     (item) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: FCard(
-                        child: Padding(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.all(16),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 42,
                                 decoration: BoxDecoration(
                                   color: theme.colors.secondary,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 alignment: Alignment.center,
                                 child: Icon(
@@ -437,8 +554,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       mainAxisAlignment:
@@ -473,6 +589,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           .copyWith(
                                         color:
                                             theme.colors.mutedForeground,
+                                        height: 1.4,
                                       ),
                                     ),
                                   ],
