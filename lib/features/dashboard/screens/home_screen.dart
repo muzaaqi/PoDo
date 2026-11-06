@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/main_screen.dart';
@@ -22,20 +24,35 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Lecturer? _lecturer;
   TeachingSchedule? _currentSchedule;
+  List<TeachingSchedule> _schedules = [];
   bool _isLoading = true;
   String? _errorMessage;
   late final ScrollController _scrollController;
   bool _showAppbarTitle = false;
+  Timer? _liveTicker;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
+    _startLiveTicker();
     _loadData();
+  }
+
+  void _startLiveTicker() {
+    if (widget.currentDateTime != null) return;
+    _liveTicker = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) {
+        setState(() {
+          _currentSchedule = _findCurrentSchedule(_schedules);
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _liveTicker?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -69,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) {
           setState(() {
             _lecturer = lecturer;
+            _schedules = schedules;
             _currentSchedule = _findCurrentSchedule(schedules);
             _isLoading = false;
           });

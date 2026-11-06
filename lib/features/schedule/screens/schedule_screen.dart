@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/routes.dart';
@@ -44,17 +46,27 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   String? _errorMessage;
   late final ScrollController _scrollController;
   bool _showAppbarTitle = false;
+  Timer? _liveTicker;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = widget.initialDay;
     _scrollController = ScrollController()..addListener(_onScroll);
+    _startLiveTicker();
     _loadSchedules();
+  }
+
+  void _startLiveTicker() {
+    if (widget.currentDateTime != null) return;
+    _liveTicker = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    _liveTicker?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
