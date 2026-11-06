@@ -9,7 +9,6 @@ import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/repositories/course_repository.dart';
 import 'package:podo/features/schedule/models/teaching_schedule.dart';
 import 'package:podo/features/schedule/repositories/schedule_repository.dart';
-import 'package:podo/features/schedule/widgets/schedule_form_sheet.dart';
 
 enum ScheduleTimelineStatus {
   past,
@@ -187,100 +186,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         AppRoutes.courseDetail,
         arguments: offering,
       );
-    }
-  }
-
-  Future<void> _openAddScheduleSheet() async {
-    final result = await showFSheet<bool>(
-      context: context,
-      side: FLayout.btt,
-      builder: (context) => ScheduleFormSheet(initialDay: _selectedDay),
-    );
-    if (result == true && mounted) {
-      await _loadSchedules();
-      if (mounted) {
-        showFToast(
-          context: context,
-          title: const Text('Jadwal mengajar berhasil ditambahkan'),
-        );
-      }
-    }
-  }
-
-  Future<void> _editSchedule(TeachingSchedule schedule) async {
-    final result = await showFSheet<bool>(
-      context: context,
-      side: FLayout.btt,
-      builder: (context) => ScheduleFormSheet(
-        initialSchedule: schedule,
-        initialDay: schedule.dayOfWeek,
-      ),
-    );
-    if (result == true && mounted) {
-      await _loadSchedules();
-      if (mounted) {
-        showFToast(
-          context: context,
-          title: const Text('Jadwal mengajar berhasil diperbarui'),
-        );
-      }
-    }
-  }
-
-  Future<void> _deleteSchedule(TeachingSchedule schedule) async {
-    final confirmed = await showFDialog<bool>(
-      context: context,
-      builder: (dialogContext, _, animation) => FDialog(
-        animation: animation,
-        builder: (context, dialogStyle) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Hapus Jadwal Mengajar?',
-                style: context.theme.typography.body.md
-                    .copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Jadwal "${schedule.courseName} (${schedule.className})" hari ${schedule.dayOfWeek} (${schedule.startTime} - ${schedule.endTime}) di ruang ${schedule.room} akan dihapus.',
-                style: context.theme.typography.body.sm
-                    .copyWith(color: context.theme.colors.mutedForeground),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FButton(
-                    variant: FButtonVariant.outline,
-                    onPress: () => Navigator.of(dialogContext).pop(false),
-                    child: const Text('Batal'),
-                  ),
-                  const SizedBox(width: 8),
-                  FButton(
-                    variant: FButtonVariant.destructive,
-                    onPress: () => Navigator.of(dialogContext).pop(true),
-                    child: const Text('Hapus Jadwal'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      await ScheduleRepository.instance.deleteSchedule(schedule.id);
-      await _loadSchedules();
-      if (mounted) {
-        showFToast(
-          context: context,
-          title: const Text('Jadwal mengajar berhasil dihapus'),
-        );
-      }
     }
   }
 
@@ -579,68 +484,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ],
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Semantics(
-                          button: true,
-                          label: 'Edit jadwal ${schedule.courseName}',
-                          child: FTappable(
-                            onPress: () => _editSchedule(schedule),
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: theme.colors.card,
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                FLucideIcons.pencil,
-                                size: 14,
-                                color: token.foreground,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Semantics(
-                          button: true,
-                          label: 'Hapus jadwal ${schedule.courseName}',
-                          child: FTappable(
-                            onPress: () => _deleteSchedule(schedule),
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: theme.colors.card,
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                FLucideIcons.trash2,
-                                size: 14,
-                                color: token.foreground,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: theme.colors.card,
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Icon(
-                            FLucideIcons.chevronRight,
-                            size: 16,
-                            color: token.foreground,
-                          ),
-                        ),
-                      ],
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: theme.colors.card,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        FLucideIcons.chevronRight,
+                        size: 16,
+                        color: token.foreground,
+                      ),
                     ),
                   ],
                 ),
@@ -982,12 +838,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 overflow: TextOverflow.ellipsis,
               )
             : const SizedBox.shrink(),
-        suffixes: [
-          FHeaderAction(
-            icon: const Icon(FLucideIcons.plus),
-            onPress: _openAddScheduleSheet,
-          ),
-        ],
       ),
       child: _isLoading
           ? const Center(child: Text('Memuat jadwal mengajar...'))

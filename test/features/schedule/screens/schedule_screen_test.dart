@@ -267,76 +267,24 @@ void main() {
     expect(find.textContaining('Waktu Berjalan'), findsNothing);
   });
 
-  testWidgets('tapping plus icon opens ScheduleFormSheet in create mode', (tester) async {
+  testWidgets('ScheduleScreen is pure read-only with no add button in header', (tester) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(buildTestableWidget());
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
 
-    final plusIcon = find.byIcon(FLucideIcons.plus);
-    expect(plusIcon, findsOneWidget);
-
-    await tester.tap(plusIcon);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Tambah Jadwal Kuliah'), findsOneWidget);
+    expect(find.byIcon(FLucideIcons.plus), findsNothing);
   });
 
-  testWidgets('tapping pencil icon opens ScheduleFormSheet in edit mode', (tester) async {
+  testWidgets('Schedule cards are pure read-only with no pencil or trash action icons', (tester) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(buildTestableWidget());
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
 
-    final editIcons = find.byIcon(FLucideIcons.pencil);
-    expect(editIcons, findsWidgets);
-
-    await tester.tap(editIcons.first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Edit Jadwal Kuliah'), findsOneWidget);
-
-    await tester.runAsync(() async {
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    });
-    await tester.pumpAndSettle();
-
-    expect(find.text('Simpan Perubahan'), findsOneWidget);
-  });
-
-  testWidgets('tapping trash icon shows confirmation dialog and confirms deletion', (tester) async {
-    await tester.runAsync(() async {
-      await tester.pumpWidget(buildTestableWidget());
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    });
-    await tester.pumpAndSettle();
-
-    final trashIcons = find.byIcon(FLucideIcons.trash2);
-    expect(trashIcons, findsWidgets);
-
-    await tester.tap(trashIcons.first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Hapus Jadwal Mengajar?'), findsOneWidget);
-
-    // Tap confirm
-    final confirmButton = find.descendant(
-      of: find.byType(FDialog),
-      matching: find.text('Hapus Jadwal'),
-    );
-    await tester.tap(confirmButton);
-    await tester.runAsync(() async {
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    });
-    await tester.pumpAndSettle();
-
-    // Verify schedule was deleted from SQLite
-    TeachingSchedule? deletedSchedule;
-    await tester.runAsync(() async {
-      deletedSchedule = await ScheduleRepository.instance.getScheduleById(1);
-    });
-    expect(deletedSchedule, isNull);
+    expect(find.byIcon(FLucideIcons.pencil), findsNothing);
+    expect(find.byIcon(FLucideIcons.trash2), findsNothing);
   });
 }
