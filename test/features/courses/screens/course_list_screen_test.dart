@@ -8,7 +8,8 @@ import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/courses/screens/course_list_screen.dart';
-import 'package:podo/features/courses/widgets/add_course_offering_sheet.dart';
+import 'package:podo/features/courses/widgets/add_class_offering_sheet.dart';
+import 'package:podo/features/courses/widgets/add_course_sheet.dart';
 
 void main() {
   setUpAll(() {
@@ -193,15 +194,25 @@ void main() {
       expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
     });
 
-    testWidgets('tapping floating action button opens AddCourseOfferingSheet', (tester) async {
+    testWidgets('tapping floating action button expands speed dial with Tambah Kelas and Tambah Mata Kuliah', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
-      // Tap floating action button
+      // Tap FAB to expand
       await tester.tap(find.byIcon(FLucideIcons.plus));
+      await tester.pumpAndSettle();
+
+      // Verify speed dial actions are displayed
+      expect(find.text('Tambah Kelas'), findsOneWidget);
+      expect(find.text('Tambah Mata Kuliah'), findsOneWidget);
+      expect(find.byIcon(FLucideIcons.school), findsOneWidget);
+      expect(find.byIcon(FLucideIcons.bookPlus), findsOneWidget);
+
+      // Tap Tambah Kelas action to open AddClassOfferingSheet
+      await tester.tap(find.text('Tambah Kelas'));
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
@@ -211,13 +222,38 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      // Verify sheet opens
-      expect(find.byType(AddCourseOfferingSheet), findsOneWidget);
+      // Verify AddClassOfferingSheet opens
+      expect(find.byType(AddClassOfferingSheet), findsOneWidget);
       expect(find.text('Tambah Kelas Kuliah'), findsOneWidget);
       expect(find.text('Simpan Kelas'), findsOneWidget);
     });
 
-    testWidgets('successfully creates new course offering via sheet and updates list', (tester) async {
+    testWidgets('tapping Tambah Mata Kuliah in speed dial opens AddCourseSheet', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Tap FAB to expand
+      await tester.tap(find.byIcon(FLucideIcons.plus));
+      await tester.pumpAndSettle();
+
+      // Tap Tambah Mata Kuliah action
+      await tester.tap(find.text('Tambah Mata Kuliah'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Verify AddCourseSheet opens
+      expect(find.byType(AddCourseSheet), findsOneWidget);
+      expect(find.text('Kode Mata Kuliah'), findsOneWidget);
+      expect(find.text('Nama Mata Kuliah'), findsOneWidget);
+      expect(find.text('Simpan Mata Kuliah'), findsOneWidget);
+    });
+
+    testWidgets('successfully creates new course offering via AddClassOfferingSheet and updates list', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -227,8 +263,10 @@ void main() {
       expect(find.text('Total Kelas'), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
 
-      // Open AddCourseOfferingSheet via FAB
+      // Open speed dial and tap Tambah Kelas
       await tester.tap(find.byIcon(FLucideIcons.plus));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tambah Kelas'));
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
@@ -259,7 +297,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Sheet should be dismissed
-      expect(find.byType(AddCourseOfferingSheet), findsNothing);
+      expect(find.byType(AddClassOfferingSheet), findsNothing);
 
       // New offering should appear on screen
       expect(find.textContaining('IF-44-04'), findsOneWidget);
@@ -267,6 +305,46 @@ void main() {
       // Total Kelas updated to 4
       expect(find.text('Total Kelas'), findsOneWidget);
       expect(find.text('4'), findsOneWidget);
+    });
+
+    testWidgets('successfully creates new master course via AddCourseSheet', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Open speed dial and tap Tambah Mata Kuliah
+      await tester.tap(find.byIcon(FLucideIcons.plus));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tambah Mata Kuliah'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Fill in new master course
+      final codeField = find.widgetWithText(FTextField, 'Contoh: IF104');
+      final nameField = find.widgetWithText(FTextField, 'Contoh: Kecerdasan Buatan');
+      await tester.enterText(codeField, 'IF105');
+      await tester.enterText(nameField, 'Jaringan Komputer');
+      await tester.pump();
+
+      // Tap Simpan Mata Kuliah
+      await tester.ensureVisible(find.text('Simpan Mata Kuliah'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Simpan Mata Kuliah'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      });
+      await tester.pumpAndSettle();
+
+      // Sheet should be dismissed
+      expect(find.byType(AddCourseSheet), findsNothing);
     });
   });
 }

@@ -5,7 +5,8 @@ import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/repositories/course_repository.dart';
-import 'package:podo/features/courses/widgets/add_course_offering_sheet.dart';
+import 'package:podo/features/courses/widgets/add_class_offering_sheet.dart';
+import 'package:podo/features/courses/widgets/add_course_sheet.dart';
 
 class CourseListScreen extends StatefulWidget {
   const CourseListScreen({super.key});
@@ -14,12 +15,17 @@ class CourseListScreen extends StatefulWidget {
   State<CourseListScreen> createState() => _CourseListScreenState();
 }
 
-class _CourseListScreenState extends State<CourseListScreen> {
+class _CourseListScreenState extends State<CourseListScreen>
+    with SingleTickerProviderStateMixin {
   late final TextEditingController _searchController;
   late final ScrollController _scrollController;
+  late final AnimationController _fabAnimController;
+  late final Animation<double> _fabAnimation;
+
   List<CourseOffering> _offerings = [];
   bool _isLoading = true;
   bool _showAppbarTitle = false;
+  bool _isFabExpanded = false;
 
   @override
   void initState() {
@@ -27,11 +33,22 @@ class _CourseListScreenState extends State<CourseListScreen> {
     _scrollController = ScrollController()..addListener(_onScroll);
     _searchController = TextEditingController();
     _searchController.addListener(_onSearchChanged);
+
+    _fabAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _fabAnimation = CurvedAnimation(
+      parent: _fabAnimController,
+      curve: Curves.easeOut,
+    );
+
     _loadOfferings();
   }
 
   @override
   void dispose() {
+    _fabAnimController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _searchController.removeListener(_onSearchChanged);
@@ -48,6 +65,23 @@ class _CourseListScreenState extends State<CourseListScreen> {
 
   void _onSearchChanged() {
     _loadOfferings(query: _searchController.text);
+  }
+
+  void _toggleFab() {
+    if (_isFabExpanded) {
+      _fabAnimController.reverse();
+      setState(() => _isFabExpanded = false);
+    } else {
+      _fabAnimController.forward();
+      setState(() => _isFabExpanded = true);
+    }
+  }
+
+  void _collapseFab() {
+    if (_isFabExpanded) {
+      _fabAnimController.reverse();
+      setState(() => _isFabExpanded = false);
+    }
   }
 
   Future<void> _loadOfferings({String? query}) async {
@@ -85,17 +119,19 @@ class _CourseListScreenState extends State<CourseListScreen> {
       _offerings.fold<int>(0, (sum, item) => sum + item.enrolledCount);
 
   void _navigateToDetail(CourseOffering offering) {
+    _collapseFab();
     Navigator.of(context).pushNamed(
       AppRoutes.courseDetail,
       arguments: offering,
     );
   }
 
-  Future<void> _showAddOfferingSheet() async {
+  Future<void> _showAddClassSheet() async {
+    _collapseFab();
     final created = await showFSheet<bool>(
       context: context,
       side: FLayout.btt,
-      builder: (context) => const AddCourseOfferingSheet(),
+      builder: (context) => const AddClassOfferingSheet(),
     );
 
     if (created == true) {
@@ -104,6 +140,25 @@ class _CourseListScreenState extends State<CourseListScreen> {
         showFToast(
           context: context,
           title: const Text('Kelas perkuliahan berhasil ditambahkan'),
+        );
+      }
+    }
+  }
+
+  Future<void> _showAddCourseSheet() async {
+    _collapseFab();
+    final created = await showFSheet<bool>(
+      context: context,
+      side: FLayout.btt,
+      builder: (context) => const AddCourseSheet(),
+    );
+
+    if (created == true) {
+      await _loadOfferings();
+      if (mounted) {
+        showFToast(
+          context: context,
+          title: const Text('Mata kuliah berhasil ditambahkan'),
         );
       }
     }
@@ -269,7 +324,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   FButton(
                     size: FButtonSizeVariant.sm,
                     prefix: const Icon(FLucideIcons.plus),
-                    onPress: _showAddOfferingSheet,
+                    onPress: _showAddClassSheet,
                     child: const Text('Kuliah'),
                   ),
               ],
@@ -498,6 +553,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
       ),
       child: Stack(
         children: [
+          // Main scrollable list and headers
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -551,30 +607,192 @@ class _CourseListScreenState extends State<CourseListScreen> {
               ),
             ],
           ),
+
+          // Dismiss barrier when speed dial is open
+          if (_isFabExpanded)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _collapseFab,
+                child: FadeTransition(
+                  opacity: _fabAnimation,
+                  child: Container(
+                    color: const Color(0x33000000),
+                  ),
+                ),
+              ),
+            ),
+
+          // Floating Action Button with Speed Dial items
           Positioned(
             right: 20,
             bottom: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colors.primary.withValues(alpha: 0.35),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (_isFabExpanded) ...[
+                  // Action 1: Tambah Mata Kuliah
+                  FadeTransition(
+                    opacity: _fabAnimation,
+                    child: ScaleTransition(
+                      scale: _fabAnimation,
+                      alignment: Alignment.bottomRight,
+                      child: FTappable(
+                        onPress: _showAddCourseSheet,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colors.card,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x14000000),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Tambah Mata Kuliah',
+                                style: theme.typography.body.xs.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colors.foreground,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: theme.colors.primary,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colors.primary
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                FLucideIcons.bookPlus,
+                                size: 18,
+                                color: theme.colors.primaryForeground,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 12),
+
+                  // Action 2: Tambah Kelas
+                  FadeTransition(
+                    opacity: _fabAnimation,
+                    child: ScaleTransition(
+                      scale: _fabAnimation,
+                      alignment: Alignment.bottomRight,
+                      child: FTappable(
+                        onPress: _showAddClassSheet,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colors.card,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x14000000),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Tambah Kelas',
+                                style: theme.typography.body.xs.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colors.foreground,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: theme.colors.primary,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colors.primary
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                FLucideIcons.school,
+                                size: 18,
+                                color: theme.colors.primaryForeground,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                 ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: FButton.icon(
-                  variant: FButtonVariant.primary,
-                  size: FButtonSizeVariant.lg,
-                  semanticsLabel: 'Tambah Kelas Kuliah',
-                  onPress: _showAddOfferingSheet,
-                  child: const Icon(FLucideIcons.plus),
+
+                // Main FAB Button
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colors.primary.withValues(alpha: 0.35),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: FButton.icon(
+                      variant: FButtonVariant.primary,
+                      size: FButtonSizeVariant.lg,
+                      semanticsLabel:
+                          _isFabExpanded ? 'Tutup menu aksi' : 'Buka menu tambah',
+                      onPress: _toggleFab,
+                      child: RotationTransition(
+                        turns: _fabAnimation.drive(
+                          Tween<double>(begin: 0.0, end: 0.125),
+                        ),
+                        child: const Icon(FLucideIcons.plus),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
