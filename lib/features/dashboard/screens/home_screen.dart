@@ -463,9 +463,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             label: 'Profil ${_lecturer?.fullName ?? "Dosen"}',
                             child: FAvatar.raw(
                               size: 46,
+                              style: FAvatarStyleDelta.delta(
+                                backgroundColor: theme.colors.primary,
+                              ),
                               child: Text(
                                 _getInitials(_lecturer?.fullName),
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: theme.colors.primaryForeground,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
