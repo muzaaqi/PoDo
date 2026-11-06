@@ -191,32 +191,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              schedule.courseName,
-                              style: theme.typography.body.md.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${schedule.startTime} - ${schedule.endTime}',
-                            style: theme.typography.body.xs.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colors.primary,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        schedule.courseName,
+                        style: theme.typography.body.md.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Text(
-                            '${schedule.courseCode} • Kelas ${schedule.className}',
+                            'Kelas ${schedule.className}',
                             style: theme.typography.body.xs.copyWith(
                               color: theme.colors.mutedForeground,
                             ),
@@ -245,42 +230,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                         ],
                       ),
-                      if (isActive) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          height: 1,
-                          color: theme.colors.border,
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  FLucideIcons.users,
-                                  size: 14,
-                                  color: theme.colors.primary,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Perkuliahan Aktif',
-                                  style: theme.typography.body.xs.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colors.primary,
-                                  ),
-                                ),
-                              ],
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            FLucideIcons.clock,
+                            size: 14,
+                            color: theme.colors.mutedForeground,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${schedule.startTime} - ${schedule.endTime}',
+                            style: theme.typography.body.xs.copyWith(
+                              color: theme.colors.mutedForeground,
                             ),
-                            FBadge(
-                              variant: FBadgeVariant.outline,
-                              child: Text(
-                                '${schedule.academicYear} (${schedule.term})',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

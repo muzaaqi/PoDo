@@ -66,8 +66,7 @@ void main() {
 
     // Monday schedule for L001: Pemrograman Mobile, IF-44-01, KU3.01, 08:00 - 10:30, 3 SKS
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
-    expect(find.textContaining('IF101'), findsOneWidget);
-    expect(find.textContaining('IF-44-01'), findsOneWidget);
+    expect(find.text('Kelas IF-44-01'), findsOneWidget);
     expect(find.text('3 SKS'), findsOneWidget);
     expect(find.textContaining('08:00 - 10:30'), findsOneWidget);
     expect(find.textContaining('KU3.01'), findsOneWidget);
