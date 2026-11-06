@@ -234,19 +234,19 @@ Future<void> deleteSchedule(int id); // Menghapus jadwal mengajar
 - Test: `test/features/grades/repositories/grade_repository_test.dart`
 - Test: `test/features/grades/widgets/grade_input_bottom_sheet_test.dart`
 
-- [ ] **Step 1: Write failing test untuk deleteGrade di repository dan tombol reset di bottom sheet**
+- [x] **Step 1: Write failing test untuk deleteGrade di repository dan tombol reset di bottom sheet**
   - Pastikan test memeriksa `deleteGrade(enrollmentId)` menghapus record dari tabel `grades`.
   - Pastikan widget test memeriksa tombol "Reset Nilai" muncul jika mahasiswa sudah memiliki nilai, dan memunculkan dialog konfirmasi.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/grades/repositories/grade_repository_test.dart test/features/grades/widgets/grade_input_bottom_sheet_test.dart`
-- [ ] **Step 3: Implement minimal code**
+- [x] **Step 3: Implement minimal code**
   - Tambahkan tombol "Reset Nilai" dengan varian outline/destructive pada `GradeInputBottomSheet`.
   - Hubungkan dengan konfirmasi `showFDialog` dan `GradeRepository.instance.deleteGrade`.
-- [ ] **Step 4: Verify test passes**
+- [x] **Step 4: Verify test passes**
   - Run: `flutter test test/features/grades/repositories/grade_repository_test.dart test/features/grades/widgets/grade_input_bottom_sheet_test.dart`
-- [ ] **Step 5: Run analyze**
+- [x] **Step 5: Run analyze**
   - Run: `flutter analyze`
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - `git commit -m "feat(grades): implement delete and reset grade functionality with confirmation dialog"`
 
 ---
@@ -259,22 +259,22 @@ Future<void> deleteSchedule(int id); // Menghapus jadwal mengajar
 - Test: `test/features/courses/repositories/course_repository_test.dart`
 - Test: `test/features/courses/screens/course_detail_screen_test.dart`
 
-- [ ] **Step 1: Write failing test untuk updateOffering dan deleteOffering di repository**
+- [x] **Step 1: Write failing test untuk updateOffering dan deleteOffering di repository**
   - Uji update data kelas (nama kelas, tahun akademik, semester).
   - Uji delete kelas beserta verifikasi cascade deletion pada enrollments dan schedules terkait.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/courses/repositories/course_repository_test.dart`
-- [ ] **Step 3: Implement repository methods**
+- [x] **Step 3: Implement repository methods**
   - Tambahkan `updateOffering(CourseOffering offering)` dan `deleteOffering(String offeringId)`.
-- [ ] **Step 4: Write failing widget test untuk aksi Edit dan Hapus Kelas di CourseDetailScreen**
+- [x] **Step 4: Write failing widget test untuk aksi Edit dan Hapus Kelas di CourseDetailScreen**
   - Uji adanya menu edit dan hapus pada header `CourseDetailScreen`.
   - Uji dialog konfirmasi hapus kelas yang memanggil `deleteOffering` dan navigasi kembali ke `CourseListScreen`.
-- [ ] **Step 5: Implement UI components di CourseDetailScreen & AddClassOfferingSheet**
+- [x] **Step 5: Implement UI components di CourseDetailScreen & AddClassOfferingSheet**
   - Tambahkan dukungan mode edit pada `AddClassOfferingSheet` (`initialOffering`).
   - Tambahkan tombol edit dan tombol hapus kelas dengan dialog konfirmasi Forui `FDialog`.
-- [ ] **Step 6: Verify all course tests pass**
+- [x] **Step 6: Verify all course tests pass**
   - Run: `flutter test test/features/courses/repositories/course_repository_test.dart test/features/courses/screens/course_detail_screen_test.dart`
-- [ ] **Step 7: Run analyze & commit**
+- [x] **Step 7: Run analyze & commit**
   - `git commit -m "feat(courses): implement update and delete course offering with cascade cleanup"`
 
 ---
@@ -286,20 +286,20 @@ Future<void> deleteSchedule(int id); // Menghapus jadwal mengajar
 - Test: `test/features/grades/repositories/enrollment_repository_test.dart`
 - Test: `test/features/courses/screens/course_detail_screen_test.dart`
 
-- [ ] **Step 1: Write failing test untuk unenrollStudent di repository**
+- [x] **Step 1: Write failing test untuk unenrollStudent di repository**
   - Uji `unenrollStudent(enrollmentId)` menghapus relasi di `course_enrollments` dan menghapus data nilai terkait.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `flutter test test/features/grades/repositories/enrollment_repository_test.dart`
-- [ ] **Step 3: Implement unenrollStudent di EnrollmentRepository**
+- [x] **Step 3: Implement unenrollStudent di EnrollmentRepository**
   - Jalankan `db.delete('course_enrollments', where: 'id = ?', whereArgs: [enrollmentId])`.
-- [ ] **Step 4: Write failing widget test untuk tombol keluarkan mahasiswa di CourseDetailScreen**
+- [x] **Step 4: Write failing widget test untuk tombol keluarkan mahasiswa di CourseDetailScreen**
   - Uji adanya aksi unenroll pada item mahasiswa dan dialog konfirmasi sebelum eksekusi.
-- [ ] **Step 5: Implement UI tombol keluarkan mahasiswa pada kartu mahasiswa**
+- [x] **Step 5: Implement UI tombol keluarkan mahasiswa pada kartu mahasiswa**
   - Tambahkan ikon aksi `FLucideIcons.userMinus` dengan dialog konfirmasi `FDialog`.
   - Refresh daftar mahasiswa dan kartu statistik setelah mahasiswa berhasil dikeluarkan.
-- [ ] **Step 6: Verify tests pass**
+- [x] **Step 6: Verify tests pass**
   - Run: `flutter test test/features/grades/repositories/enrollment_repository_test.dart test/features/courses/screens/course_detail_screen_test.dart`
-- [ ] **Step 7: Run analyze & commit**
+- [x] **Step 7: Run analyze & commit**
   - `git commit -m "feat(enrollment): implement unenroll student from course offering with confirmation dialog"`
 
 ---
@@ -313,19 +313,19 @@ Future<void> deleteSchedule(int id); // Menghapus jadwal mengajar
 - Test: `test/features/schedule/screens/schedule_screen_test.dart`
 - Test: `test/features/schedule/widgets/schedule_form_sheet_test.dart`
 
-- [ ] **Step 1: Write failing tests untuk updateSchedule dan deleteSchedule di ScheduleRepository**
+- [x] **Step 1: Write failing tests untuk updateSchedule dan deleteSchedule di ScheduleRepository**
   - Uji perubahan ruangan, jam, dan hari pada record jadwal.
   - Uji penghapusan jadwal berdasarkan ID.
-- [ ] **Step 2: Implement updateSchedule dan deleteSchedule di ScheduleRepository**
-- [ ] **Step 3: Create ScheduleFormSheet untuk tambah dan edit jadwal**
+- [x] **Step 2: Implement updateSchedule dan deleteSchedule di ScheduleRepository**
+- [x] **Step 3: Create ScheduleFormSheet untuk tambah dan edit jadwal**
   - Menggunakan `showFSheet` dengan pemilihan kelas yang diampu dosen, pemilihan hari, kolom ruangan, serta waktu mulai dan selesai.
   - Terapkan validasi waktu dan penanganan konflik jadwal unik.
-- [ ] **Step 4: Integrate ScheduleFormSheet ke ScheduleScreen**
+- [x] **Step 4: Integrate ScheduleFormSheet ke ScheduleScreen**
   - Tambahkan tombol aksi tambah jadwal (+) pada header `ScheduleScreen`.
   - Tambahkan opsi edit dan hapus jadwal (dengan konfirmasi dialog `FDialog`) pada setiap kartu jadwal.
-- [ ] **Step 5: Verify schedule tests pass**
+- [x] **Step 5: Verify schedule tests pass**
   - Run: `flutter test test/features/schedule/`
-- [ ] **Step 6: Run analyze & commit**
+- [x] **Step 6: Run analyze & commit**
   - `git commit -m "feat(schedule): implement full CRUD for teaching schedules with form sheet and confirmation"`
 
 ---
@@ -334,25 +334,25 @@ Future<void> deleteSchedule(int id); // Menghapus jadwal mengajar
 **Files:**
 - Full test suite: `test/`
 
-- [ ] **Step 1: Jalankan analisis kode statis menyeluruh**
+- [x] **Step 1: Jalankan analisis kode statis menyeluruh**
   - Run: `flutter analyze`
   - Expected: No issues found!
-- [ ] **Step 2: Jalankan seluruh suite test otomatis**
+- [x] **Step 2: Jalankan seluruh suite test otomatis**
   - Run: `flutter test`
   - Expected: 175+ tests PASS (0 failure)
-- [ ] **Step 3: Build rilis APK final**
+- [x] **Step 3: Build rilis APK final**
   - Run: `flutter build apk`
   - Expected: `app-release.apk` berhasil ter-build tanpa error.
-- [ ] **Step 4: Final commit**
+- [x] **Step 4: Final commit**
   - `git commit -m "chore: complete full CRUD implementation and verification across all modules"`
 
 ---
 
 ## 6. Verification Checklist
 
-- [ ] Seluruh diagram Mermaid dirender dengan benar tanpa sintaks error.
-- [ ] Tidak ada penggunaan widget Material/Cupertino yang menggantikan Forui.
-- [ ] Seluruh operasi database menggunakan repository dan transaksi SQLite yang aman.
-- [ ] Konfirmasi dialog (`showFDialog`) wajib menyertai setiap aksi penghapusan data (Delete).
-- [ ] `flutter analyze` menghasilkan 0 error dan 0 warning.
-- [ ] `flutter test` lulus 100% pada seluruh modul.
+- [x] Seluruh diagram Mermaid dirender dengan benar tanpa sintaks error.
+- [x] Tidak ada penggunaan widget Material/Cupertino yang menggantikan Forui.
+- [x] Seluruh operasi database menggunakan repository dan transaksi SQLite yang aman.
+- [x] Konfirmasi dialog (`showFDialog`) wajib menyertai setiap aksi penghapusan data (Delete).
+- [x] `flutter analyze` menghasilkan 0 error dan 0 warning.
+- [x] `flutter test` lulus 100% pada seluruh modul.
