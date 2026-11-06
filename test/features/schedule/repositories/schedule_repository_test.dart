@@ -135,5 +135,34 @@ void main() {
       expect(sabtuSchedules.length, 2);
       expect(sabtuSchedules.any((s) => s.room == 'LAB-05'), isTrue);
     });
+
+    test('updateSchedule updates room, times, and day for existing schedule', () async {
+      final schedule = await ScheduleRepository.instance.getScheduleById(1);
+      expect(schedule, isNotNull);
+      expect(schedule!.room, 'KU3.01');
+
+      final updated = schedule.copyWith(
+        room: 'LAB-CORE',
+        startTime: '09:00',
+        endTime: '11:30',
+        dayOfWeek: 'Selasa',
+      );
+      await ScheduleRepository.instance.updateSchedule(updated);
+
+      final fetched = await ScheduleRepository.instance.getScheduleById(1);
+      expect(fetched, isNotNull);
+      expect(fetched!.room, 'LAB-CORE');
+      expect(fetched.startTime, '09:00');
+      expect(fetched.endTime, '11:30');
+      expect(fetched.dayOfWeek, 'Selasa');
+    });
+
+    test('deleteSchedule removes schedule by id', () async {
+      expect(await ScheduleRepository.instance.getScheduleById(2), isNotNull);
+
+      await ScheduleRepository.instance.deleteSchedule(2);
+
+      expect(await ScheduleRepository.instance.getScheduleById(2), isNull);
+    });
   });
 }

@@ -7,6 +7,8 @@ import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
+import 'package:podo/features/schedule/models/teaching_schedule.dart';
+import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 import 'package:podo/features/schedule/screens/schedule_screen.dart';
 
 void main() {
@@ -263,5 +265,78 @@ void main() {
     expect(find.text('Berlangsung'), findsNothing);
     expect(find.text('Selesai'), findsNothing);
     expect(find.textContaining('Waktu Berjalan'), findsNothing);
+  });
+
+  testWidgets('tapping plus icon opens ScheduleFormSheet in create mode', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final plusIcon = find.byIcon(FLucideIcons.plus);
+    expect(plusIcon, findsOneWidget);
+
+    await tester.tap(plusIcon);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tambah Jadwal Kuliah'), findsOneWidget);
+  });
+
+  testWidgets('tapping pencil icon opens ScheduleFormSheet in edit mode', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final editIcons = find.byIcon(FLucideIcons.pencil);
+    expect(editIcons, findsWidgets);
+
+    await tester.tap(editIcons.first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit Jadwal Kuliah'), findsOneWidget);
+
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Simpan Perubahan'), findsOneWidget);
+  });
+
+  testWidgets('tapping trash icon shows confirmation dialog and confirms deletion', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final trashIcons = find.byIcon(FLucideIcons.trash2);
+    expect(trashIcons, findsWidgets);
+
+    await tester.tap(trashIcons.first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hapus Jadwal Mengajar?'), findsOneWidget);
+
+    // Tap confirm
+    final confirmButton = find.descendant(
+      of: find.byType(FDialog),
+      matching: find.text('Hapus Jadwal'),
+    );
+    await tester.tap(confirmButton);
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    // Verify schedule was deleted from SQLite
+    TeachingSchedule? deletedSchedule;
+    await tester.runAsync(() async {
+      deletedSchedule = await ScheduleRepository.instance.getScheduleById(1);
+    });
+    expect(deletedSchedule, isNull);
   });
 }

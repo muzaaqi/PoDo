@@ -107,4 +107,29 @@ class ScheduleRepository {
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
   }
+
+  Future<void> updateSchedule(TeachingSchedule schedule) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.update(
+      'teaching_schedules',
+      {
+        'offering_id': schedule.offeringId,
+        'day_of_week': schedule.dayOfWeek,
+        'room': schedule.room,
+        'start_time': schedule.startTime,
+        'end_time': schedule.endTime,
+      },
+      where: 'id = ?',
+      whereArgs: [schedule.id],
+    );
+  }
+
+  Future<void> deleteSchedule(int id) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.delete(
+      'teaching_schedules',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }
