@@ -4,7 +4,6 @@ import 'package:forui/forui.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
-import 'package:podo/core/widgets/stat_card.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/grades/widgets/grade_input_bottom_sheet.dart';
@@ -68,37 +67,21 @@ void main() {
       expect(find.textContaining('2024/2025'), findsOneWidget);
     });
 
-    testWidgets('displays 3 academic stat metrics for OFF001 initially', (tester) async {
+    testWidgets('displays 3 academic stat metrics and progress bar for OFF001 initially', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
-      expect(
-        find.descendant(
-          of: find.byType(StatCard),
-          matching: find.text('Total Mahasiswa'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: find.byType(StatCard),
-          matching: find.text('Sudah Dinilai'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: find.byType(StatCard),
-          matching: find.text('Belum Dinilai'),
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('Total Mahasiswa'), findsOneWidget);
+      expect(find.text('Sudah Dinilai'), findsWidgets); // hero card + filter tab
+      expect(find.text('Belum Dinilai'), findsWidgets); // hero card + filter tab + cards
+      expect(find.text('Progress Penilaian'), findsOneWidget);
+      expect(find.byType(FDeterminateProgress), findsOneWidget);
 
-      expect(find.text('3'), findsNWidgets(2)); // Total: 3, Belum: 3
-      expect(find.text('0'), findsOneWidget); // Sudah: 0
+      expect(find.text('3'), findsWidgets); // Total and Belum counts
+      expect(find.text('0'), findsWidgets); // Sudah count
     });
 
     testWidgets('displays enrolled student roster with Belum Dinilai badge initially', (tester) async {
@@ -147,8 +130,11 @@ void main() {
       await tester.tap(find.text('Ahmad Fauzi'));
       await tester.pumpAndSettle();
 
-      // Fill CPMK fields
-      final fields = find.byType(FTextField);
+      // Fill CPMK fields in sheet
+      final fields = find.descendant(
+        of: find.byType(GradeInputBottomSheet),
+        matching: find.byType(FTextField),
+      );
       await tester.enterText(fields.at(0), '85');
       await tester.enterText(fields.at(1), '90');
       await tester.enterText(fields.at(2), '80');
@@ -188,8 +174,113 @@ void main() {
       );
 
       // Stat cards updated: Sudah = 1, Belum = 2
-      expect(find.text('1'), findsOneWidget);
-      expect(find.text('2'), findsOneWidget);
+      expect(find.text('1'), findsWidgets);
+      expect(find.text('2'), findsWidgets);
+    });
+
+    testWidgets('filters students in real time by name or NIM search query', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      final searchField = find.widgetWithText(FTextField, 'Cari nama atau NIM mahasiswa...');
+      expect(searchField, findsOneWidget);
+
+      // Search for Citra
+      await tester.enterText(searchField, 'Citra');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Citra Dewi'), findsOneWidget);
+      expect(find.text('Ahmad Fauzi'), findsNothing);
+      expect(find.text('Budi Santoso'), findsNothing);
+
+      // Search for Budi's NIM
+      await tester.enterText(searchField, '2101002');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Budi Santoso'), findsOneWidget);
+      expect(find.text('Citra Dewi'), findsNothing);
+
+      // Empty search shows empty state
+      await tester.enterText(searchField, 'ZzzNotExist');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mahasiswa tidak ditemukan'), findsOneWidget);
+      expect(find.text('Reset Filter'), findsOneWidget);
+
+      // Tap Reset Filter
+      await tester.ensureVisible(find.text('Reset Filter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reset Filter'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ahmad Fauzi'), findsOneWidget);
+      expect(find.text('Budi Santoso'), findsOneWidget);
+      expect(find.text('Citra Dewi'), findsOneWidget);
+    });
+
+    testWidgets('filters students via status segment tabs', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Tap 'Sudah Dinilai' filter tab (second occurrence of 'Sudah Dinilai' text, first is in hero card)
+      await tester.tap(find.text('Sudah Dinilai').at(1));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mahasiswa tidak ditemukan'), findsOneWidget);
+
+      // Tap 'Belum Dinilai' filter tab (in filter tab row)
+      await tester.tap(find.text('Belum Dinilai').at(1));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ahmad Fauzi'), findsOneWidget);
+      expect(find.text('Budi Santoso'), findsOneWidget);
+      expect(find.text('Citra Dewi'), findsOneWidget);
+    });
+
+    testWidgets('shows error state when query fails and recovers on Coba Lagi', (tester) async {
+      await tester.runAsync(() async {
+        final db = await DatabaseHelper.instance.database;
+        await db.execute('ALTER TABLE course_enrollments RENAME TO course_enrollments_bak');
+      });
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kendala Memuat Data Perkuliahan'), findsOneWidget);
+      expect(find.text('Coba Lagi'), findsOneWidget);
+
+      // Restore table
+      await tester.runAsync(() async {
+        final db = await DatabaseHelper.instance.database;
+        await db.execute('ALTER TABLE course_enrollments_bak RENAME TO course_enrollments');
+      });
+
+      await tester.tap(find.text('Coba Lagi'));
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kendala Memuat Data Perkuliahan'), findsNothing);
+      expect(find.text('Ahmad Fauzi'), findsOneWidget);
     });
   });
 }

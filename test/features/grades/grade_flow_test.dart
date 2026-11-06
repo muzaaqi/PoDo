@@ -6,7 +6,6 @@ import 'package:podo/app/main_screen.dart';
 import 'package:podo/app/routes.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
-import 'package:podo/core/widgets/stat_card.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
@@ -105,13 +104,7 @@ void main() {
     expect(find.text('3 SKS'), findsOneWidget);
 
     // 4. Verify initial stats & student roster: 3 students, all Belum Dinilai
-    expect(
-      find.descendant(
-        of: find.byType(StatCard),
-        matching: find.text('Total Mahasiswa'),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Total Mahasiswa'), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(FBadge),
@@ -135,7 +128,10 @@ void main() {
     );
 
     // 6. Enter CPMK 1-4
-    final fields = find.byType(FTextField);
+    final fields = find.descendant(
+      of: find.byType(GradeInputBottomSheet),
+      matching: find.byType(FTextField),
+    );
     await tester.enterText(fields.at(0), '85');
     await tester.enterText(fields.at(1), '90');
     await tester.enterText(fields.at(2), '78');
@@ -184,7 +180,10 @@ void main() {
     expect(find.text('88'), findsOneWidget);
 
     // 10. Update CPMK 1 to 95 and save
-    final editFields = find.byType(FTextField);
+    final editFields = find.descendant(
+      of: find.byType(GradeInputBottomSheet),
+      matching: find.byType(FTextField),
+    );
     await tester.enterText(editFields.at(0), '95');
     await tester.pumpAndSettle();
 
