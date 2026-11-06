@@ -103,7 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               color: token.background,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: token.border, width: 1.5),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -143,7 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: colors.amber.background,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.amber.border, width: 1.5),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -245,12 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
 
-            const SizedBox(height: 14),
-            Container(
-              height: 1,
-              color: colors.amber.border,
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             // Bottom info row: Day & Time with Clock Icon, Room with MapPin Icon
             Row(
@@ -310,7 +303,6 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: colors.emerald.background,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.emerald.border, width: 1.5),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       child: Row(
@@ -582,7 +574,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: catToken.background,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: catToken.border, width: 1.5),
                               ),
                               alignment: Alignment.center,
                               child: Icon(
@@ -609,10 +600,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: catToken.background,
                                           borderRadius:
                                               BorderRadius.circular(100),
-                                          border: Border.all(
-                                            color: catToken.border,
-                                            width: 1.5,
-                                          ),
                                         ),
                                         child: Text(
                                           item.category,
