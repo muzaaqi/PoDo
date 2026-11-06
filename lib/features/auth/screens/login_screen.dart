@@ -230,11 +230,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
-                            Icon(
-                              FLucideIcons.sparkles,
-                              size: 16,
-                              color: colors.indigo.foreground,
-                            ),
                           ],
                         ),
                       ),
