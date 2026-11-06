@@ -11,7 +11,9 @@ import 'package:podo/features/schedule/models/teaching_schedule.dart';
 import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final DateTime? currentDateTime;
+
+  const HomeScreen({super.key, this.currentDateTime});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -19,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Lecturer? _lecturer;
-  TeachingSchedule? _upcomingSchedule;
+  TeachingSchedule? _currentSchedule;
   bool _isLoading = true;
   String? _errorMessage;
   late final ScrollController _scrollController;
@@ -67,11 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) {
           setState(() {
             _lecturer = lecturer;
-            if (schedules.isNotEmpty) {
-              _upcomingSchedule = schedules.first;
-            } else {
-              _upcomingSchedule = null;
-            }
+            _currentSchedule = _findCurrentSchedule(schedules);
             _isLoading = false;
           });
         }
@@ -95,6 +93,58 @@ class _HomeScreenState extends State<HomeScreen> {
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  TeachingSchedule? _findCurrentSchedule(List<TeachingSchedule> schedules) {
+    final now = widget.currentDateTime ?? DateTime.now();
+    final dayName = _getDayName(now.weekday);
+    final currentMinutes = now.hour * 60 + now.minute;
+
+    for (final schedule in schedules) {
+      if (schedule.dayOfWeek.trim().toLowerCase() != dayName.toLowerCase()) {
+        continue;
+      }
+      final startMinutes = _parseTimeToMinutes(schedule.startTime);
+      final endMinutes = _parseTimeToMinutes(schedule.endTime);
+
+      if (startMinutes != null && endMinutes != null) {
+        if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+          return schedule;
+        }
+      }
+    }
+    return null;
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Senin';
+      case DateTime.tuesday:
+        return 'Selasa';
+      case DateTime.wednesday:
+        return 'Rabu';
+      case DateTime.thursday:
+        return 'Kamis';
+      case DateTime.friday:
+        return 'Jumat';
+      case DateTime.saturday:
+        return 'Sabtu';
+      default:
+        return 'Minggu';
+    }
+  }
+
+  int? _parseTimeToMinutes(String time) {
+    try {
+      final parts = time.trim().split(':');
+      if (parts.length >= 2) {
+        final hours = int.parse(parts[0]);
+        final minutes = int.parse(parts[1]);
+        return hours * 60 + minutes;
+      }
+    } catch (_) {}
+    return null;
   }
 
   void _showNotificationSheet(BuildContext context) {
@@ -352,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = context.theme;
     final colors = context.appColors;
 
-    final scheduleSemantics = 'Jadwal berikutnya: ${schedule.courseName}, '
+    final scheduleSemantics = 'Jadwal sekarang: ${schedule.courseName}, '
         'Kelas ${schedule.className}, ${schedule.credits} SKS, '
         'Ruangan ${schedule.room}, pukul ${schedule.startTime} sampai ${schedule.endTime}. '
         'Ketuk untuk membuka jadwal lengkap.';
@@ -446,6 +496,39 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colors.card,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: colors.emerald.foreground,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Berlangsung',
+                                  style: TextStyle(
+                                    color: colors.amber.foreground,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -526,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final colors = context.appColors;
 
     return Semantics(
-      label: 'Tidak ada jadwal mengajar hari ini. Semua kelas telah selesai atau belum terjadwal.',
+      label: 'Tidak ada jadwal mengajar yang sedang berlangsung saat ini.',
       excludeSemantics: true,
       child: Container(
         decoration: BoxDecoration(
@@ -556,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tidak Ada Jadwal Mengajar',
+                    'Tidak Ada Kelas Berlangsung',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -565,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Semua kelas telah selesai atau belum terjadwal.',
+                    'Saat ini tidak ada perkuliahan dalam rentang jam mengajar aktif.',
                     style: TextStyle(
                       fontSize: 12,
                       color: colors.emerald.foreground,
@@ -732,12 +815,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 22),
 
-                  // Zone 2: Upcoming Schedule Hero Card (Jadwal Terdekat)
+                  // Zone 2: Current Schedule Hero Card (Jadwal Sekarang)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Jadwal Berikutnya',
+                        'Jadwal Sekarang',
                         style: theme.typography.body.md.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colors.foreground,
@@ -768,8 +851,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  if (_upcomingSchedule != null)
-                    _buildHeroScheduleCard(context, _upcomingSchedule!)
+                  if (_currentSchedule != null)
+                    _buildHeroScheduleCard(context, _currentSchedule!)
                   else
                     _buildEmptyScheduleCard(context),
 

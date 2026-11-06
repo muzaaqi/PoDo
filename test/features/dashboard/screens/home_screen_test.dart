@@ -30,14 +30,17 @@ void main() {
     await AuthRepository.instance.logout();
   });
 
-  Widget buildTestableWidget({void Function(int)? onSwitchTab}) {
+  Widget buildTestableWidget({
+    void Function(int)? onSwitchTab,
+    DateTime? currentDateTime,
+  }) {
     return MaterialApp(
       initialRoute: AppRoutes.main,
       routes: {
         ...AppRoutes.routes,
         AppRoutes.main: (context) => MainScreenScope(
           switchToTab: onSwitchTab ?? (_) {},
-          child: const HomeScreen(),
+          child: HomeScreen(currentDateTime: currentDateTime),
         ),
       },
       builder: (context, child) => FTheme(
@@ -138,19 +141,41 @@ void main() {
     expect(find.text('Notifikasi & Pengumuman'), findsNothing);
   });
 
-  testWidgets('Hero schedule card provides consolidated semantics for screen readers', (tester) async {
+  testWidgets('Hero schedule card displays ongoing class when within scheduled time', (tester) async {
+    // 2026-11-02 was a Monday, 09:00 is within 08:00 - 10:30
+    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
+
     await tester.runAsync(() async {
-      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
+
+    expect(find.text('Jadwal Sekarang'), findsOneWidget);
+    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Berlangsung'), findsOneWidget);
 
     final heroScheduleSemantics = find.byWidgetPredicate(
       (widget) =>
           widget is Semantics &&
           widget.properties.label != null &&
-          widget.properties.label!.startsWith('Jadwal berikutnya:'),
+          widget.properties.label!.startsWith('Jadwal sekarang:'),
     );
     expect(heroScheduleSemantics, findsOneWidget);
+  });
+
+  testWidgets('Hero section renders empty state when outside class schedule hours', (tester) async {
+    // 2026-11-02 was a Monday, 22:00 is outside class hours
+    final mondayNight = DateTime(2026, 11, 2, 22, 0);
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayNight));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Jadwal Sekarang'), findsOneWidget);
+    expect(find.text('Tidak Ada Kelas Berlangsung'), findsOneWidget);
+    expect(find.text('Pemrograman Mobile'), findsNothing);
   });
 }
