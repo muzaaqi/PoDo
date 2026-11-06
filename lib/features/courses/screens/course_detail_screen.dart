@@ -8,6 +8,8 @@ import 'package:podo/features/courses/widgets/add_student_to_offering_sheet.dart
 import 'package:podo/features/grades/models/enrolled_student.dart';
 import 'package:podo/features/grades/repositories/enrollment_repository.dart';
 import 'package:podo/features/grades/widgets/grade_input_bottom_sheet.dart';
+import 'package:podo/features/schedule/models/teaching_schedule.dart';
+import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 
 enum StudentStatusFilter { all, ungraded, graded }
 
@@ -25,6 +27,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   late final ScrollController _scrollController;
 
   CourseOffering? _offering;
+  TeachingSchedule? _schedule;
   List<EnrolledStudent> _students = [];
   bool _isLoading = true;
   bool _hasError = false;
@@ -92,11 +95,19 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     }
 
     try {
-      final students = await EnrollmentRepository.instance
-          .getEnrolledStudentsByOffering(_offering!.offeringId);
+      final results = await Future.wait([
+        EnrollmentRepository.instance
+            .getEnrolledStudentsByOffering(_offering!.offeringId),
+        ScheduleRepository.instance
+            .getPrimaryScheduleForOffering(_offering!.offeringId),
+      ]);
+      final students = results[0] as List<EnrolledStudent>;
+      final schedule = results[1] as TeachingSchedule?;
+
       if (mounted) {
         setState(() {
           _students = students;
+          _schedule = schedule;
           _isLoading = false;
           _hasError = false;
           _errorMessage = null;
@@ -106,6 +117,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       if (mounted) {
         setState(() {
           _students = [];
+          _schedule = null;
           _isLoading = false;
           _hasError = true;
           _errorMessage =
@@ -377,6 +389,50 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 ),
               ],
             ),
+            if (_schedule != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: colors.sky.background,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FLucideIcons.calendarClock,
+                      size: 13,
+                      color: colors.sky.foreground,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${_schedule!.dayOfWeek}, ${_schedule!.startTime} - ${_schedule!.endTime}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colors.sky.foreground,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      FLucideIcons.mapPin,
+                      size: 13,
+                      color: colors.sky.foreground,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Ruang ${_schedule!.room}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colors.sky.foreground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 14),
 
             // Progress Header & Bar

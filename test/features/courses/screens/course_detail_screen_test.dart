@@ -58,7 +58,7 @@ void main() {
     testWidgets('displays course offering info card, header, and SKS badge', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -69,10 +69,22 @@ void main() {
       expect(find.textContaining('2024/2025'), findsNothing);
     });
 
+    testWidgets('displays schedule information in header card when schedule exists', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      });
+      await tester.pumpAndSettle();
+
+      // OFF001 schedule: Senin, 08:00 - 10:30, Ruang KU3.01
+      expect(find.textContaining('Senin, 08:00 - 10:30'), findsOneWidget);
+      expect(find.textContaining('Ruang KU3.01'), findsOneWidget);
+    });
+
     testWidgets('displays progress bar for OFF001 initially', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -91,7 +103,7 @@ void main() {
     testWidgets('displays enrolled student roster with Belum Dinilai badge initially', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -111,7 +123,7 @@ void main() {
     testWidgets('tapping student card opens GradeInputBottomSheet via showFSheet', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -126,7 +138,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -150,11 +162,11 @@ void main() {
       await tester.ensureVisible(saveButton);
       await tester.tap(saveButton);
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pump();
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -185,7 +197,7 @@ void main() {
     testWidgets('filters students in real time by name or NIM search query', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -228,7 +240,7 @@ void main() {
     testWidgets('filters students via status segment tabs', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -290,7 +302,7 @@ void main() {
     testWidgets('tapping 3-dot menu and Tambah Mahasiswa opens AddStudentToOfferingSheet and enrolls new student', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -312,7 +324,7 @@ void main() {
       });
       await tester.pump();
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -325,11 +337,11 @@ void main() {
       final submitButton = find.text('Tambahkan ke Kelas');
       await tester.tap(submitButton);
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pump();
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -343,7 +355,7 @@ void main() {
     testWidgets('tapping 3-dot and Edit Kelas opens AddClassOfferingSheet in edit mode and updates offering', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -362,7 +374,7 @@ void main() {
       expect(find.text('Edit Kelas Perkuliahan'), findsOneWidget);
 
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -372,7 +384,7 @@ void main() {
     testWidgets('tapping 3-dot and Hapus Kelas shows confirmation dialog and deleting removes offering and pops', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -397,7 +409,7 @@ void main() {
       );
       await tester.tap(confirmDelete);
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -412,7 +424,7 @@ void main() {
     testWidgets('tapping 3-dot and Kelola Mahasiswa enables edit mode with Batal button and removes student from class', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       });
       await tester.pumpAndSettle();
 
@@ -450,7 +462,7 @@ void main() {
       );
       await tester.tap(confirmButton);
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 600));
       });
       await tester.pumpAndSettle();
 
@@ -459,6 +471,9 @@ void main() {
 
       // Tap "Batal" to exit edit mode
       await tester.tap(find.text('Batal'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
       await tester.pumpAndSettle();
 
       // 3-dot icon is back, and edit mode banner is gone
