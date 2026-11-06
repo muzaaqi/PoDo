@@ -399,5 +399,50 @@ void main() {
       expect(find.text('Kendala Memuat Mata Kuliah'), findsNothing);
       expect(find.text('Pemrograman Mobile'), findsOneWidget);
     });
+
+    testWidgets('expanding speed dial uses transparent backdrop and collapses on tap outside', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Open speed dial
+      await tester.tap(find.byIcon(FLucideIcons.plus));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tambah Kelas'), findsOneWidget);
+      expect(find.text('Tambah Mata Kuliah'), findsOneWidget);
+
+      // Verify no dark container background (0x33000000) exists
+      final darkContainer = find.byWidgetPredicate(
+        (widget) => widget is Container && widget.color == const Color(0x33000000),
+      );
+      expect(darkContainer, findsNothing);
+
+      // Tap on transparent backdrop barrier to collapse
+      await tester.tap(find.bySemanticsLabel('Tutup menu aksi tambah'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tambah Kelas'), findsNothing);
+      expect(find.text('Tambah Mata Kuliah'), findsNothing);
+    });
+
+    testWidgets('search with keyboard viewInsets does not produce duplicate bottom inset space', (tester) async {
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(() {
+        tester.view.resetViewInsets();
+      });
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Scaffolds layout without error
+      expect(find.text('Mata Kuliah'), findsWidgets);
+      expect(find.byIcon(FLucideIcons.plus), findsOneWidget);
+    });
   });
 }

@@ -617,6 +617,7 @@ class _CourseListScreenState extends State<CourseListScreen>
     final theme = context.theme;
 
     return FScaffold(
+      resizeToAvoidBottomInset: false,
       header: FHeader.nested(
         titleAlignment: Alignment.center,
         style: const FHeaderStyleDelta.delta(
@@ -669,6 +670,11 @@ class _CourseListScreenState extends State<CourseListScreen>
                       control: FTextFieldControl.managed(
                         controller: _searchController,
                       ),
+                      onTap: () {
+                        if (_isFabExpanded) {
+                          _collapseFab();
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -715,21 +721,16 @@ class _CourseListScreenState extends State<CourseListScreen>
             ],
           ),
 
-          // Dismiss barrier when speed dial is open
+          // Dismiss barrier when speed dial is open (transparent without darkening background)
           if (_isFabExpanded)
             Positioned.fill(
               child: Semantics(
                 button: true,
                 label: 'Tutup menu aksi tambah',
                 child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                  behavior: HitTestBehavior.translucent,
                   onTap: _collapseFab,
-                  child: FadeTransition(
-                    opacity: _fabAnimation,
-                    child: Container(
-                      color: const Color(0x33000000),
-                    ),
-                  ),
+                  child: const SizedBox.expand(),
                 ),
               ),
             ),
