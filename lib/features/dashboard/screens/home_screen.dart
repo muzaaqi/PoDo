@@ -708,7 +708,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Builder(
                     builder: (context) {
                       final todaySchedules = _getTodaySchedules(_schedules);

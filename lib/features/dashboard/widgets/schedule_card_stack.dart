@@ -240,13 +240,10 @@ class _ScheduleCardStackState extends State<ScheduleCardStack>
     final currentSchedule = widget.schedules[_currentIndex % total];
 
     if (total == 1) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: _ScheduleCardItem(
-          schedule: currentSchedule,
-          currentDateTime: widget.currentDateTime,
-          onTap: () => widget.onScheduleTap(currentSchedule),
-        ),
+      return _ScheduleCardItem(
+        schedule: currentSchedule,
+        currentDateTime: widget.currentDateTime,
+        onTap: () => widget.onScheduleTap(currentSchedule),
       );
     }
 
@@ -266,18 +263,18 @@ class _ScheduleCardStackState extends State<ScheduleCardStack>
     final hasThirdCard = total >= 3;
     final thirdSchedule = hasThirdCard ? widget.schedules[peekThirdIndex] : null;
 
-    final underScale = 0.94 + (0.06 * dragFraction.abs());
-    final underOffsetY = -8.0 + (8.0 * dragFraction.abs());
+    final underScale = 0.95 + (0.05 * dragFraction.abs());
+    final underOffsetY = -4.0 + (4.0 * dragFraction.abs());
 
-    final thirdScale = 0.88 + (0.06 * dragFraction.abs());
-    final thirdOffsetY = -16.0 + (8.0 * dragFraction.abs());
+    final thirdScale = 0.90 + (0.05 * dragFraction.abs());
+    final thirdOffsetY = -8.0 + (4.0 * dragFraction.abs());
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Card Deck Stack Area
         Padding(
-          padding: const EdgeInsets.only(top: 18),
+          padding: const EdgeInsets.only(top: 8),
           child: GestureDetector(
             onTap: () {
               if (!_isDragging && _dragOffset.abs() < 10) {
