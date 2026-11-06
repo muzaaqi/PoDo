@@ -45,12 +45,14 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _loadProfileAndStats() async {
     final activeId = AuthRepository.instance.activeLecturerId;
     if (activeId != null) {
-      final lecturer = await LecturerRepository.instance.getLecturerById(activeId);
-      final stats = await LecturerRepository.instance.getLecturerStats(activeId);
+      final results = await Future.wait([
+        LecturerRepository.instance.getLecturerById(activeId),
+        LecturerRepository.instance.getLecturerStats(activeId),
+      ]);
       if (mounted) {
         setState(() {
-          _lecturer = lecturer;
-          _stats = stats;
+          _lecturer = results[0] as Lecturer?;
+          _stats = results[1] as LecturerStats;
           _isLoading = false;
         });
       }
@@ -130,31 +132,35 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Widget _buildDetailRow(BuildContext context, {required IconData icon, required String label, required String value}) {
     final theme = context.theme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 16, color: theme.colors.mutedForeground),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: theme.typography.body.sm.copyWith(
-                color: theme.colors.mutedForeground,
+    return Semantics(
+      label: '$label: $value',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 16, color: theme.colors.mutedForeground),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 110,
+              child: Text(
+                label,
+                style: theme.typography.body.sm.copyWith(
+                  color: theme.colors.mutedForeground,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: theme.typography.body.sm.copyWith(
-                fontWeight: FontWeight.w500,
+            Expanded(
+              child: Text(
+                value,
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -192,13 +198,6 @@ class _AccountScreenState extends State<AccountScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Profil Pengguna',
-                    style: theme.typography.body.xs.copyWith(
-                      color: theme.colors.mutedForeground,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
                     'Akun Dosen',
                     style: theme.typography.display.lg.copyWith(
                       fontWeight: FontWeight.bold,
@@ -213,12 +212,15 @@ class _AccountScreenState extends State<AccountScreen> {
                       child: Column(
                         children: [
                           Center(
-                            child: FAvatar.raw(
-                              size: 64,
-                              child: Text(
-                                _getInitials(_lecturer?.fullName),
-                                style: theme.typography.display.xl.copyWith(
-                                  fontWeight: FontWeight.bold,
+                            child: Semantics(
+                              label: 'Foto profil ${_lecturer?.fullName ?? "Dosen"}',
+                              child: FAvatar.raw(
+                                size: 64,
+                                child: Text(
+                                  _getInitials(_lecturer?.fullName),
+                                  style: theme.typography.display.xl.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
