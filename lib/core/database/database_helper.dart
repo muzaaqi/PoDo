@@ -21,7 +21,7 @@ class DatabaseHelper {
     DatabaseFactory? factory,
   }) async {
     final dbFactory = factory ?? databaseFactory;
-    final dbPath = path ?? p.join(await getDatabasesPath(), 'podo.db');
+    final dbPath = path ?? p.join(await dbFactory.getDatabasesPath(), 'podo.db');
 
     _database = await dbFactory.openDatabase(
       dbPath,
