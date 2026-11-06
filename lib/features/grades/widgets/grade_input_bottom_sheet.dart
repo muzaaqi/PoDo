@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/grades/models/enrolled_student.dart';
 import 'package:podo/features/grades/models/grade.dart';
 import 'package:podo/features/grades/repositories/grade_repository.dart';
@@ -115,81 +116,147 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final colors = context.appColors;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colors.border,
-                borderRadius: BorderRadius.circular(2),
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            24 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top drag handle
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 14),
+
+              // Header row with Icon, Title, Subtitle, and Close button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: colors.emerald.background,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            FLucideIcons.award,
+                            size: 18,
+                            color: colors.emerald.foreground,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Penilaian CPMK Mahasiswa',
+                                style: theme.typography.body.md.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colors.foreground,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${widget.student.studentName} • NIM: ${widget.student.studentNim}',
+                                style: theme.typography.body.xs.copyWith(
+                                  color: theme.colors.mutedForeground,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FTappable(
+                    onPress: () => Navigator.of(context).pop(false),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        FLucideIcons.x,
+                        size: 20,
+                        color: theme.colors.mutedForeground,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              FTextField(
+                label: const Text('CPMK 1'),
+                hint: '0 - 100',
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                error: _cpmk1Error != null ? Text(_cpmk1Error!) : null,
+                control: FTextFieldControl.managed(controller: _cpmk1Controller),
+              ),
+              const SizedBox(height: 14),
+              FTextField(
+                label: const Text('CPMK 2'),
+                hint: '0 - 100',
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                error: _cpmk2Error != null ? Text(_cpmk2Error!) : null,
+                control: FTextFieldControl.managed(controller: _cpmk2Controller),
+              ),
+              const SizedBox(height: 14),
+              FTextField(
+                label: const Text('CPMK 3'),
+                hint: '0 - 100',
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                error: _cpmk3Error != null ? Text(_cpmk3Error!) : null,
+                control: FTextFieldControl.managed(controller: _cpmk3Controller),
+              ),
+              const SizedBox(height: 14),
+              FTextField(
+                label: const Text('CPMK 4'),
+                hint: '0 - 100',
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                error: _cpmk4Error != null ? Text(_cpmk4Error!) : null,
+                control: FTextFieldControl.managed(controller: _cpmk4Controller),
+              ),
+              const SizedBox(height: 24),
+              FButton(
+                onPress: _isSaving ? null : _saveGrade,
+                child: Text(_isSaving ? 'Menyimpan...' : 'Simpan Nilai'),
+              ),
+              const SizedBox(height: 10),
+              FButton(
+                variant: FButtonVariant.outline,
+                onPress: _isSaving ? null : () => Navigator.of(context).pop(false),
+                child: const Text('Batal'),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Penilaian CPMK Mahasiswa',
-            style: theme.typography.body.md.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${widget.student.studentName} • NIM: ${widget.student.studentNim}',
-            style: theme.typography.body.xs.copyWith(
-              color: theme.colors.mutedForeground,
-            ),
-          ),
-          const SizedBox(height: 20),
-          FTextField(
-            label: const Text('CPMK 1'),
-            hint: '0 - 100',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            error: _cpmk1Error != null ? Text(_cpmk1Error!) : null,
-            control: FTextFieldControl.managed(controller: _cpmk1Controller),
-          ),
-          const SizedBox(height: 14),
-          FTextField(
-            label: const Text('CPMK 2'),
-            hint: '0 - 100',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            error: _cpmk2Error != null ? Text(_cpmk2Error!) : null,
-            control: FTextFieldControl.managed(controller: _cpmk2Controller),
-          ),
-          const SizedBox(height: 14),
-          FTextField(
-            label: const Text('CPMK 3'),
-            hint: '0 - 100',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            error: _cpmk3Error != null ? Text(_cpmk3Error!) : null,
-            control: FTextFieldControl.managed(controller: _cpmk3Controller),
-          ),
-          const SizedBox(height: 14),
-          FTextField(
-            label: const Text('CPMK 4'),
-            hint: '0 - 100',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            error: _cpmk4Error != null ? Text(_cpmk4Error!) : null,
-            control: FTextFieldControl.managed(controller: _cpmk4Controller),
-          ),
-          const SizedBox(height: 24),
-          FButton(
-            onPress: _isSaving ? null : _saveGrade,
-            child: Text(_isSaving ? 'Menyimpan...' : 'Simpan Nilai'),
-          ),
-          const SizedBox(height: 10),
-          FButton(
-            variant: FButtonVariant.outline,
-            onPress: _isSaving ? null : () => Navigator.of(context).pop(false),
-            child: const Text('Batal'),
-          ),
-        ],
+        ),
       ),
     );
   }

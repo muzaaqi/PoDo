@@ -5,6 +5,7 @@ import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/grades/models/enrolled_student.dart';
 import 'package:podo/features/grades/repositories/enrollment_repository.dart';
 import 'package:podo/features/grades/widgets/grade_input_bottom_sheet.dart';
+import 'package:podo/features/courses/widgets/add_student_to_offering_sheet.dart';
 
 enum StudentStatusFilter { all, ungraded, graded }
 
@@ -174,6 +175,27 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     }
   }
 
+  Future<void> _openAddStudentSheet(CourseOffering offering) async {
+    final result = await showFSheet<bool>(
+      context: context,
+      side: FLayout.btt,
+      builder: (context) => AddStudentToOfferingSheet(
+        offering: offering,
+        enrolledNims: _students.map((s) => s.studentNim).toSet(),
+      ),
+    );
+
+    if (result == true) {
+      await _loadStudents();
+      if (mounted) {
+        showFToast(
+          context: context,
+          title: const Text('Mahasiswa berhasil ditambahkan ke kelas'),
+        );
+      }
+    }
+  }
+
   Widget _buildHeroCard(BuildContext context, CourseOffering offering) {
     final theme = context.theme;
     final colors = context.appColors;
@@ -292,7 +314,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                 ),
                 Text(
-                  '${(progress * 100).toInt()}% • $_gradedCount/$_totalStudents Dinilai',
+                  '${(progress * 100).toInt()}%',
                   style: theme.typography.body.xs.copyWith(
                     fontWeight: FontWeight.bold,
                     color: isAllGraded
@@ -700,6 +722,14 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     onPress: _resetFilterAndSearch,
                     child: const Text('Reset Filter'),
                   ),
+                ] else if (_offering != null) ...[
+                  const SizedBox(height: 16),
+                  FButton(
+                    size: FButtonSizeVariant.sm,
+                    prefix: const Icon(FLucideIcons.userPlus),
+                    onPress: () => _openAddStudentSheet(_offering!),
+                    child: const Text('Tambah Mahasiswa ke Kelas'),
+                  ),
                 ],
               ],
             ),
@@ -779,6 +809,13 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         prefixes: [
           FHeaderAction.back(onPress: () => Navigator.of(context).maybePop()),
         ],
+        suffixes: [
+          if (offering != null)
+            FHeaderAction(
+              icon: const Icon(FLucideIcons.userPlus),
+              onPress: () => _openAddStudentSheet(offering),
+            ),
+        ],
       ),
       child: _isLoading
           ? const Center(child: Text('Memuat data perkuliahan...'))
@@ -798,19 +835,42 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
                       const SizedBox(height: 18),
 
-                      // Section Heading
-                      Text(
-                        'Daftar Mahasiswa Terdaftar',
-                        style: theme.typography.body.md.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Ketuk mahasiswa untuk menginput atau mengubah nilai CPMK',
-                        style: theme.typography.body.xs.copyWith(
-                          color: theme.colors.mutedForeground,
-                        ),
+                      // Section Heading with Add Student Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Daftar Mahasiswa Terdaftar',
+                                  style: theme.typography.body.md.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Ketuk mahasiswa untuk menginput atau mengubah nilai CPMK',
+                                  style: theme.typography.body.xs.copyWith(
+                                    color: theme.colors.mutedForeground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FButton(
+                            size: FButtonSizeVariant.sm,
+                            variant: FButtonVariant.outline,
+                            prefix: const Icon(FLucideIcons.userPlus, size: 14),
+                            onPress: offering != null
+                                ? () => _openAddStudentSheet(offering)
+                                : null,
+                            child: const Text('Tambah'),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 12),
@@ -833,32 +893,36 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
                       const SizedBox(height: 10),
 
-                      // Filter Segment Tabs
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildFilterChip(
-                              context,
-                              label: 'Semua',
-                              count: _totalStudents,
-                              filter: StudentStatusFilter.all,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildFilterChip(
-                              context,
-                              label: 'Belum Dinilai',
-                              count: _ungradedCount,
-                              filter: StudentStatusFilter.ungraded,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildFilterChip(
-                              context,
-                              label: 'Sudah Dinilai',
-                              count: _gradedCount,
-                              filter: StudentStatusFilter.graded,
-                            ),
-                          ],
+                      // Filter Segment Tabs (Centered)
+                      Center(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildFilterChip(
+                                context,
+                                label: 'Semua',
+                                count: _totalStudents,
+                                filter: StudentStatusFilter.all,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildFilterChip(
+                                context,
+                                label: 'Belum Dinilai',
+                                count: _ungradedCount,
+                                filter: StudentStatusFilter.ungraded,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildFilterChip(
+                                context,
+                                label: 'Sudah Dinilai',
+                                count: _gradedCount,
+                                filter: StudentStatusFilter.graded,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
 

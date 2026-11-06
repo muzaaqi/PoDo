@@ -68,5 +68,39 @@ void main() {
       final notFound = await EnrollmentRepository.instance.getEnrolledStudentById(9999);
       expect(notFound, isNull);
     });
+
+    test('enrollStudent adds new student to offering and unenrollStudent removes it', () async {
+      // Dewi Lestari (2101004) is not in OFF001
+      var students = await EnrollmentRepository.instance.getEnrolledStudentsByOffering('OFF001');
+      expect(students.any((s) => s.studentNim == '2101004'), isFalse);
+
+      final newEnrollmentId = await EnrollmentRepository.instance.enrollStudent(
+        offeringId: 'OFF001',
+        studentNim: '2101004',
+      );
+      expect(newEnrollmentId, isPositive);
+
+      students = await EnrollmentRepository.instance.getEnrolledStudentsByOffering('OFF001');
+      expect(students.length, 4);
+      expect(students.any((s) => s.studentNim == '2101004'), isTrue);
+
+      // Attempting to enroll duplicate throws exception
+      expect(
+        () => EnrollmentRepository.instance.enrollStudent(
+          offeringId: 'OFF001',
+          studentNim: '2101004',
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      // Unenroll
+      await EnrollmentRepository.instance.unenrollStudent(
+        offeringId: 'OFF001',
+        studentNim: '2101004',
+      );
+      students = await EnrollmentRepository.instance.getEnrolledStudentsByOffering('OFF001');
+      expect(students.length, 3);
+      expect(students.any((s) => s.studentNim == '2101004'), isFalse);
+    });
   });
 }

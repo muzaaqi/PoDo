@@ -57,4 +57,38 @@ class EnrollmentRepository {
     if (results.isEmpty) return null;
     return EnrolledStudent.fromMap(results.first);
   }
+
+  Future<int> enrollStudent({
+    required String offeringId,
+    required String studentNim,
+  }) async {
+    final db = await _dbHelper.database;
+    final existing = await db.query(
+      'course_enrollments',
+      where: 'offering_id = ? AND student_nim = ?',
+      whereArgs: [offeringId, studentNim],
+    );
+    if (existing.isNotEmpty) {
+      throw Exception('Mahasiswa dengan NIM $studentNim sudah terdaftar di kelas ini.');
+    }
+    return await db.insert(
+      'course_enrollments',
+      {
+        'offering_id': offeringId,
+        'student_nim': studentNim,
+      },
+    );
+  }
+
+  Future<void> unenrollStudent({
+    required String offeringId,
+    required String studentNim,
+  }) async {
+    final db = await _dbHelper.database;
+    await db.delete(
+      'course_enrollments',
+      where: 'offering_id = ? AND student_nim = ?',
+      whereArgs: [offeringId, studentNim],
+    );
+  }
 }

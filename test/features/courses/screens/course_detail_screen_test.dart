@@ -6,6 +6,7 @@ import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
+import 'package:podo/features/courses/widgets/add_student_to_offering_sheet.dart';
 import 'package:podo/features/grades/widgets/grade_input_bottom_sheet.dart';
 
 void main() {
@@ -82,6 +83,8 @@ void main() {
 
       expect(find.text('3'), findsWidgets); // Total and Belum counts
       expect(find.text('0'), findsWidgets); // Sudah count
+      expect(find.text('0%'), findsOneWidget); // Progress percent
+      expect(find.textContaining('0/3 Dinilai'), findsNothing); // Redundant text removed
     });
 
     testWidgets('displays enrolled student roster with Belum Dinilai badge initially', (tester) async {
@@ -281,6 +284,53 @@ void main() {
 
       expect(find.text('Kendala Memuat Data Perkuliahan'), findsNothing);
       expect(find.text('Ahmad Fauzi'), findsOneWidget);
+    });
+
+    testWidgets('tapping Tambah button opens AddStudentToOfferingSheet and enrolls new student', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Initially Dewi Lestari is not in the course roster
+      expect(find.text('Dewi Lestari'), findsNothing);
+
+      // Tap Tambah button in section header
+      final addButton = find.text('Tambah');
+      expect(addButton, findsOneWidget);
+      await tester.tap(addButton);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Expect AddStudentToOfferingSheet is displayed
+      expect(find.byType(AddStudentToOfferingSheet), findsOneWidget);
+      expect(find.text('Tambah Mahasiswa ke Kelas'), findsOneWidget);
+      expect(find.textContaining('Dewi Lestari'), findsWidgets);
+
+      // Tap "Tambahkan ke Kelas"
+      final submitButton = find.text('Tambahkan ke Kelas');
+      await tester.tap(submitButton);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Sheet should be dismissed
+      expect(find.byType(AddStudentToOfferingSheet), findsNothing);
+
+      // Dewi Lestari should now be in the enrolled students roster
+      expect(find.text('Dewi Lestari'), findsOneWidget);
     });
   });
 }
