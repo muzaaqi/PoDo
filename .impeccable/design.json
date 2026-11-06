@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T13:57:30+07:00",
+  "generatedAt": "2026-11-06T14:36:30+07:00",
   "title": "Design System: PoDo (Portal Dosen)",
   "extensions": {
     "colorMeta": {
@@ -16,35 +16,47 @@
         "canonical": "#F8FAFC",
         "tonalRamp": ["#FFFFFF", "#F8FAFC", "#F1F5F9", "#E2E8F0", "#CBD5E1"]
       },
+      "neutral-surface": {
+        "role": "neutral",
+        "displayName": "Card Surface",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#FFFFFF", "#F8FAFC", "#F1F5F9", "#E2E8F0", "#CBD5E1"]
+      },
       "accent-amber": {
         "role": "accent",
-        "displayName": "Warm Amber",
-        "canonical": "#F59E0B",
+        "displayName": "Pastel Butter Yellow",
+        "canonical": "#FDE68A",
         "tonalRamp": ["#FEF3C7", "#FDE68A", "#FCD34D", "#F59E0B", "#D97706"]
       },
       "accent-violet": {
         "role": "accent",
-        "displayName": "Lavender Violet",
-        "canonical": "#8B5CF6",
+        "displayName": "Pastel Lavender",
+        "canonical": "#DDD6FE",
         "tonalRamp": ["#EDE9FE", "#DDD6FE", "#C4B5FD", "#8B5CF6", "#7C3AED"]
       },
       "accent-sky": {
         "role": "accent",
-        "displayName": "Sky Breeze",
-        "canonical": "#0EA5E9",
+        "displayName": "Pastel Ice Blue",
+        "canonical": "#BAE6FD",
         "tonalRamp": ["#E0F2FE", "#BAE6FD", "#7DD3FC", "#0EA5E9", "#0284C7"]
       },
       "accent-emerald": {
         "role": "accent",
-        "displayName": "Fresh Emerald",
-        "canonical": "#10B981",
+        "displayName": "Pastel Mint",
+        "canonical": "#A7F3D0",
         "tonalRamp": ["#D1FAE5", "#A7F3D0", "#6EE7B7", "#10B981", "#059669"]
       },
       "accent-coral": {
         "role": "accent",
-        "displayName": "Soft Coral",
-        "canonical": "#EF4444",
-        "tonalRamp": ["#FEE2E2", "#FECACA", "#FCA5A5", "#EF4444", "#DC2626"]
+        "displayName": "Pastel Peach Pink",
+        "canonical": "#FECDD3",
+        "tonalRamp": ["#FEE2E2", "#FECDD3", "#FCA5A5", "#EF4444", "#DC2626"]
+      },
+      "accent-indigo": {
+        "role": "accent",
+        "displayName": "Pastel Periwinkle",
+        "canonical": "#C7D2FE",
+        "tonalRamp": ["#EEF2FF", "#C7D2FE", "#A5B4FC", "#4338CA", "#312E81"]
       }
     },
     "typographyMeta": {
@@ -71,9 +83,9 @@
     },
     "shadows": [
       {
-        "name": "subtle-lifted",
-        "value": "0 4px 12px rgba(15, 23, 42, 0.04)",
-        "purpose": "Bayangan ambient halus untuk kartu yang dapat ditekan (tappable cards)."
+        "name": "subtle-surface",
+        "value": "none",
+        "purpose": "Kedalaman dibangun via kontras kanvas #F8FAFC dengan kartu #FFFFFF atau kartu pastel solid."
       }
     ],
     "motion": [
@@ -101,39 +113,64 @@
       "refersTo": "card-default",
       "description": "Kartu metrik statistik akademik dengan angka tebal berskala otomatis.",
       "html": "<div class=\"podo-stat-card\"><div class=\"stat-header\"><span class=\"stat-title\">Total SKS</span><i class=\"icon-award\"></i></div><div class=\"stat-value\">6 SKS</div></div>",
-      "css": ".podo-stat-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; padding: 14px 16px; } .stat-header { display: flex; justify-content: space-between; color: #64748B; font-size: 14px; } .stat-value { font-size: 22px; font-weight: bold; color: #0F172A; margin-top: 8px; }"
+      "css": ".podo-stat-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; padding: 14px 16px; } .stat-header { display: flex; justify-content: space-between; color: #64748B; font-size: 14px; } .stat-value { font-size: 22px; font-weight: bold; color: #18181B; margin-top: 8px; }"
     },
     {
       "name": "Primary Action Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Tombol aksi utama form dan navigasi dengan target sentuh 48dp.",
+      "description": "Tombol aksi utama form dan navigasi dengan Academic Indigo #4338CA.",
       "html": "<button class=\"podo-btn-primary\">Simpan Nilai</button>",
-      "css": ".podo-btn-primary { background: #0F172A; color: #FFFFFF; border-radius: 12px; height: 48px; padding: 0 20px; font-weight: 600; border: none; font-size: 15px; }"
+      "css": ".podo-btn-primary { background: #4338CA; color: #FFFFFF; border-radius: 12px; height: 48px; padding: 0 20px; font-weight: 600; border: none; font-size: 15px; }"
+    },
+    {
+      "name": "Borderless Pastel Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Kartu aksi atau hero dengan warna pastel solid 100% tanpa border.",
+      "html": "<div class=\"podo-card-pastel\"><i class=\"icon-award\"></i><span>Input Nilai</span></div>",
+      "css": ".podo-card-pastel { background: #A7F3D0; color: #18181B; border: none; border-radius: 16px; padding: 18px 8px; text-align: center; font-weight: 700; }"
     },
     {
       "name": "Status Badge",
       "kind": "chip",
       "refersTo": "badge-pill",
-      "description": "Penanda status nilai atau kategori kelas dalam bentuk pill.",
+      "description": "Penanda status nilai atau kategori dalam bentuk pill solid tanpa border.",
       "html": "<span class=\"podo-badge-success\">Sudah Dinilai</span>",
-      "css": ".podo-badge-success { background: #D1FAE5; color: #10B981; border-radius: 100px; padding: 4px 10px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; }"
+      "css": ".podo-badge-success { background: #A7F3D0; color: #18181B; border: none; border-radius: 100px; padding: 4px 10px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; }"
     }
   ],
   "narrative": {
     "northStar": "The Playful Faculty Ledger",
-    "overview": "PoDo memadukan kejelasan catatan akademik dengan sentuhan modern yang lembut dan menyenangkan. Mengedepankan scanability cepat dengan kartu bersudut membulat nyaman dan aksen warna pastel fungsional.",
+    "overview": "PoDo memadukan kejelasan catatan akademik dengan sentuhan modern yang lembut dan menyenangkan. Mengedepankan scanability cepat dengan kartu bersudut membulat 16dp, kanvas lembut #F8FAFC, dan permukaan pastel solid borderless.",
     "keyCharacteristics": [
       "High Scanability: Informasi perkuliahan dan nilai terbaca sekilas.",
-      "Friendly Geometry: Sudut membulat 14-16dp yang ramah dan nyaman di tangan.",
-      "Playful Tonal Accents: Warna fungsional untuk jadwal, SKS, dan status penilaian.",
+      "Friendly Geometry: Sudut membulat 16dp yang ramah dan taktil.",
+      "100% Solid Pastel Surfaces: Permukaan solid pekat (Tailwind 200) tanpa opacity wash.",
+      "Borderless Pastels: Bebas border/stroke di bagian manapun untuk permukaan pastel.",
+      "Unified Profile Header: Sapaan, avatar, dan notifikasi dalam 1 baris 46dp ringkas.",
       "Zero Fluff: Bebas emoji dan ornamen tanpa fungsi nyata."
     ],
     "rules": [
       {
-        "name": "The Functional Playfulness Rule",
-        "body": "Warna aksen ceria hanya digunakan untuk merepresentasikan data atau status riil (jadwal, SKS, nilai CPMK).",
+        "name": "The Borderless Pastel Rule",
+        "body": "Seluruh kartu, badge, atau container berwarna pastel solid dilarang menggunakan border di bagian manapun.",
         "section": "colors"
+      },
+      {
+        "name": "The Zero-Alpha Rule",
+        "body": "Dilarang menggunakan opacity/alpha untuk warna pastel. Seluruh pastel harus solid 100% opaque.",
+        "section": "colors"
+      },
+      {
+        "name": "The High-Contrast Foreground Rule",
+        "body": "Teks di atas permukaan pastel terang di Light Mode selalu menggunakan solid dark charcoal #18181B.",
+        "section": "colors"
+      },
+      {
+        "name": "The Single-Row Header Rule",
+        "body": "Avatar, teks 'Selamat Datang,', dan nama dosen disatukan dalam satu baris horisontal 46dp.",
+        "section": "layout"
       },
       {
         "name": "The Compact Appbar Rule",
@@ -149,9 +186,12 @@
     "dos": [
       "Gunakan komponen resmi Forui untuk seluruh tombol, form, kartu, dan sheet.",
       "Bungkus baris detail dan avatar dengan Semantics yang deskriptif.",
-      "Pastikan target sentuh tombol minimal 48x48dp."
+      "Pastikan target sentuh tombol minimal 48x48dp.",
+      "Gunakan warna pastel solid tanpa border."
     ],
     "donts": [
+      "Jangan beri border pada kartu atau badge berwarna pastel.",
+      "Jangan gunakan opacity/alpha untuk warna pastel.",
       "Jangan gunakan emoji di sembarang tempat pada antarmuka.",
       "Jangan letakkan nama dosen sebagai judul AppBar di HomeScreen.",
       "Jangan ubah urutan 4 tab navigasi utama (Home, Jadwal, Mata Kuliah, Akun)."
