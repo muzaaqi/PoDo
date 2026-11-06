@@ -66,12 +66,14 @@ void main() {
     });
     await tester.pumpAndSettle();
 
-    // Monday schedule for L001: Pemrograman Mobile, IF-44-01, KU3.01, 08:00 - 10:30, 3 SKS
+    // Monday schedules for L001 (minimal 2 classes):
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
     expect(find.text('Kelas IF-44-01'), findsOneWidget);
-    expect(find.text('3 SKS'), findsOneWidget);
+    expect(find.text('3 SKS'), findsWidgets);
     expect(find.textContaining('08:00 - 10:30'), findsOneWidget);
     expect(find.textContaining('KU3.01'), findsOneWidget);
+    expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
+    expect(find.textContaining('13:00 - 15:30'), findsOneWidget);
   });
 
   testWidgets('Tapping Selasa tab updates list to Tuesday schedule', (tester) async {

@@ -70,10 +70,10 @@ void main() {
     expect(find.byType(ScheduleScreen), findsOneWidget);
     expect(find.text('Jadwal Mengajar'), findsOneWidget);
 
-    // 4. Default day is Senin -> Displays Monday class
+    // 4. Default day is Senin -> Displays Monday classes
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
     expect(find.textContaining('KU3.01'), findsOneWidget);
-    expect(find.text('3 SKS'), findsOneWidget);
+    expect(find.text('3 SKS'), findsWidgets);
     expect(find.textContaining('08:00 - 10:30'), findsOneWidget);
 
     // 5. Tap Selasa tab -> Updates to Tuesday class
@@ -129,13 +129,13 @@ void main() {
     // Monday (default) is empty for L002
     expect(find.text('Tidak Ada Jadwal Mengajar'), findsOneWidget);
 
-    // Switch to Rabu -> Displays L002's class: Basis Data Lanjut
+    // Switch to Rabu -> Displays L002's classes: Basis Data Lanjut
     await tester.tap(find.text('Rabu'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Basis Data Lanjut'), findsOneWidget);
+    expect(find.text('Basis Data Lanjut'), findsWidgets);
     expect(find.textContaining('KU2.04'), findsOneWidget);
-    expect(find.text('4 SKS'), findsOneWidget);
+    expect(find.text('4 SKS'), findsWidgets);
     expect(find.textContaining('08:00 - 11:20'), findsOneWidget);
   });
 }
