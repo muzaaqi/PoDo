@@ -102,5 +102,30 @@ void main() {
       expect(students.length, 3);
       expect(students.any((s) => s.studentNim == '2101004'), isFalse);
     });
+
+    test('unenrollStudentById removes student and cascades to grades table', () async {
+      // Create a grade for enrollment 1 first
+      final db = await DatabaseHelper.instance.database;
+      await db.insert('grades', {
+        'enrollment_id': 1,
+        'cpmk_1': 85.0,
+        'cpmk_2': 90.0,
+        'cpmk_3': 78.0,
+        'cpmk_4': 88.0,
+      });
+
+      var gradeRows = await db.query('grades', where: 'enrollment_id = ?', whereArgs: [1]);
+      expect(gradeRows, isNotEmpty);
+
+      // Unenroll student with ID 1
+      await EnrollmentRepository.instance.unenrollStudentById(1);
+
+      final student = await EnrollmentRepository.instance.getEnrolledStudentById(1);
+      expect(student, isNull);
+
+      // Verify cascade deletion to grades
+      gradeRows = await db.query('grades', where: 'enrollment_id = ?', whereArgs: [1]);
+      expect(gradeRows, isEmpty);
+    });
   });
 }

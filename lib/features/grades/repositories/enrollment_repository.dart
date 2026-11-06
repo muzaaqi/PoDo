@@ -91,4 +91,13 @@ class EnrollmentRepository {
       whereArgs: [offeringId, studentNim],
     );
   }
+
+  Future<void> unenrollStudentById(int enrollmentId) async {
+    final db = await _dbHelper.database;
+    await db.delete(
+      'course_enrollments',
+      where: 'id = ?',
+      whereArgs: [enrollmentId],
+    );
+  }
 }

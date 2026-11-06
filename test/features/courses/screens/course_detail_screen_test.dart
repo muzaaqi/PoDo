@@ -390,5 +390,37 @@ void main() {
       });
       expect(deleted, isNull);
     });
+
+    testWidgets('tapping unenroll icon shows confirmation dialog and removes student from class', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Ahmad Fauzi should be in the list
+      expect(find.text('Ahmad Fauzi'), findsOneWidget);
+
+      final unenrollIcons = find.byIcon(FLucideIcons.userMinus);
+      expect(unenrollIcons, findsWidgets);
+
+      await tester.tap(unenrollIcons.first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Keluarkan Mahasiswa?'), findsOneWidget);
+
+      final confirmButton = find.descendant(
+        of: find.byType(FDialog),
+        matching: find.text('Keluarkan'),
+      );
+      await tester.tap(confirmButton);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Ahmad Fauzi should now be removed from the UI list
+      expect(find.text('Ahmad Fauzi'), findsNothing);
+    });
   });
 }

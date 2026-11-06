@@ -236,6 +236,64 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     }
   }
 
+  Future<void> _unenrollStudent(EnrolledStudent student) async {
+    final confirmed = await showFDialog<bool>(
+      context: context,
+      builder: (dialogContext, _, animation) => FDialog(
+        animation: animation,
+        builder: (context, dialogStyle) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Keluarkan Mahasiswa?',
+                style: context.theme.typography.body.md
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Mahasiswa "${student.studentName}" (${student.studentNim}) akan dikeluarkan dari kelas ini beserta nilai yang telah diinput.',
+                style: context.theme.typography.body.sm
+                    .copyWith(color: context.theme.colors.mutedForeground),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Batal'),
+                  ),
+                  const SizedBox(width: 8),
+                  FButton(
+                    variant: FButtonVariant.destructive,
+                    onPress: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Keluarkan'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await EnrollmentRepository.instance
+          .unenrollStudentById(student.enrollmentId);
+      await _loadStudents();
+      if (mounted) {
+        showFToast(
+          context: context,
+          title: const Text('Mahasiswa berhasil dikeluarkan dari kelas'),
+        );
+      }
+    }
+  }
+
   Future<void> _openGradeSheet(EnrolledStudent student) async {
     final result = await showFSheet<bool>(
       context: context,
@@ -480,149 +538,175 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Semantics(
-        button: true,
-        label: semanticsLabel,
-        excludeSemantics: true,
-        child: FTappable(
-          onPress: () => _openGradeSheet(student),
-          child: FCard(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: FCard(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: student.isGraded
-                              ? colors.emerald.background
-                              : colors.amber.background,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          _getInitials(student.studentName),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: student.isGraded
-                                ? colors.emerald.foreground
-                                : colors.amber.foreground,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              student.studentName,
-                              style: theme.typography.body.sm.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'NIM: ${student.studentNim}',
-                              style: theme.typography.body.xs.copyWith(
-                                color: theme.colors.mutedForeground,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FBadge(
-                        variant: student.isGraded
-                            ? FBadgeVariant.secondary
-                            : FBadgeVariant.outline,
+                  Expanded(
+                    child: Semantics(
+                      button: true,
+                      label: semanticsLabel,
+                      excludeSemantics: true,
+                      child: FTappable(
+                        onPress: () => _openGradeSheet(student),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            if (student.isGraded) ...[
-                              Icon(
-                                FLucideIcons.check,
-                                size: 11,
-                                color: colors.emerald.foreground,
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: student.isGraded
+                                    ? colors.emerald.background
+                                    : colors.amber.background,
+                                shape: BoxShape.circle,
                               ),
-                              const SizedBox(width: 3),
-                            ],
-                            Text(student.isGraded
-                                ? 'Sudah Dinilai'
-                                : 'Belum Dinilai'),
+                              alignment: Alignment.center,
+                              child: Text(
+                                _getInitials(student.studentName),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: student.isGraded
+                                      ? colors.emerald.foreground
+                                      : colors.amber.foreground,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    student.studentName,
+                                    style: theme.typography.body.sm.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'NIM: ${student.studentNim}',
+                                    style: theme.typography.body.xs.copyWith(
+                                      color: theme.colors.mutedForeground,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FBadge(
+                              variant: student.isGraded
+                                  ? FBadgeVariant.secondary
+                                  : FBadgeVariant.outline,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (student.isGraded) ...[
+                                    Icon(
+                                      FLucideIcons.check,
+                                      size: 11,
+                                      color: colors.emerald.foreground,
+                                    ),
+                                    const SizedBox(width: 3),
+                                  ],
+                                  Text(student.isGraded
+                                      ? 'Sudah Dinilai'
+                                      : 'Belum Dinilai'),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              FLucideIcons.chevronRight,
+                              size: 16,
+                              color: theme.colors.mutedForeground,
+                            ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        FLucideIcons.chevronRight,
-                        size: 16,
-                        color: theme.colors.mutedForeground,
-                      ),
-                    ],
-                  ),
-
-                  // If Graded: Show Average Score Pill and 4 CPMK Micro-Chips
-                  if (student.isGraded) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colors.muted,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colors.emerald.background,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              'Rata-rata: ${student.averageScore?.toStringAsFixed(1)}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: colors.emerald.foreground,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Wrap(
-                              spacing: 4,
-                              runSpacing: 4,
-                              alignment: WrapAlignment.end,
-                              children: [
-                                _buildCpmkChip('C1', student.grade?.cpmk1, theme),
-                                _buildCpmkChip('C2', student.grade?.cpmk2, theme),
-                                _buildCpmkChip('C3', student.grade?.cpmk3, theme),
-                                _buildCpmkChip('C4', student.grade?.cpmk4, theme),
-                              ],
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: 6),
+                  Semantics(
+                    button: true,
+                    label: 'Keluarkan mahasiswa ${student.studentName} dari kelas',
+                    child: FTappable(
+                      onPress: () => _unenrollStudent(student),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          FLucideIcons.userMinus,
+                          size: 18,
+                          color: theme.colors.mutedForeground,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
+
+              // If Graded: Show Average Score Pill and 4 CPMK Micro-Chips
+              if (student.isGraded) ...[
+                const SizedBox(height: 10),
+                FTappable(
+                  onPress: () => _openGradeSheet(student),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colors.muted,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.emerald.background,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            'Rata-rata: ${student.averageScore?.toStringAsFixed(1)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: colors.emerald.foreground,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Wrap(
+                            spacing: 4,
+                            runSpacing: 4,
+                            alignment: WrapAlignment.end,
+                            children: [
+                              _buildCpmkChip('C1', student.grade?.cpmk1, theme),
+                              _buildCpmkChip('C2', student.grade?.cpmk2, theme),
+                              _buildCpmkChip('C3', student.grade?.cpmk3, theme),
+                              _buildCpmkChip('C4', student.grade?.cpmk4, theme),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
