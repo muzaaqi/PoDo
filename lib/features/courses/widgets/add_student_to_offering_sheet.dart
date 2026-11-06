@@ -128,13 +128,9 @@ class _AddStudentToOfferingSheetState extends State<AddStudentToOfferingSheet> {
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
               // Fixed handle bar
               Padding(
                 padding: const EdgeInsets.only(top: 12, bottom: 8),
@@ -439,7 +435,6 @@ class _AddStudentToOfferingSheetState extends State<AddStudentToOfferingSheet> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
