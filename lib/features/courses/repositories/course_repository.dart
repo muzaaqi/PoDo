@@ -142,4 +142,28 @@ class CourseRepository {
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
   }
+
+  Future<void> updateOffering(CourseOffering offering) async {
+    final db = await _dbHelper.database;
+    await db.update(
+      'course_offerings',
+      {
+        'course_code': offering.courseCode,
+        'class_name': offering.className,
+        'academic_year': offering.academicYear,
+        'term': offering.term,
+      },
+      where: 'offering_id = ?',
+      whereArgs: [offering.offeringId],
+    );
+  }
+
+  Future<void> deleteOffering(String offeringId) async {
+    final db = await _dbHelper.database;
+    await db.delete(
+      'course_offerings',
+      where: 'offering_id = ?',
+      whereArgs: [offeringId],
+    );
+  }
 }

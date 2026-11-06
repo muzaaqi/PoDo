@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
+import 'package:podo/features/courses/repositories/course_repository.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/courses/widgets/add_student_to_offering_sheet.dart';
 import 'package:podo/features/grades/widgets/grade_input_bottom_sheet.dart';
@@ -331,6 +332,63 @@ void main() {
 
       // Dewi Lestari should now be in the enrolled students roster
       expect(find.text('Dewi Lestari'), findsOneWidget);
+    });
+
+    testWidgets('tapping pencil icon opens AddClassOfferingSheet in edit mode and updates offering', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      final editIcon = find.byIcon(FLucideIcons.pencil);
+      expect(editIcon, findsOneWidget);
+
+      await tester.tap(editIcon);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit Kelas Perkuliahan'), findsOneWidget);
+
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Simpan Perubahan'), findsOneWidget);
+    });
+
+    testWidgets('tapping trash icon shows confirmation dialog and deleting offering removes it and pops', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      final deleteIcon = find.byIcon(FLucideIcons.trash2);
+      expect(deleteIcon, findsOneWidget);
+
+      await tester.tap(deleteIcon);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hapus Kelas Perkuliahan?'), findsOneWidget);
+
+      // Tap confirm button
+      final confirmDelete = find.descendant(
+        of: find.byType(FDialog),
+        matching: find.text('Hapus Kelas'),
+      );
+      await tester.tap(confirmDelete);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Verify offering was deleted from SQLite
+      CourseOffering? deleted;
+      await tester.runAsync(() async {
+        deleted = await CourseRepository.instance.getOfferingById('OFF001');
+      });
+      expect(deleted, isNull);
     });
   });
 }

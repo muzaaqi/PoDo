@@ -10,7 +10,9 @@ import 'package:podo/features/courses/widgets/add_course_sheet.dart';
 /// Modal bottom sheet for adding a new course offering (kelas perkuliahan)
 /// with a searchable dropdown select for picking the master course.
 class AddClassOfferingSheet extends StatefulWidget {
-  const AddClassOfferingSheet({super.key});
+  final CourseOffering? initialOffering;
+
+  const AddClassOfferingSheet({this.initialOffering, super.key});
 
   @override
   State<AddClassOfferingSheet> createState() => _AddClassOfferingSheetState();
@@ -29,11 +31,17 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
   bool _isSaving = false;
   String? _errorMessage;
 
+  bool get _isEdit => widget.initialOffering != null;
+
   @override
   void initState() {
     super.initState();
-    _classNameController = TextEditingController();
-    _academicYearController = TextEditingController(text: '2024/2025');
+    final initial = widget.initialOffering;
+    _classNameController = TextEditingController(text: initial?.className ?? '');
+    _academicYearController = TextEditingController(text: initial?.academicYear ?? '2024/2025');
+    if (initial != null) {
+      _selectedTerm = initial.term;
+    }
     _loadMasterCourses();
   }
 
@@ -50,7 +58,12 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
       if (mounted) {
         setState(() {
           _availableCourses = courses;
-          if (courses.isNotEmpty) {
+          if (widget.initialOffering != null) {
+            _selectedCourse = courses.cast<Course?>().firstWhere(
+              (c) => c?.courseCode == widget.initialOffering!.courseCode,
+              orElse: () => courses.isNotEmpty ? courses.first : null,
+            );
+          } else if (courses.isNotEmpty) {
             _selectedCourse = courses.first;
           }
           _isLoading = false;
@@ -109,20 +122,32 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
     });
 
     try {
-      final offeringId =
-          'OFF_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}';
-      await CourseRepository.instance.createOffering(
-        CourseOffering(
-          offeringId: offeringId,
+      if (_isEdit) {
+        final updatedOffering = widget.initialOffering!.copyWith(
           courseCode: _selectedCourse!.courseCode,
-          lecturerId: lecturerId,
           className: className,
           academicYear: academicYear,
           term: _selectedTerm,
           courseName: _selectedCourse!.courseName,
           credits: _selectedCourse!.credits,
-        ),
-      );
+        );
+        await CourseRepository.instance.updateOffering(updatedOffering);
+      } else {
+        final offeringId =
+            'OFF_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}';
+        await CourseRepository.instance.createOffering(
+          CourseOffering(
+            offeringId: offeringId,
+            courseCode: _selectedCourse!.courseCode,
+            lecturerId: lecturerId,
+            className: className,
+            academicYear: academicYear,
+            term: _selectedTerm,
+            courseName: _selectedCourse!.courseName,
+            credits: _selectedCourse!.credits,
+          ),
+        );
+      }
 
       if (mounted) {
         Navigator.of(context).pop(true);
@@ -200,7 +225,7 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Tambah Kelas Kuliah',
+                          _isEdit ? 'Edit Kelas Perkuliahan' : 'Tambah Kelas Kuliah',
                           style: theme.typography.body.md.copyWith(
                             fontWeight: FontWeight.bold,
                             color: theme.colors.foreground,
@@ -462,7 +487,11 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                               FButton(
                                 onPress: _isSaving ? null : _saveOffering,
                                 child: Text(
-                                  _isSaving ? 'Menyimpan...' : 'Simpan Kelas',
+                                  _isSaving
+                                      ? 'Menyimpan...'
+                                      : (_isEdit
+                                          ? 'Simpan Perubahan'
+                                          : 'Simpan Kelas'),
                                 ),
                               ),
                             ],

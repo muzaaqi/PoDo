@@ -139,5 +139,40 @@ void main() {
       expect(offerings.length, 1);
       expect(offerings.first.offeringId, 'OFF999');
     });
+
+    test('updateOffering modifies existing offering record', () async {
+      final initial = await CourseRepository.instance.getOfferingById('OFF001');
+      expect(initial, isNotNull);
+      expect(initial!.className, 'IF-44-01');
+
+      final updated = initial.copyWith(
+        className: 'IF-44-01-REVISED',
+        term: 'Genap',
+      );
+      await CourseRepository.instance.updateOffering(updated);
+
+      final fetched = await CourseRepository.instance.getOfferingById('OFF001');
+      expect(fetched, isNotNull);
+      expect(fetched!.className, 'IF-44-01-REVISED');
+      expect(fetched.term, 'Genap');
+    });
+
+    test('deleteOffering removes offering and cascades to enrollments and schedules', () async {
+      expect(await CourseRepository.instance.getOfferingById('OFF002'), isNotNull);
+
+      final db = await DatabaseHelper.instance.database;
+      final schedulesBefore = await db.query('teaching_schedules', where: 'offering_id = ?', whereArgs: ['OFF002']);
+      expect(schedulesBefore, isNotEmpty);
+
+      await CourseRepository.instance.deleteOffering('OFF002');
+
+      expect(await CourseRepository.instance.getOfferingById('OFF002'), isNull);
+
+      // Verify cascade
+      final schedulesAfter = await db.query('teaching_schedules', where: 'offering_id = ?', whereArgs: ['OFF002']);
+      expect(schedulesAfter, isEmpty);
+      final enrollmentsAfter = await db.query('course_enrollments', where: 'offering_id = ?', whereArgs: ['OFF002']);
+      expect(enrollmentsAfter, isEmpty);
+    });
   });
 }

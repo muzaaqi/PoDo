@@ -2,10 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
+import 'package:podo/features/courses/repositories/course_repository.dart';
+import 'package:podo/features/courses/widgets/add_class_offering_sheet.dart';
+import 'package:podo/features/courses/widgets/add_student_to_offering_sheet.dart';
 import 'package:podo/features/grades/models/enrolled_student.dart';
 import 'package:podo/features/grades/repositories/enrollment_repository.dart';
 import 'package:podo/features/grades/widgets/grade_input_bottom_sheet.dart';
-import 'package:podo/features/courses/widgets/add_student_to_offering_sheet.dart';
 
 enum StudentStatusFilter { all, ungraded, graded }
 
@@ -155,6 +157,83 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   String _formatScore(double? score) {
     if (score == null) return '-';
     return score % 1 == 0 ? score.toInt().toString() : score.toStringAsFixed(1);
+  }
+
+  Future<void> _editOffering(CourseOffering offering) async {
+    final updated = await showFSheet<bool>(
+      context: context,
+      side: FLayout.btt,
+      builder: (context) => AddClassOfferingSheet(initialOffering: offering),
+    );
+
+    if (updated == true && mounted) {
+      final refreshed =
+          await CourseRepository.instance.getOfferingById(offering.offeringId);
+      if (mounted && refreshed != null) {
+        setState(() => _offering = refreshed);
+        showFToast(
+          context: context,
+          title: const Text('Kelas perkuliahan berhasil diperbarui'),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteOffering(CourseOffering offering) async {
+    final confirmed = await showFDialog<bool>(
+      context: context,
+      builder: (dialogContext, _, animation) => FDialog(
+        animation: animation,
+        builder: (context, dialogStyle) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hapus Kelas Perkuliahan?',
+                style: context.theme.typography.body.md
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Kelas "${offering.courseName} (${offering.className})" beserta seluruh jadwal, peserta, dan nilai terkait akan dihapus secara permanen.',
+                style: context.theme.typography.body.sm
+                    .copyWith(color: context.theme.colors.mutedForeground),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Batal'),
+                  ),
+                  const SizedBox(width: 8),
+                  FButton(
+                    variant: FButtonVariant.destructive,
+                    onPress: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Hapus Kelas'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await CourseRepository.instance.deleteOffering(offering.offeringId);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        showFToast(
+          context: context,
+          title: const Text('Kelas perkuliahan berhasil dihapus'),
+        );
+      }
+    }
   }
 
   Future<void> _openGradeSheet(EnrolledStudent student) async {
@@ -694,11 +773,20 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           FHeaderAction.back(onPress: () => Navigator.of(context).maybePop()),
         ],
         suffixes: [
-          if (offering != null)
+          if (offering != null) ...[
+            FHeaderAction(
+              icon: const Icon(FLucideIcons.pencil),
+              onPress: () => _editOffering(offering),
+            ),
+            FHeaderAction(
+              icon: const Icon(FLucideIcons.trash2),
+              onPress: () => _deleteOffering(offering),
+            ),
             FHeaderAction(
               icon: const Icon(FLucideIcons.userPlus),
               onPress: () => _openAddStudentSheet(offering),
             ),
+          ],
         ],
       ),
       child: _isLoading
