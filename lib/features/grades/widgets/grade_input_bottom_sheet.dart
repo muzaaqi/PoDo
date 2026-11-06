@@ -127,7 +127,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colors.mutedForeground.withValues(alpha: 0.4),
+                color: theme.colors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

@@ -1,22 +1,22 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 
-/// Semantic token that defines paired background, foreground, and card colors
-/// for soft matte pastel surfaces in both Light and Dark modes.
+/// Semantic token that defines paired solid background, crisp foreground, and matching border
+/// for authentic, opaque pastel surfaces in both Light and Dark modes.
 class ColorToken {
   final Color background;
   final Color foreground;
-  final Color card;
+  final Color border;
 
   const ColorToken({
     required this.background,
     required this.foreground,
-    required this.card,
+    required this.border,
   });
 }
 
-/// Application color palette providing quiet, authentic matte pastel tokens.
-/// Adapts cleanly between Light and Dark mode without neon or opacity artifacts.
+/// Application color palette providing authentic, solid matte pastel tokens.
+/// Adapts cleanly between Light and Dark mode without opacity or transparency.
 class AppColors {
   final Brightness brightness;
 
@@ -52,34 +52,34 @@ class AppColors {
     brandPrimaryForeground: Color(0xFFFFFFFF),
     canvas: Color(0xFFF8FAFC),
     indigo: ColorToken(
-      background: Color(0xFFEEF2FF),
-      foreground: Color(0xFF4338CA),
-      card: Color(0xFFF8FAFC),
+      background: Color(0xFFC7D2FE),
+      foreground: Color(0xFF18181B),
+      border: Color(0xFFA5B4FC),
     ),
     amber: ColorToken(
-      background: Color(0xFFFEF3C7),
-      foreground: Color(0xFF92400E),
-      card: Color(0xFFFFFDF5),
+      background: Color(0xFFFDE68A),
+      foreground: Color(0xFF18181B),
+      border: Color(0xFFFCD34D),
     ),
     violet: ColorToken(
-      background: Color(0xFFEDE9FE),
-      foreground: Color(0xFF5B21B6),
-      card: Color(0xFFFAF5FF),
+      background: Color(0xFFDDD6FE),
+      foreground: Color(0xFF18181B),
+      border: Color(0xFFC4B5FD),
     ),
     emerald: ColorToken(
-      background: Color(0xFFDCFCE7),
-      foreground: Color(0xFF166534),
-      card: Color(0xFFF0FDF4),
+      background: Color(0xFFA7F3D0),
+      foreground: Color(0xFF18181B),
+      border: Color(0xFF86EFAC),
     ),
     sky: ColorToken(
-      background: Color(0xFFE0F2FE),
-      foreground: Color(0xFF075985),
-      card: Color(0xFFF0F9FF),
+      background: Color(0xFFBAE6FD),
+      foreground: Color(0xFF18181B),
+      border: Color(0xFF93C5FD),
     ),
     coral: ColorToken(
-      background: Color(0xFFFFE4E6),
-      foreground: Color(0xFF9F1239),
-      card: Color(0xFFFFF1F2),
+      background: Color(0xFFFECDD3),
+      foreground: Color(0xFF18181B),
+      border: Color(0xFFFDA4AF),
     ),
   );
 
@@ -89,34 +89,34 @@ class AppColors {
     brandPrimaryForeground: Color(0xFF0F172A),
     canvas: Color(0xFF090A0F),
     indigo: ColorToken(
-      background: Color(0xFF1E1B4B),
+      background: Color(0xFF23254B),
       foreground: Color(0xFFC7D2FE),
-      card: Color(0xFF13151D),
+      border: Color(0xFF363973),
     ),
     amber: ColorToken(
-      background: Color(0xFF2E2417),
+      background: Color(0xFF382C14),
       foreground: Color(0xFFFDE68A),
-      card: Color(0xFF1F1B14),
+      border: Color(0xFF52401B),
     ),
     violet: ColorToken(
-      background: Color(0xFF251E33),
+      background: Color(0xFF2E2442),
       foreground: Color(0xFFDDD6FE),
-      card: Color(0xFF1A1624),
+      border: Color(0xFF453663),
     ),
     emerald: ColorToken(
-      background: Color(0xFF182A22),
+      background: Color(0xFF1B382B),
       foreground: Color(0xFFA7F3D0),
-      card: Color(0xFF14211B),
+      border: Color(0xFF285440),
     ),
     sky: ColorToken(
-      background: Color(0xFF162432),
+      background: Color(0xFF193247),
       foreground: Color(0xFFBAE6FD),
-      card: Color(0xFF121B24),
+      border: Color(0xFF254B6B),
     ),
     coral: ColorToken(
-      background: Color(0xFF30181E),
+      background: Color(0xFF3B1E26),
       foreground: Color(0xFFFECDD3),
-      card: Color(0xFF221317),
+      border: Color(0xFF542834),
     ),
   );
 
