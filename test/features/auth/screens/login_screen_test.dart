@@ -104,4 +104,72 @@ void main() {
     // Verify navigated to /main
     expect(navigatedToMain, isTrue);
   });
+
+  testWidgets('Tapping Gunakan Akun Demo auto-fills demo credentials and logs in successfully', (WidgetTester tester) async {
+    bool navigatedToMain = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: FLocalizations.localizationsDelegates,
+        supportedLocales: FLocalizations.supportedLocales,
+        builder: (context, child) => FTheme(
+          data: AppTheme.lightTheme,
+          child: FToaster(
+            child: FTooltipGroup(child: child ?? const SizedBox.shrink()),
+          ),
+        ),
+        routes: {
+          '/': (context) => const LoginScreen(),
+          AppRoutes.main: (context) {
+            navigatedToMain = true;
+            return const Scaffold(body: Text('Main Screen'));
+          },
+        },
+      ),
+    );
+
+    // Verify demo account chip exists
+    final demoChip = find.text('Gunakan Akun Demo');
+    expect(demoChip, findsOneWidget);
+
+    // Tap demo chip
+    await tester.tap(demoChip);
+    await tester.pumpAndSettle();
+
+    // Verify fields populated
+    expect(find.text('dosen@kampus.id'), findsOneWidget);
+    expect(find.text('password123'), findsOneWidget);
+
+    // Tap Masuk
+    await tester.tap(find.text('Masuk'));
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    });
+    await tester.pumpAndSettle();
+
+    expect(navigatedToMain, isTrue);
+  });
+
+  testWidgets('No bullet point character exists in LoginScreen', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: FLocalizations.localizationsDelegates,
+        supportedLocales: FLocalizations.supportedLocales,
+        builder: (context, child) => FTheme(
+          data: AppTheme.lightTheme,
+          child: FToaster(
+            child: FTooltipGroup(child: child ?? const SizedBox.shrink()),
+          ),
+        ),
+        home: const LoginScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final allTextWidgets = tester.widgetList<Text>(find.byType(Text));
+    for (final textWidget in allTextWidgets) {
+      final data = textWidget.data ?? textWidget.textSpan?.toPlainText() ?? '';
+      expect(data.contains('•'), isFalse, reason: 'Text contains banned bullet: "$data"');
+    }
+  });
 }
