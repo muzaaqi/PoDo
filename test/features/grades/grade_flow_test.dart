@@ -100,11 +100,11 @@ void main() {
 
     expect(find.byType(CourseDetailScreen), findsOneWidget);
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
-    expect(find.textContaining('IF101 • Kelas IF-44-01'), findsOneWidget);
+    expect(find.textContaining('Kelas IF-44-01'), findsOneWidget);
     expect(find.text('3 SKS'), findsOneWidget);
 
-    // 4. Verify initial stats & student roster: 3 students, all Belum Dinilai
-    expect(find.text('Total Mahasiswa'), findsOneWidget);
+    // 4. Verify initial progress & student roster: 3 students, all Belum Dinilai
+    expect(find.text('Progress Penilaian'), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(FBadge),

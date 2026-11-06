@@ -187,7 +187,7 @@ class _AddStudentToOfferingSheetState extends State<AddStudentToOfferingSheet> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${widget.offering.courseName} • Kelas ${widget.offering.className}',
+                                  '${widget.offering.courseName} (Kelas ${widget.offering.className})',
                                   style: theme.typography.body.xs.copyWith(
                                     color: theme.colors.mutedForeground,
                                   ),
@@ -395,7 +395,7 @@ class _AddStudentToOfferingSheetState extends State<AddStudentToOfferingSheet> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'NIM: ${_selectedStudent!.nim}${_selectedStudent!.studyProgram != null ? ' • ${_selectedStudent!.studyProgram}' : ''}',
+                                          'NIM: ${_selectedStudent!.nim}${_selectedStudent!.studyProgram != null ? ' (${_selectedStudent!.studyProgram})' : ''}',
                                           style: theme.typography.body.xs
                                               .copyWith(
                                             color: theme.colors.mutedForeground,

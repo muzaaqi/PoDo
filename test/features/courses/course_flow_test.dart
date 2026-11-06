@@ -112,7 +112,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CourseDetailScreen), findsOneWidget);
-    expect(find.textContaining('IF101 • Kelas IF-44-01'), findsOneWidget);
+    expect(find.textContaining('Kelas IF-44-01'), findsOneWidget);
 
     // 6. Navigate back to MainScreen via back action
     Navigator.of(tester.element(find.byType(CourseDetailScreen))).pop();

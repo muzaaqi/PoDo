@@ -163,7 +163,7 @@ void main() {
 
       // CourseDetailScreen should be displayed with course info
       expect(find.byType(CourseDetailScreen), findsOneWidget);
-      expect(find.textContaining('IF101 • Kelas IF-44-01'), findsOneWidget);
+      expect(find.textContaining('Kelas IF-44-01'), findsOneWidget);
     });
 
     testWidgets('tapping Reset Pencarian in empty state clears search query and restores courses', (tester) async {

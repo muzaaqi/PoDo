@@ -197,9 +197,8 @@ void main() {
     });
     await tester.pumpAndSettle();
 
-    // Verify CourseDetailScreen is opened (contains Daftar Mahasiswa Terdaftar and Total Mahasiswa)
-    expect(find.text('Daftar Mahasiswa Terdaftar'), findsOneWidget);
-    expect(find.text('Total Mahasiswa'), findsOneWidget);
+    // Verify CourseDetailScreen is opened
+    expect(find.text('Progress Penilaian'), findsOneWidget);
   });
 
   testWidgets('Tapping Lihat Semua in schedule header switches to Jadwal tab (index 1)', (tester) async {

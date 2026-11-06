@@ -67,7 +67,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Tambah Mahasiswa ke Kelas'), findsOneWidget);
-      expect(find.textContaining('Pemrograman Mobile • Kelas IF-44-01'), findsOneWidget);
+      expect(find.textContaining('Kelas IF-44-01'), findsOneWidget);
       expect(find.text('Pilih Mahasiswa'), findsOneWidget);
       expect(find.text('Tambahkan ke Kelas'), findsOneWidget);
 

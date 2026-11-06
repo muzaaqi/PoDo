@@ -65,23 +65,23 @@ void main() {
       expect(find.textContaining('IF101'), findsOneWidget);
       expect(find.textContaining('IF-44-01'), findsOneWidget);
       expect(find.text('3 SKS'), findsOneWidget);
-      expect(find.textContaining('2024/2025'), findsOneWidget);
+      expect(find.textContaining('2024/2025'), findsNothing);
     });
 
-    testWidgets('displays 3 academic stat metrics and progress bar for OFF001 initially', (tester) async {
+    testWidgets('displays progress bar for OFF001 initially', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
-      expect(find.text('Total Mahasiswa'), findsOneWidget);
-      expect(find.text('Sudah Dinilai'), findsWidgets); // hero card + filter tab
-      expect(find.text('Belum Dinilai'), findsWidgets); // hero card + filter tab + cards
       expect(find.text('Progress Penilaian'), findsOneWidget);
       expect(find.byType(FDeterminateProgress), findsOneWidget);
+      expect(find.text('Sudah Dinilai'), findsOneWidget); // in filter tab
+      expect(find.text('Belum Dinilai'), findsWidgets); // in filter tab + cards
+      expect(find.text('Total Mahasiswa'), findsNothing); // removed from island
 
-      expect(find.text('3'), findsWidgets); // Total and Belum counts
+      expect(find.text('3'), findsWidgets); // Belum and Semua counts
       expect(find.text('0'), findsWidgets); // Sudah count
       expect(find.text('0%'), findsOneWidget); // Progress percent
       expect(find.textContaining('0/3 Dinilai'), findsNothing); // Redundant text removed
@@ -231,14 +231,14 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      // Tap 'Sudah Dinilai' filter tab (second occurrence of 'Sudah Dinilai' text, first is in hero card)
-      await tester.tap(find.text('Sudah Dinilai').at(1));
+      // Tap 'Sudah Dinilai' filter tab
+      await tester.tap(find.text('Sudah Dinilai'));
       await tester.pumpAndSettle();
 
       expect(find.text('Mahasiswa tidak ditemukan'), findsOneWidget);
 
-      // Tap 'Belum Dinilai' filter tab (in filter tab row)
-      await tester.tap(find.text('Belum Dinilai').at(1));
+      // Tap 'Belum Dinilai' filter tab
+      await tester.tap(find.text('Belum Dinilai').first);
       await tester.pumpAndSettle();
 
       expect(find.text('Ahmad Fauzi'), findsOneWidget);
@@ -286,7 +286,7 @@ void main() {
       expect(find.text('Ahmad Fauzi'), findsOneWidget);
     });
 
-    testWidgets('tapping Tambah button opens AddStudentToOfferingSheet and enrolls new student', (tester) async {
+    testWidgets('tapping bar userPlus action opens AddStudentToOfferingSheet and enrolls new student', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -296,8 +296,8 @@ void main() {
       // Initially Dewi Lestari is not in the course roster
       expect(find.text('Dewi Lestari'), findsNothing);
 
-      // Tap Tambah button in section header
-      final addButton = find.text('Tambah');
+      // Tap userPlus action in header
+      final addButton = find.byIcon(FLucideIcons.userPlus);
       expect(addButton, findsOneWidget);
       await tester.tap(addButton);
       await tester.runAsync(() async {

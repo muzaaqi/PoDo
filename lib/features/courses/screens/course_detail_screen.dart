@@ -208,7 +208,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top: Course Code, Class Name, Credits, Academic Year
+            // Top: Class Name, Course Code, Credits
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -217,14 +217,14 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${offering.courseCode} • Kelas ${offering.className}',
+                        'Kelas ${offering.className}',
                         style: theme.typography.body.md.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 2),
                       Text(
-                        'Tahun Akademik: ${offering.academicYear} (${offering.term})',
+                        offering.courseCode,
                         style: theme.typography.body.xs.copyWith(
                           color: theme.colors.mutedForeground,
                         ),
@@ -241,68 +241,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             ),
             const SizedBox(height: 14),
 
-            // Subtle Divider
-            Container(
-              height: 1,
-              color: theme.colors.border,
-            ),
-            const SizedBox(height: 14),
-
-            // Middle: 3 Stat Metrics
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricItem(
-                    context,
-                    title: 'Sudah Dinilai',
-                    value: '$_gradedCount',
-                    icon: FLucideIcons.checkCircle2,
-                    iconBg: colors.emerald.background,
-                    iconColor: colors.emerald.foreground,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: theme.colors.border,
-                ),
-                Expanded(
-                  child: _buildMetricItem(
-                    context,
-                    title: 'Belum Dinilai',
-                    value: '$_ungradedCount',
-                    icon: FLucideIcons.clock,
-                    iconBg: colors.amber.background,
-                    iconColor: colors.amber.foreground,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: theme.colors.border,
-                ),
-                Expanded(
-                  child: _buildMetricItem(
-                    context,
-                    title: 'Total Mahasiswa',
-                    value: '$_totalStudents',
-                    icon: FLucideIcons.users,
-                    iconBg: colors.sky.background,
-                    iconColor: colors.sky.foreground,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            // Subtle Divider
-            Container(
-              height: 1,
-              color: theme.colors.border,
-            ),
-            const SizedBox(height: 12),
-
-            // Bottom: Progress Header & Bar
+            // Progress Header & Bar
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -362,60 +301,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildMetricItem(
-    BuildContext context, {
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color iconBg,
-    required Color iconColor,
-  }) {
-    final theme = context.theme;
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: iconBg,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Icon(icon, size: 12, color: iconColor),
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  value,
-                  style: theme.typography.display.sm.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            title,
-            style: theme.typography.body.xs.copyWith(
-              color: theme.colors.mutedForeground,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
     );
   }
 
@@ -799,7 +684,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
     final offering = _offering;
     final filtered = _filteredStudents;
 
@@ -833,47 +717,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       // Unified Hero Card with Class Info, 3 Stats, and Progress Bar
                       if (offering != null) _buildHeroCard(context, offering),
 
-                      const SizedBox(height: 18),
-
-                      // Section Heading with Add Student Button
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Daftar Mahasiswa Terdaftar',
-                                  style: theme.typography.body.md.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Ketuk mahasiswa untuk menginput atau mengubah nilai CPMK',
-                                  style: theme.typography.body.xs.copyWith(
-                                    color: theme.colors.mutedForeground,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          FButton(
-                            size: FButtonSizeVariant.sm,
-                            variant: FButtonVariant.outline,
-                            prefix: const Icon(FLucideIcons.userPlus, size: 14),
-                            onPress: offering != null
-                                ? () => _openAddStudentSheet(offering)
-                                : null,
-                            child: const Text('Tambah'),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
                       // Search Field
                       FTextField(

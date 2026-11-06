@@ -184,7 +184,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${widget.student.studentName} • NIM: ${widget.student.studentNim}',
+                                '${widget.student.studentName} (${widget.student.studentNim})',
                                 style: theme.typography.body.xs.copyWith(
                                   color: theme.colors.mutedForeground,
                                 ),
