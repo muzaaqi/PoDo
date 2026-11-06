@@ -48,10 +48,10 @@ void main() {
 
       final stats = await repo.getLecturerStats('L001');
 
-      // L001 has 2 course offerings (OFF001 and OFF002)
-      expect(stats.courseCount, 2);
-      // CS101 (3 SKS) + CS102 (3 SKS) = 6 SKS
-      expect(stats.totalCredits, 6);
+      // L001 has 3 course offerings (OFF001, OFF002, OFF004)
+      expect(stats.courseCount, 3);
+      // CS101 (3 SKS) + CS102 (3 SKS) + CS103 (3 SKS) = 9 SKS
+      expect(stats.totalCredits, 9);
       // Students 2101001, 2101002, 2101003 in OFF001; 2101001, 2101004, 2101005 in OFF002 -> 5 unique students
       expect(stats.studentCount, 5);
     });

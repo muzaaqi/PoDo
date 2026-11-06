@@ -1,3 +1,4 @@
+import 'package:sqflite/sqflite.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/features/schedule/models/teaching_schedule.dart';
 
@@ -84,5 +85,26 @@ class ScheduleRepository {
     final results = await db.rawQuery(sql, [id]);
     if (results.isEmpty) return null;
     return TeachingSchedule.fromMap(results.first);
+  }
+
+  Future<int> createSchedule({
+    required String offeringId,
+    required String dayOfWeek,
+    required String room,
+    required String startTime,
+    required String endTime,
+  }) async {
+    final db = await DatabaseHelper.instance.database;
+    return await db.insert(
+      'teaching_schedules',
+      {
+        'offering_id': offeringId,
+        'day_of_week': dayOfWeek,
+        'room': room,
+        'start_time': startTime,
+        'end_time': endTime,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
   }
 }

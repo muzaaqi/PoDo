@@ -63,8 +63,8 @@ void main() {
 
     // Stat cards from SQLite
     expect(find.byType(StatCard), findsNWidgets(3));
-    expect(find.text('2 Kelas'), findsOneWidget);
-    expect(find.text('6 SKS'), findsOneWidget);
+    expect(find.text('3 Kelas'), findsOneWidget);
+    expect(find.text('9 SKS'), findsOneWidget);
     expect(find.text('5 Mahasiswa'), findsOneWidget);
 
     // Logout button

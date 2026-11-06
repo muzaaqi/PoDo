@@ -427,7 +427,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 6),
-                          Row(
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -447,7 +449,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 9,
@@ -466,8 +467,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ),
                                 ),
                               ),
-                              if (status == ScheduleTimelineStatus.ongoing) ...[
-                                const SizedBox(width: 6),
+                              if (status == ScheduleTimelineStatus.ongoing)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -499,10 +499,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                       ),
                                     ],
                                   ),
-                                ),
-                              ] else if (status ==
-                                  ScheduleTimelineStatus.past) ...[
-                                const SizedBox(width: 6),
+                                )
+                              else if (status == ScheduleTimelineStatus.past)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -532,7 +530,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                     ],
                                   ),
                                 ),
-                              ],
                             ],
                           ),
                         ],

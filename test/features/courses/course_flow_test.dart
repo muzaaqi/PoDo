@@ -91,9 +91,9 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Total Kelas'), findsOneWidget);
-    expect(find.text('2'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
     expect(find.text('Total SKS'), findsOneWidget);
-    expect(find.text('6'), findsOneWidget);
+    expect(find.text('9'), findsOneWidget);
 
     // 4. Verify course offerings for L001
     expect(find.text('Pemrograman Mobile'), findsOneWidget);

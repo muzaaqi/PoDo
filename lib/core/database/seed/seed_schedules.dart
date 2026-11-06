@@ -31,4 +31,28 @@ const List<Map<String, dynamic>> seedSchedules = [
     'start_time': '08:00',
     'end_time': '11:20',
   },
+  {
+    'id': 5,
+    'offering_id': 'OFF001',
+    'day_of_week': 'Jumat',
+    'room': 'LAB-01',
+    'start_time': '13:30',
+    'end_time': '16:00',
+  },
+  {
+    'id': 6,
+    'offering_id': 'OFF004',
+    'day_of_week': 'Jumat',
+    'room': 'KU3.08',
+    'start_time': '16:30',
+    'end_time': '19:00',
+  },
+  {
+    'id': 7,
+    'offering_id': 'OFF002',
+    'day_of_week': 'Jumat',
+    'room': 'KU3.05',
+    'start_time': '19:30',
+    'end_time': '21:00',
+  },
 ];

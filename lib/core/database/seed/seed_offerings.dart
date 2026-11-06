@@ -23,4 +23,12 @@ const List<Map<String, dynamic>> seedOfferings = [
     'academic_year': '2024/2025',
     'term': 'Ganjil',
   },
+  {
+    'offering_id': 'OFF004',
+    'course_code': 'IF103',
+    'lecturer_id': 'L001',
+    'class_name': 'IF-44-03',
+    'academic_year': '2024/2025',
+    'term': 'Ganjil',
+  },
 ];

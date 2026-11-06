@@ -105,6 +105,64 @@ class SeedData {
   static Future<void> checkAndApplySeeds(Database db) async {
     if (!await isInitialSeedApplied(db)) {
       await seedInitialData(db);
+      return;
     }
+    await syncNewSeedData(db);
+  }
+
+  static Future<void> syncNewSeedData(Database db) async {
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final lecturer in seedLecturers) {
+        batch.insert(
+          'lecturers',
+          lecturer,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+
+      for (final student in seedStudents) {
+        batch.insert(
+          'students',
+          student,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+
+      for (final course in seedCourses) {
+        batch.insert(
+          'courses',
+          course,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+
+      for (final offering in seedOfferings) {
+        batch.insert(
+          'course_offerings',
+          offering,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+
+      for (final enrollment in seedEnrollments) {
+        batch.insert(
+          'course_enrollments',
+          enrollment,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+
+      for (final schedule in seedSchedules) {
+        batch.insert(
+          'teaching_schedules',
+          schedule,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+
+      await batch.commit(noResult: true);
+    });
   }
 }

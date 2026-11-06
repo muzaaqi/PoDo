@@ -67,11 +67,11 @@ void main() {
       // Verify Header
       expect(find.text('Mata Kuliah'), findsOneWidget);
 
-      // Verify Stat Cards: 2 classes, 6 SKS (3 + 3)
+      // Verify Stat Cards: 3 classes, 9 SKS (3 + 3 + 3)
       expect(find.text('Total Kelas'), findsOneWidget);
-      expect(find.text('2'), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
       expect(find.text('Total SKS'), findsOneWidget);
-      expect(find.text('6'), findsOneWidget);
+      expect(find.text('9'), findsOneWidget);
 
       // Verify search field
       expect(find.byType(FTextField), findsOneWidget);
@@ -79,8 +79,10 @@ void main() {
       // Verify course cards
       expect(find.text('Pemrograman Mobile'), findsOneWidget);
       expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
+      expect(find.text('Sistem Terdistribusi'), findsOneWidget);
       expect(find.textContaining('IF-44-01'), findsOneWidget);
       expect(find.textContaining('IF-44-02'), findsOneWidget);
+      expect(find.textContaining('IF-44-03'), findsOneWidget);
     });
 
     testWidgets('displays credits badge and enrolled student count on cards', (tester) async {
@@ -91,10 +93,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Badges with SKS
-      expect(find.text('3 SKS'), findsNWidgets(2));
+      expect(find.text('3 SKS'), findsNWidgets(3));
 
       // Student count
-      expect(find.text('3 Mahasiswa'), findsNWidgets(2));
+      expect(find.text('3 Mahasiswa'), findsNWidgets(3));
     });
 
     testWidgets('filters offerings in real time when typing search query', (tester) async {

@@ -125,6 +125,28 @@ void main() {
     expect(find.textContaining('13:00 - 15:30'), findsOneWidget);
   });
 
+  testWidgets('Tapping Jumat tab displays all 3 Friday classes with real-time status', (tester) async {
+    final fridayAfternoon = DateTime(2026, 11, 6, 17, 30);
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: fridayAfternoon));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final jumatTab = find.text('Jumat');
+    expect(jumatTab, findsOneWidget);
+    await tester.tap(jumatTab);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Sistem Terdistribusi'), findsOneWidget);
+    expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
+
+    expect(find.text('Selesai'), findsOneWidget);
+    expect(find.text('Berlangsung'), findsOneWidget);
+    expect(find.textContaining('Waktu Berjalan'), findsOneWidget);
+  });
+
   testWidgets('Tapping schedule card navigates to CourseDetailScreen', (tester) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(MaterialApp(

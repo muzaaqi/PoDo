@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:podo/core/database/database_helper.dart';
+import 'package:podo/features/courses/models/course.dart';
+import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/repositories/course_repository.dart';
 
 void main() {
@@ -25,7 +27,7 @@ void main() {
     test('getOfferingsByLecturer returns all offerings for L001 with correct join fields and enrolled count', () async {
       final offerings = await CourseRepository.instance.getOfferingsByLecturer('L001');
 
-      expect(offerings.length, 2);
+      expect(offerings.length, 3);
 
       // Verify first offering (Pemrograman Mobile, ordered by course_name ASC)
       expect(offerings[0].offeringId, 'OFF001');
@@ -44,6 +46,15 @@ void main() {
       expect(offerings[1].courseName, 'Rekayasa Perangkat Lunak');
       expect(offerings[1].credits, 3);
       expect(offerings[1].enrolledCount, 3);
+
+      // Verify third offering (Sistem Terdistribusi)
+      expect(offerings[2].offeringId, 'OFF004');
+      expect(offerings[2].courseCode, 'IF103');
+      expect(offerings[2].lecturerId, 'L001');
+      expect(offerings[2].className, 'IF-44-03');
+      expect(offerings[2].courseName, 'Sistem Terdistribusi');
+      expect(offerings[2].credits, 3);
+      expect(offerings[2].enrolledCount, 3);
     });
 
     test('getOfferingsByLecturer filters by query matching course name, code, or class name', () async {
@@ -90,8 +101,8 @@ void main() {
     test('getAllCourses returns master courses', () async {
       final courses = await CourseRepository.instance.getAllCourses();
 
-      expect(courses.length, 3);
-      expect(courses.map((c) => c.courseCode), containsAll(['IF101', 'IF102', 'SI101']));
+      expect(courses.length, 4);
+      expect(courses.map((c) => c.courseCode), containsAll(['IF101', 'IF102', 'SI101', 'IF103']));
     });
 
     test('getCourseByCode returns specific course or null', () async {
@@ -102,6 +113,31 @@ void main() {
 
       final notFound = await CourseRepository.instance.getCourseByCode('UNKNOWN');
       expect(notFound, isNull);
+    });
+
+    test('createCourse and createOffering inserts new records', () async {
+      const newCourse = Course(
+        courseCode: 'IF999',
+        courseName: 'Topik Khusus',
+        credits: 2,
+      );
+      await CourseRepository.instance.createCourse(newCourse);
+      final fetched = await CourseRepository.instance.getCourseByCode('IF999');
+      expect(fetched, isNotNull);
+      expect(fetched!.courseName, 'Topik Khusus');
+
+      const newOffering = CourseOffering(
+        offeringId: 'OFF999',
+        courseCode: 'IF999',
+        lecturerId: 'L001',
+        className: 'IF-Special',
+        academicYear: '2024/2025',
+        term: 'Ganjil',
+      );
+      await CourseRepository.instance.createOffering(newOffering);
+      final offerings = await CourseRepository.instance.getOfferingsByLecturer('L001', query: 'Special');
+      expect(offerings.length, 1);
+      expect(offerings.first.offeringId, 'OFF999');
     });
   });
 }

@@ -14,4 +14,9 @@ const List<Map<String, dynamic>> seedCourses = [
     'course_name': 'Basis Data Lanjut',
     'credits': 4,
   },
+  {
+    'course_code': 'IF103',
+    'course_name': 'Sistem Terdistribusi',
+    'credits': 3,
+  },
 ];

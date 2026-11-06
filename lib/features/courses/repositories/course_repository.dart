@@ -1,3 +1,4 @@
+import 'package:sqflite/sqflite.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/features/courses/models/course.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
@@ -115,5 +116,30 @@ class CourseRepository {
     );
     if (results.isEmpty) return null;
     return Course.fromMap(results.first);
+  }
+
+  Future<void> createCourse(Course course) async {
+    final db = await _dbHelper.database;
+    await db.insert(
+      'courses',
+      course.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<void> createOffering(CourseOffering offering) async {
+    final db = await _dbHelper.database;
+    await db.insert(
+      'course_offerings',
+      {
+        'offering_id': offering.offeringId,
+        'course_code': offering.courseCode,
+        'lecturer_id': offering.lecturerId,
+        'class_name': offering.className,
+        'academic_year': offering.academicYear,
+        'term': offering.term,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
   }
 }
