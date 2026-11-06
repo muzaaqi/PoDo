@@ -169,66 +169,203 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return FScaffold(
-      header: FHeader.nested(
-        title: Text(_isEdit ? 'Edit Biodata Mahasiswa' : 'Tambah Mahasiswa'),
-        prefixes: [
-          FHeaderAction.back(onPress: () => Navigator.of(context).maybePop()),
-        ],
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+  Widget _buildSectionHeader({
+    required BuildContext context,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String title,
+    required String subtitle,
+  }) {
+    final theme = context.theme;
+
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: iconBg,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              size: 18,
+              color: iconColor,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: theme.typography.body.xs.copyWith(
+                  color: theme.colors.mutedForeground,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAcademicCard(BuildContext context) {
+    return FCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildSectionHeader(
+              context: context,
+              icon: FLucideIcons.graduationCap,
+              iconColor: const Color(0xFF16A34A),
+              iconBg: const Color(0xFFF0FDF4),
+              title: 'Data Akademik & Identitas',
+              subtitle: 'Informasi pokok mahasiswa dan program studi',
+            ),
+            const SizedBox(height: 16),
             FTextField(
               label: const Text('Nomor Induk Mahasiswa (NIM)'),
               hint: 'Contoh: 2101001',
               keyboardType: TextInputType.number,
               enabled: !_isEdit,
               error: _nimError != null ? Text(_nimError!) : null,
+              description: _isEdit
+                  ? const Text('NIM bersifat tetap dan tidak dapat diubah')
+                  : null,
+              prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
+                context,
+                style,
+                variants,
+                const Icon(FLucideIcons.hash),
+              ),
               control: FTextFieldControl.managed(controller: _nimController),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             FTextField(
               label: const Text('Nama Lengkap'),
               hint: 'Contoh: Ahmad Fauzi',
               error: _nameError != null ? Text(_nameError!) : null,
+              prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
+                context,
+                style,
+                variants,
+                const Icon(FLucideIcons.user),
+              ),
               control: FTextFieldControl.managed(controller: _nameController),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             FTextField(
               label: const Text('Program Studi'),
               hint: 'Contoh: Teknik Informatika',
+              prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
+                context,
+                style,
+                variants,
+                const Icon(FLucideIcons.bookOpen),
+              ),
               control: FTextFieldControl.managed(controller: _studyProgramController),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             FTextField(
               label: const Text('Jurusan / Departemen'),
               hint: 'Contoh: Teknologi Informasi',
+              prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
+                context,
+                style,
+                variants,
+                const Icon(FLucideIcons.building2),
+              ),
               control: FTextFieldControl.managed(controller: _departmentController),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactCard(BuildContext context) {
+    return FCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildSectionHeader(
+              context: context,
+              icon: FLucideIcons.phone,
+              iconColor: const Color(0xFF4F46E5),
+              iconBg: const Color(0xFFEEF2FF),
+              title: 'Kontak & Domisili',
+              subtitle: 'Nomor telepon dan alamat tempat tinggal',
             ),
             const SizedBox(height: 16),
             FTextField(
               label: const Text('Nomor Telepon'),
               hint: 'Contoh: 081234567890',
               keyboardType: TextInputType.phone,
+              prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
+                context,
+                style,
+                variants,
+                const Icon(FLucideIcons.phone),
+              ),
               control: FTextFieldControl.managed(controller: _phoneController),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             FTextField.multiline(
               label: const Text('Alamat Lengkap'),
               hint: 'Contoh: Jl. Merdeka No. 10, Bandung',
               control: FTextFieldControl.managed(controller: _addressController),
             ),
-            const SizedBox(height: 28),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(_isEdit ? 'Edit Biodata Mahasiswa' : 'Tambah Mahasiswa'),
+        prefixes: [
+          FHeaderAction.back(
+            semanticsLabel: 'Kembali',
+            onPress: () => Navigator.of(context).maybePop(),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildAcademicCard(context),
+            const SizedBox(height: 16),
+            _buildContactCard(context),
+            const SizedBox(height: 24),
             FButton(
               onPress: _isLoading ? null : _saveStudent,
-              child: Text(_isLoading
-                  ? 'Menyimpan...'
-                  : (_isEdit ? 'Simpan Perubahan' : 'Simpan Mahasiswa')),
+              child: Text(
+                _isLoading
+                    ? 'Menyimpan...'
+                    : (_isEdit ? 'Simpan Perubahan' : 'Simpan Mahasiswa'),
+              ),
             ),
             if (_isEdit) ...[
               const SizedBox(height: 12),

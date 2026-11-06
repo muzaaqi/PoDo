@@ -209,4 +209,39 @@ void main() {
     });
     expect(deleted, isNull);
   });
+
+  testWidgets('Renders two grouped section cards with correct labels', (tester) async {
+    const existing = Student(
+      nim: '2101001',
+      fullName: 'Ahmad Fauzi',
+      studyProgram: 'Teknik Informatika',
+    );
+
+    await tester.pumpWidget(buildTestableWidget(student: existing));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Data Akademik & Identitas'), findsOneWidget);
+    expect(find.text('Kontak & Domisili'), findsOneWidget);
+    expect(find.text('NIM bersifat tetap dan tidak dapat diubah'), findsOneWidget);
+  });
+
+  testWidgets('No bullet point character exists in StudentBiodataFormScreen', (tester) async {
+    const existing = Student(
+      nim: '2101001',
+      fullName: 'Ahmad Fauzi',
+      studyProgram: 'Teknik Informatika',
+      department: 'Teknologi Informasi',
+      phone: '081234567890',
+      address: 'Jl. Merdeka No. 10',
+    );
+
+    await tester.pumpWidget(buildTestableWidget(student: existing));
+    await tester.pumpAndSettle();
+
+    final allTextWidgets = tester.widgetList<Text>(find.byType(Text));
+    for (final textWidget in allTextWidgets) {
+      final data = textWidget.data ?? textWidget.textSpan?.toPlainText() ?? '';
+      expect(data.contains('•'), isFalse, reason: 'Text contains banned bullet: "$data"');
+    }
+  });
 }
