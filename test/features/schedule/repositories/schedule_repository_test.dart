@@ -164,5 +164,20 @@ void main() {
 
       expect(await ScheduleRepository.instance.getScheduleById(2), isNull);
     });
+
+    test('getSchedulesByOffering returns all schedules for a specific offering', () async {
+      final schedules = await ScheduleRepository.instance.getSchedulesByOffering('OFF001');
+      expect(schedules, isNotEmpty);
+      expect(schedules.every((s) => s.offeringId == 'OFF001'), isTrue);
+    });
+
+    test('getPrimaryScheduleForOffering returns primary schedule or null', () async {
+      final schedule = await ScheduleRepository.instance.getPrimaryScheduleForOffering('OFF001');
+      expect(schedule, isNotNull);
+      expect(schedule!.offeringId, 'OFF001');
+
+      final nullSchedule = await ScheduleRepository.instance.getPrimaryScheduleForOffering('NON_EXISTENT');
+      expect(nullSchedule, isNull);
+    });
   });
 }

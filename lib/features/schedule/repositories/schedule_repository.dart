@@ -87,6 +87,50 @@ class ScheduleRepository {
     return TeachingSchedule.fromMap(results.first);
   }
 
+  Future<List<TeachingSchedule>> getSchedulesByOffering(String offeringId) async {
+    final db = await DatabaseHelper.instance.database;
+
+    final sql = '''
+      SELECT 
+        ts.id,
+        ts.offering_id,
+        ts.day_of_week,
+        ts.room,
+        ts.start_time,
+        ts.end_time,
+        co.class_name,
+        co.academic_year,
+        co.term,
+        c.course_code,
+        c.course_name,
+        c.credits
+      FROM teaching_schedules ts
+      JOIN course_offerings co ON ts.offering_id = co.offering_id
+      JOIN courses c ON co.course_code = c.course_code
+      WHERE ts.offering_id = ?
+      ORDER BY 
+        CASE ts.day_of_week
+          WHEN 'Senin' THEN 1
+          WHEN 'Selasa' THEN 2
+          WHEN 'Rabu' THEN 3
+          WHEN 'Kamis' THEN 4
+          WHEN 'Jumat' THEN 5
+          WHEN 'Sabtu' THEN 6
+          ELSE 7
+        END,
+        ts.start_time ASC
+    ''';
+
+    final results = await db.rawQuery(sql, [offeringId]);
+    return results.map((row) => TeachingSchedule.fromMap(row)).toList();
+  }
+
+  Future<TeachingSchedule?> getPrimaryScheduleForOffering(String offeringId) async {
+    final schedules = await getSchedulesByOffering(offeringId);
+    if (schedules.isEmpty) return null;
+    return schedules.first;
+  }
+
   Future<int> createSchedule({
     required String offeringId,
     required String dayOfWeek,
