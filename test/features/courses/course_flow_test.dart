@@ -93,7 +93,8 @@ void main() {
     expect(find.text('Total Kelas'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
     expect(find.text('Total SKS'), findsOneWidget);
-    expect(find.text('9'), findsOneWidget);
+    expect(find.text('Total Mahasiswa'), findsOneWidget);
+    expect(find.text('9'), findsNWidgets(2));
 
     // 4. Verify course offerings for L001
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
@@ -129,7 +130,7 @@ void main() {
     expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
     expect(find.text('Pemrograman Mobile'), findsNothing);
     expect(find.text('1'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
+    expect(find.text('3'), findsNWidgets(2));
 
     // 8. Test switching to Jadwal tab and switching back via BottomNavigationBar
     final jadwalTab = find.text('Jadwal');

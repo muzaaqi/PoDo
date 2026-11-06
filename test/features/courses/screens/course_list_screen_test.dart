@@ -8,6 +8,7 @@ import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/courses/screens/course_list_screen.dart';
+import 'package:podo/features/courses/widgets/add_course_offering_sheet.dart';
 
 void main() {
   setUpAll(() {
@@ -65,13 +66,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify Header
-      expect(find.text('Mata Kuliah'), findsOneWidget);
+      expect(find.text('Mata Kuliah'), findsWidgets);
+      expect(find.text('Tambah Kelas'), findsOneWidget);
 
-      // Verify Stat Cards: 3 classes, 9 SKS (3 + 3 + 3)
+      // Verify Hero Summary Banner: 3 classes, 9 SKS, 9 students (3 per class)
       expect(find.text('Total Kelas'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
       expect(find.text('Total SKS'), findsOneWidget);
-      expect(find.text('9'), findsOneWidget);
+      expect(find.text('Total Mahasiswa'), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('9'), findsNWidgets(2));
 
       // Verify search field
       expect(find.byType(FTextField), findsOneWidget);
@@ -116,9 +119,9 @@ void main() {
       expect(find.text('Pemrograman Mobile'), findsOneWidget);
       expect(find.text('Rekayasa Perangkat Lunak'), findsNothing);
 
-      // Stat cards updated: 1 class, 3 SKS
+      // Hero banner updated: 1 class, 3 SKS, 3 students
       expect(find.text('1'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
+      expect(find.text('3'), findsNWidgets(2));
     });
 
     testWidgets('shows empty state when no courses match search query', (tester) async {
@@ -160,6 +163,110 @@ void main() {
       // CourseDetailScreen should be displayed with course info
       expect(find.byType(CourseDetailScreen), findsOneWidget);
       expect(find.textContaining('IF101 • Kelas IF-44-01'), findsOneWidget);
+    });
+
+    testWidgets('tapping Reset Pencarian in empty state clears search query and restores courses', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Enter search query 'NonExistent'
+      await tester.enterText(find.byType(FTextField), 'NonExistent');
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mata kuliah tidak ditemukan'), findsOneWidget);
+      expect(find.text('Reset Pencarian'), findsOneWidget);
+
+      // Tap Reset Pencarian
+      await tester.tap(find.text('Reset Pencarian'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pemrograman Mobile'), findsOneWidget);
+      expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
+    });
+
+    testWidgets('tapping Tambah Kelas opens AddCourseOfferingSheet', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Tap Tambah Kelas button
+      await tester.tap(find.text('Tambah Kelas'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Verify sheet opens
+      expect(find.byType(AddCourseOfferingSheet), findsOneWidget);
+      expect(find.text('Tambah Kelas Kuliah'), findsOneWidget);
+      expect(find.text('Simpan Kelas'), findsOneWidget);
+    });
+
+    testWidgets('successfully creates new course offering via sheet and updates list', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Total Kelas'), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+
+      // Open AddCourseOfferingSheet
+      await tester.tap(find.text('Tambah Kelas'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Enter class name IF-44-04
+      final classField = find.widgetWithText(FTextField, 'Contoh: IF-44-01');
+      await tester.enterText(classField, 'IF-44-04');
+      await tester.pump();
+
+      // Scroll to Simpan Kelas if needed and tap
+      await tester.ensureVisible(find.text('Simpan Kelas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Simpan Kelas'));
+
+      // Let SQLite persist and refresh
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      });
+      await tester.pumpAndSettle();
+
+      // Sheet should be dismissed
+      expect(find.byType(AddCourseOfferingSheet), findsNothing);
+
+      // New offering should appear on screen
+      expect(find.textContaining('IF-44-04'), findsOneWidget);
+
+      // Total Kelas updated to 4
+      expect(find.text('Total Kelas'), findsOneWidget);
+      expect(find.text('4'), findsOneWidget);
     });
   });
 }

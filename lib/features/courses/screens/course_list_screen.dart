@@ -1,10 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/routes.dart';
-import 'package:podo/core/widgets/stat_card.dart';
+import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/repositories/course_repository.dart';
+import 'package:podo/features/courses/widgets/add_course_offering_sheet.dart';
 
 class CourseListScreen extends StatefulWidget {
   const CourseListScreen({super.key});
@@ -80,6 +81,9 @@ class _CourseListScreenState extends State<CourseListScreen> {
   int get _totalCredits =>
       _offerings.fold<int>(0, (sum, item) => sum + item.credits);
 
+  int get _totalStudents =>
+      _offerings.fold<int>(0, (sum, item) => sum + item.enrolledCount);
+
   void _navigateToDetail(CourseOffering offering) {
     Navigator.of(context).pushNamed(
       AppRoutes.courseDetail,
@@ -87,26 +91,209 @@ class _CourseListScreenState extends State<CourseListScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Future<void> _showAddOfferingSheet() async {
+    final created = await showFSheet<bool>(
+      context: context,
+      side: FLayout.btt,
+      builder: (context) => const AddCourseOfferingSheet(),
+    );
+
+    if (created == true) {
+      await _loadOfferings();
+      if (mounted) {
+        showFToast(
+          context: context,
+          title: const Text('Kelas perkuliahan berhasil ditambahkan'),
+        );
+      }
+    }
+  }
+
+  Widget _buildHeroBanner(BuildContext context) {
+    final theme = context.theme;
+    final colors = context.appColors;
+
+    return FCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: colors.violet.background,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    FLucideIcons.graduationCap,
+                    size: 20,
+                    color: colors.violet.foreground,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SEMESTER AKTIF',
+                        style: theme.typography.body.xs.copyWith(
+                          color: theme.colors.mutedForeground,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        '2024/2025 • Ganjil',
+                        style: theme.typography.body.sm.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              height: 1,
+              color: theme.colors.border,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMetricItem(
+                    context,
+                    title: 'Total Kelas',
+                    value: '${_offerings.length}',
+                    icon: FLucideIcons.bookOpen,
+                    iconBg: colors.sky.background,
+                    iconColor: colors.sky.foreground,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: theme.colors.border,
+                ),
+                Expanded(
+                  child: _buildMetricItem(
+                    context,
+                    title: 'Total SKS',
+                    value: '$_totalCredits',
+                    icon: FLucideIcons.award,
+                    iconBg: colors.amber.background,
+                    iconColor: colors.amber.foreground,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: theme.colors.border,
+                ),
+                Expanded(
+                  child: _buildMetricItem(
+                    context,
+                    title: 'Total Mahasiswa',
+                    value: '$_totalStudents',
+                    icon: FLucideIcons.users,
+                    iconBg: colors.emerald.background,
+                    iconColor: colors.emerald.foreground,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricItem(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+  }) {
     final theme = context.theme;
 
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: iconBg,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 12, color: iconColor),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              value,
+              style: theme.typography.display.sm.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: theme.typography.body.xs.copyWith(
+            color: theme.colors.mutedForeground,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final theme = context.theme;
+    final colors = context.appColors;
+    final isSearching = _searchController.text.isNotEmpty;
+
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: FCard(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  FLucideIcons.bookOpen,
-                  size: 48,
-                  color: theme.colors.mutedForeground,
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: colors.violet.background,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    isSearching ? FLucideIcons.searchX : FLucideIcons.bookOpen,
+                    size: 26,
+                    color: colors.violet.foreground,
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Text(
-                  'Mata kuliah tidak ditemukan',
+                  isSearching
+                      ? 'Mata kuliah tidak ditemukan'
+                      : 'Belum ada kelas perkuliahan',
                   style: theme.typography.body.md.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -114,12 +301,29 @@ class _CourseListScreenState extends State<CourseListScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Coba ubah kata kunci pencarian Anda.',
+                  isSearching
+                      ? 'Coba ubah kata kunci pencarian Anda.'
+                      : 'Tambahkan kelas perkuliahan baru untuk memulai.',
                   style: theme.typography.body.sm.copyWith(
                     color: theme.colors.mutedForeground,
                   ),
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 16),
+                if (isSearching)
+                  FButton(
+                    size: FButtonSizeVariant.sm,
+                    variant: FButtonVariant.outline,
+                    onPress: () => _searchController.clear(),
+                    child: const Text('Reset Pencarian'),
+                  )
+                else
+                  FButton(
+                    size: FButtonSizeVariant.sm,
+                    prefix: const Icon(FLucideIcons.plus),
+                    onPress: _showAddOfferingSheet,
+                    child: const Text('Tambah Kelas'),
+                  ),
               ],
             ),
           ),
@@ -128,91 +332,187 @@ class _CourseListScreenState extends State<CourseListScreen> {
     );
   }
 
-  Widget _buildCourseCard(BuildContext context, CourseOffering offering) {
+  Widget _buildCourseCard(
+    BuildContext context,
+    CourseOffering offering,
+    int index,
+  ) {
     final theme = context.theme;
+    final colors = context.appColors;
+
+    final pastelTokens = [
+      colors.sky,
+      colors.violet,
+      colors.amber,
+      colors.emerald,
+    ];
+    final cardToken = pastelTokens[index % pastelTokens.length];
+
+    final semanticsLabel =
+        'Mata kuliah: ${offering.courseName}, Kelas ${offering.className}, '
+        '${offering.credits} SKS, ${offering.enrolledCount} Mahasiswa, '
+        '${offering.academicYear} ${offering.term}. Ketuk untuk membuka detail mata kuliah.';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: FTappable(
-        onPress: () => _navigateToDetail(offering),
-        child: FCard(
-          child: Padding(
+      child: Semantics(
+        button: true,
+        label: semanticsLabel,
+        excludeSemantics: true,
+        child: FTappable(
+          onPress: () => _navigateToDetail(offering),
+          child: Container(
+            decoration: BoxDecoration(
+              color: cardToken.background,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: theme.colors.card,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        FLucideIcons.bookOpen,
+                        size: 20,
+                        color: cardToken.foreground,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        offering.courseName,
-                        style: theme.typography.body.md.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            offering.courseName,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: cardToken.foreground,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colors.card,
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Text(
+                                  'Kelas ${offering.className}',
+                                  style: TextStyle(
+                                    color: cardToken.foreground,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colors.card,
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Text(
+                                  '${offering.credits} SKS',
+                                  style: TextStyle(
+                                    color: cardToken.foreground,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    FBadge(
-                      variant: FBadgeVariant.secondary,
-                      child: Text('${offering.credits} SKS'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(
-                      FLucideIcons.users,
-                      size: 14,
-                      color: theme.colors.mutedForeground,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Kelas ${offering.className}',
-                      style: theme.typography.body.xs.copyWith(
-                        color: theme.colors.mutedForeground,
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: theme.colors.card,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        FLucideIcons.chevronRight,
+                        size: 14,
+                        color: cardToken.foreground,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 14),
                 Row(
                   children: [
-                    Icon(
-                      FLucideIcons.graduationCap,
-                      size: 14,
-                      color: theme.colors.mutedForeground,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${offering.enrolledCount} Mahasiswa',
-                      style: theme.typography.body.xs.copyWith(
-                        color: theme.colors.mutedForeground,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Icon(
-                      FLucideIcons.calendar,
-                      size: 14,
-                      color: theme.colors.mutedForeground,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${offering.academicYear} (${offering.term})',
-                      style: theme.typography.body.xs.copyWith(
-                        color: theme.colors.mutedForeground,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          FLucideIcons.users,
+                          size: 13,
+                          color: cardToken.foreground.withValues(alpha: 0.7),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          '${offering.enrolledCount} Mahasiswa',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: cardToken.foreground.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
                     ),
                     const Spacer(),
-                    Icon(
-                      FLucideIcons.chevronRight,
-                      size: 16,
-                      color: theme.colors.mutedForeground,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          FLucideIcons.calendar,
+                          size: 13,
+                          color: cardToken.foreground.withValues(alpha: 0.7),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          '${offering.academicYear} (${offering.term})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: cardToken.foreground.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -256,35 +556,30 @@ class _CourseListScreenState extends State<CourseListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Mata Kuliah',
-                  style: theme.typography.display.lg.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(
-                      child: StatCard(
-                        title: 'Total Kelas',
-                        value: '${_offerings.length}',
-                        icon: FLucideIcons.bookOpen,
+                      child: Text(
+                        'Mata Kuliah',
+                        style: theme.typography.display.lg.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: StatCard(
-                        title: 'Total SKS',
-                        value: '$_totalCredits',
-                        icon: FLucideIcons.award,
-                      ),
+                    FButton(
+                      size: FButtonSizeVariant.sm,
+                      prefix: const Icon(FLucideIcons.plus),
+                      onPress: _showAddOfferingSheet,
+                      child: const Text('Tambah Kelas'),
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                _buildHeroBanner(context),
                 const SizedBox(height: 12),
                 FTextField(
                   hint: 'Cari mata kuliah atau kelas...',
+                  clearable: (value) => value.text.isNotEmpty,
                   prefixBuilder: (context, style, variants) =>
                       FTextField.prefixIconBuilder(
                     context,
@@ -309,8 +604,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
                         controller: _scrollController,
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                         itemCount: _offerings.length,
-                        itemBuilder: (context, index) =>
-                            _buildCourseCard(context, _offerings[index]),
+                        itemBuilder: (context, index) => _buildCourseCard(
+                          context,
+                          _offerings[index],
+                          index,
+                        ),
                       ),
           ),
         ],
