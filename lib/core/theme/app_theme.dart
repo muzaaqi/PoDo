@@ -8,8 +8,8 @@ class AppTheme {
         touch: true,
         debugLabel: 'PoDo Light Touch',
         colors: FColors.neutralLight.copyWith(
-          primary: const Color(0xFF4338CA),
-          primaryForeground: const Color(0xFFFFFFFF),
+          primary: const Color(0xFF93C5FD),
+          primaryForeground: const Color(0xFF0F172A),
           background: const Color(0xFFF8FAFC),
           card: const Color(0xFFFFFFFF),
           border: const Color(0xFFE2E8F0),
@@ -20,7 +20,7 @@ class AppTheme {
         touch: true,
         debugLabel: 'PoDo Dark Touch',
         colors: FColors.neutralDark.copyWith(
-          primary: const Color(0xFF6366F1),
+          primary: const Color(0xFF60A5FA),
           primaryForeground: const Color(0xFF0F172A),
           background: const Color(0xFF090A0F),
           card: const Color(0xFF13151D),

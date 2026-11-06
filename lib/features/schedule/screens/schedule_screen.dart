@@ -229,7 +229,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           fontWeight:
                               isSelected ? FontWeight.bold : FontWeight.w600,
                           color: isSelected
-                              ? const Color(0xFFFFFFFF)
+                              ? theme.colors.primaryForeground
                               : theme.colors.mutedForeground,
                         ),
                         maxLines: 1,
@@ -243,7 +243,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           fontWeight:
                               isSelected ? FontWeight.bold : FontWeight.w600,
                           color: isSelected
-                              ? const Color(0xFFFFFFFF)
+                              ? theme.colors.primaryForeground
                               : theme.colors.foreground,
                         ),
                       ),

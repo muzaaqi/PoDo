@@ -46,8 +46,8 @@ class AppColors {
 
   static const light = AppColors._(
     brightness: Brightness.light,
-    brandPrimary: Color(0xFF4338CA),
-    brandPrimaryForeground: Color(0xFFFFFFFF),
+    brandPrimary: Color(0xFF93C5FD),
+    brandPrimaryForeground: Color(0xFF0F172A),
     canvas: Color(0xFFF8FAFC),
     indigo: ColorToken(
       background: Color(0xFFC7D2FE),
@@ -77,7 +77,7 @@ class AppColors {
 
   static const dark = AppColors._(
     brightness: Brightness.dark,
-    brandPrimary: Color(0xFF6366F1),
+    brandPrimary: Color(0xFF60A5FA),
     brandPrimaryForeground: Color(0xFF0F172A),
     canvas: Color(0xFF090A0F),
     indigo: ColorToken(
