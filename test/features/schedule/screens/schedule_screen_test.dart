@@ -29,7 +29,7 @@ void main() {
     await AuthRepository.instance.logout();
   });
 
-  Widget buildTestableWidget() {
+  Widget buildTestableWidget({DateTime? currentDateTime}) {
     return MaterialApp(
       builder: (context, child) => FTheme(
         data: AppTheme.lightTheme,
@@ -39,7 +39,7 @@ void main() {
           ),
         ),
       ),
-      home: const ScheduleScreen(),
+      home: ScheduleScreen(currentDateTime: currentDateTime),
     );
   }
 
@@ -155,5 +155,64 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CourseDetailScreen), findsOneWidget);
+  });
+
+  testWidgets('ScheduleScreen displays live ongoing progress and timeline node for active class', (tester) async {
+    // Monday at 09:00 (Pemrograman Mobile is 08:00 - 10:30)
+    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Berlangsung'), findsOneWidget);
+    expect(find.textContaining('Waktu Berjalan'), findsOneWidget);
+    expect(find.textContaining('Tersisa'), findsOneWidget);
+
+    final scheduleSemantics = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label != null &&
+          widget.properties.label!.contains('Sedang berlangsung'),
+    );
+    expect(scheduleSemantics, findsWidgets);
+  });
+
+  testWidgets('ScheduleScreen displays completed status on timeline for past class', (tester) async {
+    // Monday at 12:00 (Pemrograman Mobile 08:00 - 10:30 has ended)
+    final mondayAfternoon = DateTime(2026, 11, 2, 12, 0);
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayAfternoon));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Selesai'), findsOneWidget);
+
+    final scheduleSemantics = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label != null &&
+          widget.properties.label!.contains('Kelas telah selesai'),
+    );
+    expect(scheduleSemantics, findsWidgets);
+  });
+
+  testWidgets('ScheduleScreen displays upcoming status for future class', (tester) async {
+    // Monday at 07:00 (Pemrograman Mobile starts at 08:00)
+    final mondayEarly = DateTime(2026, 11, 2, 7, 0);
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayEarly));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Berlangsung'), findsNothing);
+    expect(find.text('Selesai'), findsNothing);
+    expect(find.textContaining('Waktu Berjalan'), findsNothing);
   });
 }

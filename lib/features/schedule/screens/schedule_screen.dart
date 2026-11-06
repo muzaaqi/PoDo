@@ -8,10 +8,21 @@ import 'package:podo/features/courses/repositories/course_repository.dart';
 import 'package:podo/features/schedule/models/teaching_schedule.dart';
 import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 
+enum ScheduleTimelineStatus {
+  past,
+  ongoing,
+  upcoming,
+}
+
 class ScheduleScreen extends StatefulWidget {
   final String initialDay;
+  final DateTime? currentDateTime;
 
-  const ScheduleScreen({super.key, this.initialDay = 'Senin'});
+  const ScheduleScreen({
+    super.key,
+    this.initialDay = 'Senin',
+    this.currentDateTime,
+  });
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -92,6 +103,57 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   bool _hasScheduleOn(String day) {
     return _schedules
         .any((s) => s.dayOfWeek.toLowerCase() == day.toLowerCase());
+  }
+
+  int? _parseTimeToMinutes(String time) {
+    try {
+      final parts = time.trim().split(':');
+      if (parts.length >= 2) {
+        final hours = int.parse(parts[0]);
+        final minutes = int.parse(parts[1]);
+        return hours * 60 + minutes;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Senin';
+      case DateTime.tuesday:
+        return 'Selasa';
+      case DateTime.wednesday:
+        return 'Rabu';
+      case DateTime.thursday:
+        return 'Kamis';
+      case DateTime.friday:
+        return 'Jumat';
+      case DateTime.saturday:
+        return 'Sabtu';
+      default:
+        return 'Minggu';
+    }
+  }
+
+  ScheduleTimelineStatus _getScheduleStatus({
+    required TeachingSchedule schedule,
+    required bool isToday,
+    required int currentMinutes,
+  }) {
+    if (!isToday) return ScheduleTimelineStatus.upcoming;
+
+    final start = _parseTimeToMinutes(schedule.startTime);
+    final end = _parseTimeToMinutes(schedule.endTime);
+    if (start == null || end == null) return ScheduleTimelineStatus.upcoming;
+
+    if (currentMinutes > end) {
+      return ScheduleTimelineStatus.past;
+    } else if (currentMinutes >= start && currentMinutes <= end) {
+      return ScheduleTimelineStatus.ongoing;
+    } else {
+      return ScheduleTimelineStatus.upcoming;
+    }
   }
 
   Future<void> _navigateToCourseDetail(TeachingSchedule schedule) async {
@@ -197,16 +259,120 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
+  Widget _buildTimelineTrack(
+    BuildContext context, {
+    required ScheduleTimelineStatus status,
+    required bool isFirst,
+    required bool isLast,
+    required FThemeData theme,
+    required AppColors colors,
+  }) {
+    final activeColor = theme.colors.primary;
+    final pastColor = colors.emerald.foreground;
+    final neutralColor = theme.colors.border;
+
+    final topTrackColor = isFirst
+        ? const Color(0x00000000)
+        : (status == ScheduleTimelineStatus.past ||
+                status == ScheduleTimelineStatus.ongoing
+            ? pastColor
+            : neutralColor);
+
+    final bottomTrackColor = isLast
+        ? const Color(0x00000000)
+        : (status == ScheduleTimelineStatus.past ? pastColor : neutralColor);
+
+    return SizedBox(
+      width: 24,
+      child: Column(
+        children: [
+          // Top connecting line
+          Container(
+            width: 2.5,
+            height: 20,
+            color: topTrackColor,
+          ),
+          // Node indicator based on real-time status
+          if (status == ScheduleTimelineStatus.past)
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: pastColor,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                FLucideIcons.check,
+                size: 11,
+                color: Color(0xFFFFFFFF),
+              ),
+            )
+          else if (status == ScheduleTimelineStatus.ongoing)
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: colors.amber.background,
+                shape: BoxShape.circle,
+                border: Border.all(color: activeColor, width: 2),
+              ),
+              alignment: Alignment.center,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: pastColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: theme.colors.card,
+                shape: BoxShape.circle,
+                border: Border.all(color: neutralColor, width: 2),
+              ),
+            ),
+          // Bottom connecting line
+          Expanded(
+            child: Container(
+              width: 2.5,
+              color: bottomTrackColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildScheduleCard(
     BuildContext context, {
     required TeachingSchedule schedule,
     required ColorToken token,
+    required ScheduleTimelineStatus status,
+    required int currentMinutes,
+    required DateTime now,
   }) {
     final theme = context.theme;
+    final colors = context.appColors;
+
+    final startMinutes = _parseTimeToMinutes(schedule.startTime) ?? 0;
+    final endMinutes = _parseTimeToMinutes(schedule.endTime) ?? 0;
+    final totalDuration = (endMinutes - startMinutes).clamp(1, 1440);
+    final elapsedMinutes =
+        (currentMinutes - startMinutes).clamp(0, totalDuration);
+    final remainingMinutes =
+        (endMinutes - currentMinutes).clamp(0, totalDuration);
+    final progress = (elapsedMinutes / totalDuration).clamp(0.0, 1.0);
 
     final scheduleSemantics = 'Jadwal: ${schedule.courseName}, '
         'Kelas ${schedule.className}, ${schedule.credits} SKS, '
         'Ruang ${schedule.room}, pukul ${schedule.startTime} sampai ${schedule.endTime}. '
+        '${status == ScheduleTimelineStatus.ongoing ? "Sedang berlangsung, tersisa $remainingMinutes menit. " : status == ScheduleTimelineStatus.past ? "Kelas telah selesai. " : ""}'
         'Ketuk untuk membuka detail mata kuliah.';
 
     return Padding(
@@ -300,6 +466,73 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ),
                                 ),
                               ),
+                              if (status == ScheduleTimelineStatus.ongoing) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colors.card,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: colors.emerald.foreground,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Berlangsung',
+                                        style: TextStyle(
+                                          color: token.foreground,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ] else if (status ==
+                                  ScheduleTimelineStatus.past) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colors.card,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        FLucideIcons.check,
+                                        size: 10,
+                                        color: colors.emerald.foreground,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Selesai',
+                                        style: TextStyle(
+                                          color: token.foreground,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ],
@@ -368,6 +601,137 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     ),
                   ],
                 ),
+
+                // In-Card Live Real-Time Timeline Progress if ongoing
+                if (status == ScheduleTimelineStatus.ongoing) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: theme.colors.card,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  FLucideIcons.timer,
+                                  size: 13,
+                                  color: token.foreground,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'Waktu Berjalan (${(progress * 100).toInt()}%)',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: token.foreground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              remainingMinutes > 0
+                                  ? 'Tersisa $remainingMinutes mnt'
+                                  : 'Waktu Habis',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: remainingMinutes <= 15
+                                    ? colors.coral.foreground
+                                    : token.foreground,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 10,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.centerLeft,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: token.background,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: progress,
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: token.foreground,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment(
+                                  (-1.0 + 2.0 * progress).clamp(-1.0, 1.0),
+                                  0.0,
+                                ),
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: colors.emerald.foreground,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: theme.colors.card,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              schedule.startTime,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: theme.colors.mutedForeground,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Pukul ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: token.foreground,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              schedule.endTime,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: theme.colors.mutedForeground,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -493,6 +857,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget build(BuildContext context) {
     final theme = context.theme;
     final colors = context.appColors;
+    final now = widget.currentDateTime ?? DateTime.now();
+    final isToday =
+        _selectedDay.toLowerCase() == _getDayName(now.weekday).toLowerCase();
+    final currentMinutes = now.hour * 60 + now.minute;
+
     final daySchedules = _schedules
         .where(
             (s) => s.dayOfWeek.toLowerCase() == _selectedDay.toLowerCase())
@@ -587,7 +956,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                       const SizedBox(height: 20),
 
-                      // Zone 3: Multi-Pastel Class Cards
+                      // Zone 3: Multi-Pastel Class Cards with Real-Time Timeline Track
                       if (daySchedules.isEmpty)
                         _buildEmptyState(context, _selectedDay)
                       else
@@ -595,11 +964,39 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           final index = entry.key;
                           final schedule = entry.value;
                           final token = palette[index % palette.length];
-
-                          return _buildScheduleCard(
-                            context,
+                          final isFirst = index == 0;
+                          final isLast = index == daySchedules.length - 1;
+                          final status = _getScheduleStatus(
                             schedule: schedule,
-                            token: token,
+                            isToday: isToday,
+                            currentMinutes: currentMinutes,
+                          );
+
+                          return IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildTimelineTrack(
+                                  context,
+                                  status: status,
+                                  isFirst: isFirst,
+                                  isLast: isLast,
+                                  theme: theme,
+                                  colors: colors,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _buildScheduleCard(
+                                    context,
+                                    schedule: schedule,
+                                    token: token,
+                                    status: status,
+                                    currentMinutes: currentMinutes,
+                                    now: now,
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         }),
                     ],

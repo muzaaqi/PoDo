@@ -402,9 +402,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = context.theme;
     final colors = context.appColors;
 
+    final now = widget.currentDateTime ?? DateTime.now();
+    final startMinutes = _parseTimeToMinutes(schedule.startTime) ?? 0;
+    final endMinutes = _parseTimeToMinutes(schedule.endTime) ?? 0;
+    final currentMinutes = now.hour * 60 + now.minute;
+    final totalDuration = (endMinutes - startMinutes).clamp(1, 1440);
+    final elapsedMinutes = (currentMinutes - startMinutes).clamp(0, totalDuration);
+    final remainingMinutes = (endMinutes - currentMinutes).clamp(0, totalDuration);
+    final progress = (elapsedMinutes / totalDuration).clamp(0.0, 1.0);
+
     final scheduleSemantics = 'Jadwal sekarang: ${schedule.courseName}, '
         'Kelas ${schedule.className}, ${schedule.credits} SKS, '
         'Ruangan ${schedule.room}, pukul ${schedule.startTime} sampai ${schedule.endTime}. '
+        'Waktu berjalan ${(progress * 100).toInt()} persen, tersisa $remainingMinutes menit. '
         'Ketuk untuk membuka jadwal lengkap.';
 
     return Semantics(
@@ -596,6 +606,138 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // Live In-Card Real-Time Timeline Progress
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: theme.colors.card,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            FLucideIcons.timer,
+                            size: 13,
+                            color: colors.amber.foreground,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            'Waktu Berjalan (${(progress * 100).toInt()}%)',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colors.amber.foreground,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        remainingMinutes > 0
+                            ? 'Tersisa $remainingMinutes mnt'
+                            : 'Waktu Habis',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: remainingMinutes <= 15
+                              ? colors.coral.foreground
+                              : colors.amber.foreground,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 10,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        // Base timeline track
+                        Container(
+                          width: double.infinity,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: colors.amber.background,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        // Elapsed filled timeline
+                        FractionallySizedBox(
+                          widthFactor: progress,
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: colors.amber.foreground,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                        // Live clock head indicator
+                        Align(
+                          alignment: Alignment(
+                            (-1.0 + 2.0 * progress).clamp(-1.0, 1.0),
+                            0.0,
+                          ),
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: colors.emerald.foreground,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: theme.colors.card,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        schedule.startTime,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: theme.colors.mutedForeground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Pukul ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colors.amber.foreground,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        schedule.endTime,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: theme.colors.mutedForeground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

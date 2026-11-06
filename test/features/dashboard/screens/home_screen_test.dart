@@ -154,6 +154,8 @@ void main() {
     expect(find.text('Jadwal Sekarang'), findsOneWidget);
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
     expect(find.text('Berlangsung'), findsOneWidget);
+    expect(find.textContaining('Waktu Berjalan'), findsOneWidget);
+    expect(find.textContaining('Tersisa'), findsOneWidget);
 
     final heroScheduleSemantics = find.byWidgetPredicate(
       (widget) =>
