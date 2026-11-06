@@ -55,10 +55,13 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Initial tab is Home
-    expect(find.text('Portal Dosen'), findsOneWidget);
+    expect(find.text('Selamat Datang,'), findsOneWidget);
 
     // 2. Tap on "Jadwal" tab on bottom navigation
-    final jadwalTab = find.text('Jadwal');
+    final jadwalTab = find.descendant(
+      of: find.byType(FBottomNavigationBar),
+      matching: find.text('Jadwal'),
+    );
     expect(jadwalTab, findsOneWidget);
     await tester.tap(jadwalTab);
     await tester.pumpAndSettle();
@@ -114,7 +117,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Switch to Jadwal tab
-    await tester.tap(find.text('Jadwal'));
+    final jadwalTab = find.descendant(
+      of: find.byType(FBottomNavigationBar),
+      matching: find.text('Jadwal'),
+    );
+    await tester.tap(jadwalTab);
     await tester.pumpAndSettle();
 
     expect(find.byType(ScheduleScreen), findsOneWidget);

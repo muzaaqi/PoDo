@@ -18,11 +18,28 @@ class _AccountScreenState extends State<AccountScreen> {
   Lecturer? _lecturer;
   LecturerStats _stats = const LecturerStats.zero();
   bool _isLoading = true;
+  late final ScrollController _scrollController;
+  bool _showAppbarTitle = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     _loadProfileAndStats();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final show = _scrollController.hasClients && _scrollController.offset > 40;
+    if (show != _showAppbarTitle) {
+      setState(() => _showAppbarTitle = show);
+    }
   }
 
   Future<void> _loadProfileAndStats() async {
@@ -147,16 +164,48 @@ class _AccountScreenState extends State<AccountScreen> {
     final theme = context.theme;
 
     return FScaffold(
-      header: FHeader(
-        title: const Text('Akun Dosen'),
+      header: FHeader.nested(
+        titleAlignment: Alignment.center,
+        style: const FHeaderStyleDelta.delta(
+          constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+          padding: EdgeInsetsGeometryDelta.value(
+            EdgeInsets.symmetric(horizontal: 16),
+          ),
+        ),
+        title: _showAppbarTitle
+            ? Text(
+                'Akun Dosen',
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : const SizedBox.shrink(),
       ),
       child: _isLoading
           ? const Center(child: Text('Memuat profil...'))
           : SingleChildScrollView(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Profil Pengguna',
+                    style: theme.typography.body.xs.copyWith(
+                      color: theme.colors.mutedForeground,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Akun Dosen',
+                    style: theme.typography.display.lg.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
                   // Profile Identity Card
                   FCard(
                     child: Padding(

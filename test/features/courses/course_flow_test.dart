@@ -72,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Initial screen is Home
-    expect(find.text('Portal Dosen'), findsOneWidget);
+    expect(find.text('Selamat Datang,'), findsOneWidget);
 
     // 2. Tap Quick Action "Input Nilai"
     final inputNilaiButton = find.text('Input Nilai');

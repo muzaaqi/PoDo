@@ -24,11 +24,28 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   String _selectedDay = 'Senin';
   List<TeachingSchedule> _schedules = [];
   bool _isLoading = true;
+  late final ScrollController _scrollController;
+  bool _showAppbarTitle = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     _loadSchedules();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final show = _scrollController.hasClients && _scrollController.offset > 40;
+    if (show != _showAppbarTitle) {
+      setState(() => _showAppbarTitle = show);
+    }
   }
 
   Future<void> _loadSchedules() async {
@@ -320,12 +337,29 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         _schedules.where((s) => s.dayOfWeek == _selectedDay).toList();
 
     return FScaffold(
-      header: FHeader(
-        title: const Text('Jadwal Mengajar'),
+      header: FHeader.nested(
+        titleAlignment: Alignment.center,
+        style: const FHeaderStyleDelta.delta(
+          constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+          padding: EdgeInsetsGeometryDelta.value(
+            EdgeInsets.symmetric(horizontal: 16),
+          ),
+        ),
+        title: _showAppbarTitle
+            ? Text(
+                'Jadwal Mengajar',
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : const SizedBox.shrink(),
       ),
       child: _isLoading
           ? const Center(child: Text('Memuat jadwal mengajar...'))
           : SingleChildScrollView(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,7 +373,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Agenda Perkuliahan',
+                    'Jadwal Mengajar',
                     style: theme.typography.display.lg.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

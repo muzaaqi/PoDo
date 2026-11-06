@@ -77,7 +77,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Initial tab is Home
-    expect(find.text('Portal Dosen'), findsOneWidget);
+    expect(find.text('Selamat Datang,'), findsOneWidget);
 
     // 2. Tap Quick Action "Input Nilai" -> switches to CourseListScreen
     final inputNilaiAction = find.text('Input Nilai');

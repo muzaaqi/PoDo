@@ -20,28 +20,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Lecturer? _lecturer;
   TeachingSchedule? _upcomingSchedule;
   bool _isLoading = true;
-  String _searchQuery = '';
-  late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
+  bool _showAppbarTitle = false;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
-    _searchController.addListener(_onSearchChanged);
+    _scrollController = ScrollController()..addListener(_onScroll);
     _loadData();
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    setState(() {
-      _searchQuery = _searchController.text.trim().toLowerCase();
-    });
+  void _onScroll() {
+    final show = _scrollController.hasClients && _scrollController.offset > 40;
+    if (show != _showAppbarTitle) {
+      setState(() => _showAppbarTitle = show);
+    }
   }
 
   Future<void> _loadData() async {
@@ -130,60 +130,48 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = context.theme;
 
-    final filteredAnnouncements = Announcement.demoAnnouncements.where((item) {
-      if (_searchQuery.isEmpty) return true;
-      return item.title.toLowerCase().contains(_searchQuery) ||
-          item.category.toLowerCase().contains(_searchQuery) ||
-          item.summary.toLowerCase().contains(_searchQuery);
-    }).toList();
-
     return FScaffold(
-      header: FHeader(
-        title: const Text('Portal Dosen'),
+      header: FHeader.nested(
+        titleAlignment: Alignment.center,
+        style: const FHeaderStyleDelta.delta(
+          constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+          padding: EdgeInsetsGeometryDelta.value(
+            EdgeInsets.symmetric(horizontal: 16),
+          ),
+        ),
+        title: _showAppbarTitle
+            ? Text(
+                'Portal Dosen',
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : const SizedBox.shrink(),
       ),
       child: _isLoading
           ? const Center(child: Text('Memuat data...'))
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Zone 1: Top Bar (Avatar, Semester Context Pill, Notification)
+                  // Zone 1: Top Bar (Avatar on left, Notification Bell on right - NO tahun ajaran)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       FAvatar.raw(
-                        size: 38,
+                        size: 40,
                         child: Text(
                           _getInitials(_lecturer?.fullName),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
-                      FBadge(
-                        variant: FBadgeVariant.secondary,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _upcomingSchedule != null
-                                  ? '${_upcomingSchedule!.academicYear} (${_upcomingSchedule!.term})'
-                                  : 'Ganjil 2024/2025',
-                              style: theme.typography.body.xs.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              FLucideIcons.chevronDown,
-                              size: 14,
-                              color: theme.colors.mutedForeground,
-                            ),
-                          ],
-                        ),
-                      ),
                       Container(
-                        width: 38,
-                        height: 38,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: theme.colors.secondary,
                           shape: BoxShape.circle,
@@ -198,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
 
                   // Zone 2: Large Greeting Headline
                   Text(
@@ -209,46 +197,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${_lecturer?.fullName ?? 'Dosen'} 🎓',
+                    _lecturer?.fullName ?? 'Dosen',
                     style: theme.typography.display.lg.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Zone 3: Search Bar with filter icon
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FTextField(
-                          hint: 'Cari pengumuman atau info...',
-                          control: FTextFieldControl.managed(
-                            controller: _searchController,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: theme.colors.secondary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          FLucideIcons.slidersHorizontal,
-                          size: 20,
-                          color: theme.colors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // Zone 4: Upcoming Schedule Hero Card (layout from home.jpg)
+                  // Zone 3: Upcoming Schedule Hero Card (Jadwal Terdekat)
                   if (_upcomingSchedule != null) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -396,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 24),
                   ],
 
-                  // Zone 5: Quick Action Grid (Horizontal 4 circular buttons with labels and dots)
+                  // Zone 4: Menu Utama (Quick Actions)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -435,162 +392,105 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       _buildQuickActionItem(
                         context,
-                        label: 'Informasi Mahasiswa',
+                        label: 'Mahasiswa',
                         icon: FLucideIcons.users,
                         onTap: () => Navigator.of(context)
                             .pushNamed(AppRoutes.studentList),
                       ),
                       _buildQuickActionItem(
                         context,
-                        label: 'Jadwal Mengajar',
+                        label: 'Jadwal',
                         icon: FLucideIcons.calendarDays,
                         onTap: () =>
                             MainScreenScope.of(context)?.switchToTab(1),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  // Pagination indicator dots matching home.jpg
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 14,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: theme.colors.primary,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 5,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colors.mutedForeground.withValues(alpha: 0.4),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 5,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colors.mutedForeground.withValues(alpha: 0.4),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
 
                   const SizedBox(height: 24),
 
-                  // Zone 6: Pengumuman Kampus Feed (layout from home.jpg)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Pengumuman Kampus',
-                        style: theme.typography.body.md.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      FBadge(
-                        variant: FBadgeVariant.outline,
-                        child: Text('${filteredAnnouncements.length} Informasi'),
-                      ),
-                    ],
+                  // Zone 5: Pengumuman Kampus Section (NO badge "3 informasi")
+                  Text(
+                    'Pengumuman Kampus',
+                    style: theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
-                  if (filteredAnnouncements.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        child: Text(
-                          'Tidak ada pengumuman yang sesuai.',
-                          style: theme.typography.body.sm.copyWith(
-                            color: theme.colors.mutedForeground,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ...filteredAnnouncements.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: FCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: theme.colors.secondary,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Icon(
-                                    FLucideIcons.newspaper,
-                                    size: 20,
-                                    color: theme.colors.primary,
-                                  ),
+                  ...Announcement.demoAnnouncements.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: FCard(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: theme.colors.secondary,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          FBadge(
-                                            variant: FBadgeVariant.secondary,
-                                            child: Text(item.category),
-                                          ),
-                                          Text(
-                                            item.date,
-                                            style: theme.typography.body.xs
-                                                .copyWith(
-                                              color:
-                                                  theme.colors.mutedForeground,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        item.title,
-                                        style: theme.typography.body.sm
-                                            .copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        item.summary,
-                                        style: theme.typography.body.xs
-                                            .copyWith(
-                                          color:
-                                              theme.colors.mutedForeground,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  FLucideIcons.newspaper,
+                                  size: 20,
+                                  color: theme.colors.primary,
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        FBadge(
+                                          variant: FBadgeVariant.secondary,
+                                          child: Text(item.category),
+                                        ),
+                                        Text(
+                                          item.date,
+                                          style: theme.typography.body.xs
+                                              .copyWith(
+                                            color:
+                                                theme.colors.mutedForeground,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      item.title,
+                                      style: theme.typography.body.sm
+                                          .copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item.summary,
+                                      style: theme.typography.body.xs
+                                          .copyWith(
+                                        color:
+                                            theme.colors.mutedForeground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

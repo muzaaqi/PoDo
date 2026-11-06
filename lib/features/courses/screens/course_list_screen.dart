@@ -15,12 +15,15 @@ class CourseListScreen extends StatefulWidget {
 
 class _CourseListScreenState extends State<CourseListScreen> {
   late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
   List<CourseOffering> _offerings = [];
   bool _isLoading = true;
+  bool _showAppbarTitle = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     _searchController = TextEditingController();
     _searchController.addListener(_onSearchChanged);
     _loadOfferings();
@@ -28,9 +31,18 @@ class _CourseListScreenState extends State<CourseListScreen> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final show = _scrollController.hasClients && _scrollController.offset > 40;
+    if (show != _showAppbarTitle) {
+      setState(() => _showAppbarTitle = show);
+    }
   }
 
   void _onSearchChanged() {
@@ -201,16 +213,50 @@ class _CourseListScreenState extends State<CourseListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.theme;
+
     return FScaffold(
-      header: FHeader(
-        title: const Text('Mata Kuliah'),
+      header: FHeader.nested(
+        titleAlignment: Alignment.center,
+        style: const FHeaderStyleDelta.delta(
+          constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+          padding: EdgeInsetsGeometryDelta.value(
+            EdgeInsets.symmetric(horizontal: 16),
+          ),
+        ),
+        title: _showAppbarTitle
+            ? Text(
+                'Mata Kuliah',
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : const SizedBox.shrink(),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Semester Ganjil 2024/2025',
+                  style: theme.typography.body.xs.copyWith(
+                    color: theme.colors.mutedForeground,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Mata Kuliah',
+                  style: theme.typography.display.lg.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(
@@ -254,6 +300,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                 : _offerings.isEmpty
                     ? _buildEmptyState(context)
                     : ListView.builder(
+                        controller: _scrollController,
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                         itemCount: _offerings.length,
                         itemBuilder: (context, index) =>

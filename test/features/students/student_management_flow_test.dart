@@ -108,8 +108,8 @@ void main() {
     });
     await tester.pumpAndSettle();
 
-    // 1. On Home Screen, tap 'Informasi Mahasiswa' quick action
-    final infoMahasiswaButton = find.text('Informasi Mahasiswa');
+    // 1. On Home Screen, tap 'Mahasiswa' quick action
+    final infoMahasiswaButton = find.text('Mahasiswa');
     expect(infoMahasiswaButton, findsOneWidget);
 
     await tester.tap(infoMahasiswaButton);

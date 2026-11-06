@@ -59,6 +59,10 @@ void main() {
     });
     await tester.pumpAndSettle();
 
+    // Verify no 'Portal Dosen' title or search bar on HomeScreen
+    expect(find.text('Portal Dosen'), findsNothing);
+    expect(find.byType(FTextField), findsNothing);
+
     // Lecturer greeting
     expect(find.textContaining('Dr. Eng. Muhammad Rizki'), findsOneWidget);
     expect(find.text('Selamat Datang,'), findsOneWidget);
@@ -66,7 +70,8 @@ void main() {
     // Quick Actions
     expect(find.text('Isi Biodata'), findsOneWidget);
     expect(find.text('Input Nilai'), findsOneWidget);
-    expect(find.text('Informasi Mahasiswa'), findsOneWidget);
+    expect(find.text('Mahasiswa'), findsOneWidget);
+    expect(find.text('Jadwal'), findsOneWidget);
 
     // Announcements
     expect(find.textContaining('Pengumuman Kampus'), findsOneWidget);
