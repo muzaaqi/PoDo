@@ -7,8 +7,6 @@ import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/courses/screens/course_detail_screen.dart';
-import 'package:podo/features/schedule/models/teaching_schedule.dart';
-import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 import 'package:podo/features/schedule/screens/schedule_screen.dart';
 
 void main() {
@@ -196,9 +194,13 @@ void main() {
 
     final card = find.text('Pemrograman Mobile');
     expect(card, findsOneWidget);
-    await tester.tap(card);
     await tester.runAsync(() async {
+      await tester.tap(card);
       await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pump();
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 800));
     });
     await tester.pumpAndSettle();
 

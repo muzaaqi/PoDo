@@ -136,9 +136,9 @@ void main() {
 
     testWidgets('submitting grades in sheet updates student status to Sudah Dinilai and refreshes stat metrics',
         (tester) async {
-      await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await tester.pumpWidget(buildTestableWidget());
+        await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
@@ -162,11 +162,11 @@ void main() {
       await tester.ensureVisible(saveButton);
       await tester.tap(saveButton);
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pump();
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 

@@ -46,6 +46,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
     _offering = widget.offering;
     if (_offering != null) {
+      _loadSchedule();
       _loadStudents();
     }
   }
@@ -57,6 +58,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       final routeOffering =
           ModalRoute.of(context)?.settings.arguments as CourseOffering?;
       _offering = routeOffering;
+      _loadSchedule();
       _loadStudents();
     }
   }
@@ -73,6 +75,21 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     setState(() {
       _searchQuery = _searchController.text.trim();
     });
+  }
+
+  Future<void> _loadSchedule() async {
+    if (_offering == null) return;
+    try {
+      final schedule = await ScheduleRepository.instance
+          .getPrimaryScheduleForOffering(_offering!.offeringId);
+      if (mounted) {
+        setState(() => _schedule = schedule);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _schedule = null);
+      }
+    }
   }
 
   Future<void> _loadStudents() async {
@@ -95,19 +112,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     }
 
     try {
-      final results = await Future.wait([
-        EnrollmentRepository.instance
-            .getEnrolledStudentsByOffering(_offering!.offeringId),
-        ScheduleRepository.instance
-            .getPrimaryScheduleForOffering(_offering!.offeringId),
-      ]);
-      final students = results[0] as List<EnrolledStudent>;
-      final schedule = results[1] as TeachingSchedule?;
+      final students = await EnrollmentRepository.instance
+          .getEnrolledStudentsByOffering(_offering!.offeringId);
 
       if (mounted) {
         setState(() {
           _students = students;
-          _schedule = schedule;
           _isLoading = false;
           _hasError = false;
           _errorMessage = null;
@@ -117,7 +127,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       if (mounted) {
         setState(() {
           _students = [];
-          _schedule = null;
           _isLoading = false;
           _hasError = true;
           _errorMessage =
