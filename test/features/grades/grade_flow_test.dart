@@ -82,6 +82,7 @@ void main() {
     // 2. Tap Quick Action "Input Nilai" -> switches to CourseListScreen
     final inputNilaiAction = find.text('Input Nilai');
     expect(inputNilaiAction, findsOneWidget);
+    await tester.ensureVisible(inputNilaiAction);
     await tester.tap(inputNilaiAction);
     await tester.pumpAndSettle();
 

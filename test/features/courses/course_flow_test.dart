@@ -77,6 +77,7 @@ void main() {
     // 2. Tap Quick Action "Input Nilai"
     final inputNilaiButton = find.text('Input Nilai');
     expect(inputNilaiButton, findsOneWidget);
+    await tester.ensureVisible(inputNilaiButton);
     await tester.tap(inputNilaiButton);
     await tester.pumpAndSettle();
 
