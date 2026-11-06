@@ -287,7 +287,7 @@ void main() {
       expect(find.text('Ahmad Fauzi'), findsOneWidget);
     });
 
-    testWidgets('tapping bar userPlus action opens AddStudentToOfferingSheet and enrolls new student', (tester) async {
+    testWidgets('tapping 3-dot menu and Tambah Mahasiswa opens AddStudentToOfferingSheet and enrolls new student', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -297,10 +297,16 @@ void main() {
       // Initially Dewi Lestari is not in the course roster
       expect(find.text('Dewi Lestari'), findsNothing);
 
-      // Tap userPlus action in header
-      final addButton = find.byIcon(FLucideIcons.userPlus);
-      expect(addButton, findsOneWidget);
-      await tester.tap(addButton);
+      // Tap 3-dot overflow menu
+      final moreMenu = find.byIcon(FLucideIcons.ellipsis);
+      expect(moreMenu, findsOneWidget);
+      await tester.tap(moreMenu);
+      await tester.pumpAndSettle();
+
+      // Tap "Tambah Mahasiswa" in popover
+      final addOption = find.text('Tambah Mahasiswa');
+      expect(addOption, findsOneWidget);
+      await tester.tap(addOption);
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
@@ -334,17 +340,23 @@ void main() {
       expect(find.text('Dewi Lestari'), findsOneWidget);
     });
 
-    testWidgets('tapping pencil icon opens AddClassOfferingSheet in edit mode and updates offering', (tester) async {
+    testWidgets('tapping 3-dot and Edit Informasi Kelas opens AddClassOfferingSheet in edit mode and updates offering', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
-      final editIcon = find.byIcon(FLucideIcons.pencil);
-      expect(editIcon, findsOneWidget);
+      final moreMenu = find.byIcon(FLucideIcons.ellipsis);
+      expect(moreMenu, findsOneWidget);
 
-      await tester.tap(editIcon);
+      await tester.tap(moreMenu);
+      await tester.pumpAndSettle();
+
+      final editOption = find.text('Edit Informasi Kelas');
+      expect(editOption, findsOneWidget);
+
+      await tester.tap(editOption);
       await tester.pumpAndSettle();
 
       expect(find.text('Edit Kelas Perkuliahan'), findsOneWidget);
@@ -357,17 +369,23 @@ void main() {
       expect(find.text('Simpan Perubahan'), findsOneWidget);
     });
 
-    testWidgets('tapping trash icon shows confirmation dialog and deleting offering removes it and pops', (tester) async {
+    testWidgets('tapping 3-dot and Hapus Kelas Perkuliahan shows confirmation dialog and deleting removes offering and pops', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
-      final deleteIcon = find.byIcon(FLucideIcons.trash2);
-      expect(deleteIcon, findsOneWidget);
+      final moreMenu = find.byIcon(FLucideIcons.ellipsis);
+      expect(moreMenu, findsOneWidget);
 
-      await tester.tap(deleteIcon);
+      await tester.tap(moreMenu);
+      await tester.pumpAndSettle();
+
+      final deleteOption = find.text('Hapus Kelas Perkuliahan');
+      expect(deleteOption, findsOneWidget);
+
+      await tester.tap(deleteOption);
       await tester.pumpAndSettle();
 
       expect(find.text('Hapus Kelas Perkuliahan?'), findsOneWidget);
@@ -391,7 +409,7 @@ void main() {
       expect(deleted, isNull);
     });
 
-    testWidgets('tapping unenroll icon shows confirmation dialog and removes student from class', (tester) async {
+    testWidgets('tapping 3-dot and Kelola Mahasiswa enables edit mode with Batal button and removes student from class', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -401,10 +419,27 @@ void main() {
       // Ahmad Fauzi should be in the list
       expect(find.text('Ahmad Fauzi'), findsOneWidget);
 
-      final unenrollIcons = find.byIcon(FLucideIcons.userMinus);
-      expect(unenrollIcons, findsWidgets);
+      // Open 3-dot menu and select Kelola Mahasiswa
+      final moreMenu = find.byIcon(FLucideIcons.ellipsis);
+      expect(moreMenu, findsOneWidget);
+      await tester.tap(moreMenu);
+      await tester.pumpAndSettle();
 
-      await tester.tap(unenrollIcons.first);
+      final manageOption = find.text('Kelola Mahasiswa');
+      expect(manageOption, findsOneWidget);
+      await tester.tap(manageOption);
+      await tester.pumpAndSettle();
+
+      // Edit mode is now active: 3-dot is replaced by "Batal" destructive button
+      expect(find.byIcon(FLucideIcons.ellipsis), findsNothing);
+      expect(find.text('Batal'), findsOneWidget);
+      expect(find.textContaining('Mode Kelola Mahasiswa aktif'), findsOneWidget);
+
+      // "Keluarkan" buttons are now visible on each student card
+      final unenrollButtons = find.text('Keluarkan');
+      expect(unenrollButtons, findsWidgets);
+
+      await tester.tap(unenrollButtons.first);
       await tester.pumpAndSettle();
 
       expect(find.text('Keluarkan Mahasiswa?'), findsOneWidget);
@@ -421,6 +456,15 @@ void main() {
 
       // Ahmad Fauzi should now be removed from the UI list
       expect(find.text('Ahmad Fauzi'), findsNothing);
+
+      // Tap "Batal" to exit edit mode
+      await tester.tap(find.text('Batal'));
+      await tester.pumpAndSettle();
+
+      // 3-dot icon is back, and edit mode banner is gone
+      expect(find.byIcon(FLucideIcons.ellipsis), findsOneWidget);
+      expect(find.text('Batal'), findsNothing);
+      expect(find.textContaining('Mode Kelola Mahasiswa aktif'), findsNothing);
     });
   });
 }

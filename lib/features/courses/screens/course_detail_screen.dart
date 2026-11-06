@@ -29,6 +29,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
+  bool _isEditMode = false;
 
   String _searchQuery = '';
   StudentStatusFilter _selectedFilter = StudentStatusFilter.all;
@@ -634,22 +635,21 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Semantics(
-                    button: true,
-                    label: 'Keluarkan mahasiswa ${student.studentName} dari kelas',
-                    child: FTappable(
-                      onPress: () => _unenrollStudent(student),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          FLucideIcons.userMinus,
-                          size: 18,
-                          color: theme.colors.mutedForeground,
-                        ),
+                  if (_isEditMode) ...[
+                    const SizedBox(width: 8),
+                    Semantics(
+                      button: true,
+                      label:
+                          'Keluarkan mahasiswa ${student.studentName} dari kelas',
+                      child: FButton(
+                        size: FButtonSizeVariant.sm,
+                        variant: FButtonVariant.destructive,
+                        prefix: const Icon(FLucideIcons.userMinus, size: 14),
+                        onPress: () => _unenrollStudent(student),
+                        child: const Text('Keluarkan'),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
 
@@ -849,6 +849,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Widget build(BuildContext context) {
     final offering = _offering;
     final filtered = _filteredStudents;
+    final colors = context.appColors;
 
     return FScaffold(
       header: FHeader.nested(
@@ -858,18 +859,61 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         ],
         suffixes: [
           if (offering != null) ...[
-            FHeaderAction(
-              icon: const Icon(FLucideIcons.pencil),
-              onPress: () => _editOffering(offering),
-            ),
-            FHeaderAction(
-              icon: const Icon(FLucideIcons.trash2),
-              onPress: () => _deleteOffering(offering),
-            ),
-            FHeaderAction(
-              icon: const Icon(FLucideIcons.userPlus),
-              onPress: () => _openAddStudentSheet(offering),
-            ),
+            if (_isEditMode)
+              FButton(
+                size: FButtonSizeVariant.sm,
+                variant: FButtonVariant.destructive,
+                onPress: () => setState(() => _isEditMode = false),
+                child: const Text('Batal'),
+              )
+            else
+              FPopoverMenu.tiles(
+                menuAnchor: Alignment.topRight,
+                childAnchor: Alignment.bottomRight,
+                menuBuilder: (context, controller, _) => [
+                  FTileGroup(
+                    children: [
+                      FTile(
+                        prefix: const Icon(FLucideIcons.userPlus),
+                        title: const Text('Tambah Mahasiswa'),
+                        onPress: () {
+                          controller.hide();
+                          _openAddStudentSheet(offering);
+                        },
+                      ),
+                      FTile(
+                        prefix: const Icon(FLucideIcons.pencil),
+                        title: const Text('Edit Informasi Kelas'),
+                        onPress: () {
+                          controller.hide();
+                          _editOffering(offering);
+                        },
+                      ),
+                      FTile(
+                        prefix: const Icon(FLucideIcons.userMinus),
+                        title: const Text('Kelola Mahasiswa'),
+                        onPress: () {
+                          controller.hide();
+                          setState(() => _isEditMode = true);
+                        },
+                      ),
+                      FTile(
+                        variant: FItemVariant.destructive,
+                        prefix: const Icon(FLucideIcons.trash2),
+                        title: const Text('Hapus Kelas Perkuliahan'),
+                        onPress: () {
+                          controller.hide();
+                          _deleteOffering(offering);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+                builder: (context, controller, _) => FHeaderAction(
+                  icon: const Icon(FLucideIcons.ellipsis),
+                  onPress: controller.toggle,
+                ),
+              ),
           ],
         ],
       ),
@@ -943,6 +987,41 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       ),
 
                       const SizedBox(height: 14),
+
+                      // Active Edit Mode Banner
+                      if (_isEditMode) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.coral.background,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                FLucideIcons.userMinus,
+                                size: 18,
+                                color: colors.coral.foreground,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Mode Kelola Mahasiswa aktif. Ketuk Keluarkan untuk menghapus mahasiswa dari kelas ini.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: colors.coral.foreground,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       // Student Roster List or Empty State
                       if (filtered.isEmpty)
