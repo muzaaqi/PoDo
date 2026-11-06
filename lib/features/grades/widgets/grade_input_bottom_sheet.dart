@@ -113,6 +113,68 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
     }
   }
 
+  Future<void> _confirmResetGrade() async {
+    final confirmed = await showFDialog<bool>(
+      context: context,
+      builder: (dialogContext, _, animation) => FDialog(
+        animation: animation,
+        builder: (context, dialogStyle) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Reset Nilai Mahasiswa?',
+                style: context.theme.typography.body.md.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Seluruh nilai CPMK untuk ${widget.student.studentName} akan dihapus dan status kembali menjadi Belum Dinilai.',
+                style: context.theme.typography.body.sm.copyWith(
+                  color: context.theme.colors.mutedForeground,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Batal'),
+                  ),
+                  const SizedBox(width: 8),
+                  FButton(
+                    variant: FButtonVariant.destructive,
+                    onPress: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Reset Nilai'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isSaving = true);
+      try {
+        await GradeRepository.instance.deleteGrade(widget.student.enrollmentId);
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() => _isSaving = false);
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
@@ -243,6 +305,14 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
                 onPress: _isSaving ? null : _saveGrade,
                 child: Text(_isSaving ? 'Menyimpan...' : 'Simpan Nilai'),
               ),
+              if (widget.student.isGraded) ...[
+                const SizedBox(height: 10),
+                FButton(
+                  variant: FButtonVariant.destructive,
+                  onPress: _isSaving ? null : _confirmResetGrade,
+                  child: const Text('Reset Nilai'),
+                ),
+              ],
               const SizedBox(height: 10),
               FButton(
                 variant: FButtonVariant.outline,

@@ -195,5 +195,94 @@ void main() {
       expect(savedGrade!.cpmk3, 78.0);
       expect(savedGrade!.cpmk4, 88.0);
     });
+
+    testWidgets('shows Reset Nilai button when student is graded and resets grade upon confirmation', (tester) async {
+      // First insert grade in DB
+      const existingGrade = Grade(
+        id: 1,
+        enrollmentId: 1,
+        cpmk1: 85.0,
+        cpmk2: 90.0,
+        cpmk3: 78.0,
+        cpmk4: 88.0,
+      );
+      await tester.runAsync(() async {
+        await GradeRepository.instance.upsertGrade(existingGrade);
+      });
+
+      const student = EnrolledStudent(
+        enrollmentId: 1,
+        offeringId: 'OFF001',
+        studentNim: '2101001',
+        studentName: 'Ahmad Fauzi',
+        grade: existingGrade,
+      );
+
+      bool? popResult;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => FTheme(
+            data: AppTheme.lightTheme,
+            child: FToaster(
+              child: FTooltipGroup(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
+          ),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    popResult = await Navigator.of(context).push<bool>(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) => const Scaffold(
+                          body: GradeInputBottomSheet(student: student),
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Open Sheet'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Sheet'));
+      await tester.pumpAndSettle();
+
+      // Reset button should be visible
+      final resetButton = find.text('Reset Nilai');
+      expect(resetButton, findsOneWidget);
+
+      await tester.tap(resetButton);
+      await tester.pumpAndSettle();
+
+      // Dialog should be visible
+      expect(find.text('Reset Nilai Mahasiswa?'), findsOneWidget);
+
+      // Tap confirm button in dialog (the one inside dialog action)
+      final dialogResetAction = find.descendant(
+        of: find.byType(FDialog),
+        matching: find.text('Reset Nilai'),
+      );
+      await tester.tap(dialogResetAction);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      expect(popResult, isTrue);
+
+      // Verify grade removed from SQLite
+      Grade? deletedGrade;
+      await tester.runAsync(() async {
+        deletedGrade = await GradeRepository.instance.getGradeByEnrollmentId(1);
+      });
+      expect(deletedGrade, isNull);
+    });
   });
 }
