@@ -394,6 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final colors = context.appColors;
 
     return FScaffold(
+      resizeToAvoidBottomInset: false,
       header: FHeader.nested(
         titleAlignment: Alignment.center,
         style: const FHeaderStyleDelta.delta(

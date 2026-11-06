@@ -819,6 +819,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     ];
 
     return FScaffold(
+      resizeToAvoidBottomInset: false,
       header: FHeader.nested(
         titleAlignment: Alignment.center,
         style: const FHeaderStyleDelta.delta(

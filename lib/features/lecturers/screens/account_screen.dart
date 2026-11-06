@@ -297,6 +297,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final isDark = theme.colors.brightness == Brightness.dark;
 
     return FScaffold(
+      resizeToAvoidBottomInset: false,
       header: FHeader.nested(
         titleAlignment: Alignment.center,
         style: const FHeaderStyleDelta.delta(
