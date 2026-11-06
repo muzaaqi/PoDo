@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'seed/seed_data.dart';
@@ -21,7 +22,10 @@ class DatabaseHelper {
     DatabaseFactory? factory,
   }) async {
     final dbFactory = factory ?? databaseFactory;
-    final dbPath = path ?? p.join(await dbFactory.getDatabasesPath(), 'podo.db');
+    final dbPath = path ??
+        (kIsWeb
+            ? 'podo.db'
+            : p.join(await dbFactory.getDatabasesPath(), 'podo.db'));
 
     _database = await dbFactory.openDatabase(
       dbPath,
