@@ -90,7 +90,7 @@ void main() {
 
     final inputNilaiButton = find.text('Input Nilai');
     expect(inputNilaiButton, findsOneWidget);
-
+    await tester.ensureVisible(inputNilaiButton);
     await tester.tap(inputNilaiButton);
     await tester.pumpAndSettle();
 
@@ -106,7 +106,7 @@ void main() {
 
     final isiBiodataButton = find.text('Isi Biodata');
     expect(isiBiodataButton, findsOneWidget);
-
+    await tester.ensureVisible(isiBiodataButton);
     await tester.tap(isiBiodataButton);
     await tester.pumpAndSettle();
 
