@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T13:57:30+07:00",
+  "title": "Design System: PoDo (Portal Dosen)",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Deep Slate",
+        "canonical": "#0F172A",
+        "tonalRamp": ["#020617", "#0F172A", "#1E293B", "#334155", "#475569"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#FFFFFF", "#F8FAFC", "#F1F5F9", "#E2E8F0", "#CBD5E1"]
+      },
+      "accent-amber": {
+        "role": "accent",
+        "displayName": "Warm Amber",
+        "canonical": "#F59E0B",
+        "tonalRamp": ["#FEF3C7", "#FDE68A", "#FCD34D", "#F59E0B", "#D97706"]
+      },
+      "accent-violet": {
+        "role": "accent",
+        "displayName": "Lavender Violet",
+        "canonical": "#8B5CF6",
+        "tonalRamp": ["#EDE9FE", "#DDD6FE", "#C4B5FD", "#8B5CF6", "#7C3AED"]
+      },
+      "accent-sky": {
+        "role": "accent",
+        "displayName": "Sky Breeze",
+        "canonical": "#0EA5E9",
+        "tonalRamp": ["#E0F2FE", "#BAE6FD", "#7DD3FC", "#0EA5E9", "#0284C7"]
+      },
+      "accent-emerald": {
+        "role": "accent",
+        "displayName": "Fresh Emerald",
+        "canonical": "#10B981",
+        "tonalRamp": ["#D1FAE5", "#A7F3D0", "#6EE7B7", "#10B981", "#059669"]
+      },
+      "accent-coral": {
+        "role": "accent",
+        "displayName": "Soft Coral",
+        "canonical": "#EF4444",
+        "tonalRamp": ["#FEE2E2", "#FECACA", "#FCA5A5", "#EF4444", "#DC2626"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Metric",
+        "purpose": "Angka statistik utama pada StatCard (skala besar, tegas)"
+      },
+      "headline": {
+        "displayName": "Headline Screen",
+        "purpose": "Judul halaman dalam konten scroll"
+      },
+      "title": {
+        "displayName": "Card & Section Title",
+        "purpose": "Judul seksi dan nama mata kuliah pada kartu"
+      },
+      "body": {
+        "displayName": "Body & Input Text",
+        "purpose": "Teks deskripsi, isi form, dan detail akademik"
+      },
+      "label": {
+        "displayName": "Label & Badge",
+        "purpose": "Teks caption, baris metadata, dan badge status"
+      }
+    },
+    "shadows": [
+      {
+        "name": "subtle-lifted",
+        "value": "0 4px 12px rgba(15, 23, 42, 0.04)",
+        "purpose": "Bayangan ambient halus untuk kartu yang dapat ditekan (tappable cards)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Transisi transparan dan pergerakan sheet standar."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "360px"
+      },
+      {
+        "name": "standard",
+        "value": "412px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "StatCard",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Kartu metrik statistik akademik dengan angka tebal berskala otomatis.",
+      "html": "<div class=\"podo-stat-card\"><div class=\"stat-header\"><span class=\"stat-title\">Total SKS</span><i class=\"icon-award\"></i></div><div class=\"stat-value\">6 SKS</div></div>",
+      "css": ".podo-stat-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; padding: 14px 16px; } .stat-header { display: flex; justify-content: space-between; color: #64748B; font-size: 14px; } .stat-value { font-size: 22px; font-weight: bold; color: #0F172A; margin-top: 8px; }"
+    },
+    {
+      "name": "Primary Action Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tombol aksi utama form dan navigasi dengan target sentuh 48dp.",
+      "html": "<button class=\"podo-btn-primary\">Simpan Nilai</button>",
+      "css": ".podo-btn-primary { background: #0F172A; color: #FFFFFF; border-radius: 12px; height: 48px; padding: 0 20px; font-weight: 600; border: none; font-size: 15px; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-pill",
+      "description": "Penanda status nilai atau kategori kelas dalam bentuk pill.",
+      "html": "<span class=\"podo-badge-success\">Sudah Dinilai</span>",
+      "css": ".podo-badge-success { background: #D1FAE5; color: #10B981; border-radius: 100px; padding: 4px 10px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Playful Faculty Ledger",
+    "overview": "PoDo memadukan kejelasan catatan akademik dengan sentuhan modern yang lembut dan menyenangkan. Mengedepankan scanability cepat dengan kartu bersudut membulat nyaman dan aksen warna pastel fungsional.",
+    "keyCharacteristics": [
+      "High Scanability: Informasi perkuliahan dan nilai terbaca sekilas.",
+      "Friendly Geometry: Sudut membulat 14-16dp yang ramah dan nyaman di tangan.",
+      "Playful Tonal Accents: Warna fungsional untuk jadwal, SKS, dan status penilaian.",
+      "Zero Fluff: Bebas emoji dan ornamen tanpa fungsi nyata."
+    ],
+    "rules": [
+      {
+        "name": "The Functional Playfulness Rule",
+        "body": "Warna aksen ceria hanya digunakan untuk merepresentasikan data atau status riil (jadwal, SKS, nilai CPMK).",
+        "section": "colors"
+      },
+      {
+        "name": "The Compact Appbar Rule",
+        "body": "Title AppBar ringkas, rata tengah, dan hanya muncul saat di-scroll melebihi 40dp.",
+        "section": "typography"
+      },
+      {
+        "name": "The Big Metric Rule",
+        "body": "Angka statistik dibungkus FittedBox agar tidak terpotong pada layar kompak.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Gunakan komponen resmi Forui untuk seluruh tombol, form, kartu, dan sheet.",
+      "Bungkus baris detail dan avatar dengan Semantics yang deskriptif.",
+      "Pastikan target sentuh tombol minimal 48x48dp."
+    ],
+    "donts": [
+      "Jangan gunakan emoji di sembarang tempat pada antarmuka.",
+      "Jangan letakkan nama dosen sebagai judul AppBar di HomeScreen.",
+      "Jangan ubah urutan 4 tab navigasi utama (Home, Jadwal, Mata Kuliah, Akun)."
+    ]
+  }
+}
