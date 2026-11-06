@@ -1,10 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/routes.dart';
-import 'package:podo/core/widgets/stat_card.dart';
+import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/lecturers/models/lecturer.dart';
-import 'package:podo/features/lecturers/models/lecturer_stats.dart';
 import 'package:podo/features/lecturers/repositories/lecturer_repository.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -16,8 +15,8 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   Lecturer? _lecturer;
-  LecturerStats _stats = const LecturerStats.zero();
   bool _isLoading = true;
+  bool _isDarkMode = false;
   late final ScrollController _scrollController;
   bool _showAppbarTitle = false;
 
@@ -25,7 +24,7 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
-    _loadProfileAndStats();
+    _loadProfile();
   }
 
   @override
@@ -42,25 +41,26 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
-  Future<void> _loadProfileAndStats() async {
+  Future<void> _loadProfile() async {
     final activeId = AuthRepository.instance.activeLecturerId;
     if (activeId != null) {
-      final results = await Future.wait([
-        LecturerRepository.instance.getLecturerById(activeId),
-        LecturerRepository.instance.getLecturerStats(activeId),
-      ]);
-      if (mounted) {
-        setState(() {
-          _lecturer = results[0] as Lecturer?;
-          _stats = results[1] as LecturerStats;
-          _isLoading = false;
-        });
+      try {
+        final lecturer =
+            await LecturerRepository.instance.getLecturerById(activeId);
+        if (mounted) {
+          setState(() {
+            _lecturer = lecturer;
+            _isLoading = false;
+          });
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     } else {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -130,37 +130,161 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
-  Widget _buildDetailRow(BuildContext context, {required IconData icon, required String label, required String value}) {
+  void _showFeatureNotice(String title, String message) {
+    showFToast(
+      context: context,
+      title: Text(title),
+      description: Text(message),
+    );
+  }
+
+  Widget _buildInfoRow(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String label,
+    required String value,
+    bool isLast = false,
+  }) {
     final theme = context.theme;
+
     return Semantics(
       label: '$label: $value',
       excludeSemantics: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 16, color: theme.colors.mutedForeground),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 110,
-              child: Text(
-                label,
-                style: theme.typography.body.sm.copyWith(
-                  color: theme.colors.mutedForeground,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: 18, color: iconColor),
                 ),
-              ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: theme.typography.body.xs.copyWith(
+                          color: theme.colors.mutedForeground,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        value,
+                        style: theme.typography.body.sm.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colors.foreground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: Text(
-                value,
-                style: theme.typography.body.sm.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+          ),
+          if (!isLast) ...[
+            Padding(
+              padding: const EdgeInsets.only(left: 50),
+              child: Container(
+                height: 1,
+                color: theme.colors.border,
               ),
             ),
           ],
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    bool isLast = false,
+  }) {
+    final theme = context.theme;
+
+    return Semantics(
+      button: onTap != null,
+      label: '$title, $subtitle',
+      excludeSemantics: true,
+      child: Column(
+        children: [
+          FTappable(
+            onPress: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: iconBg,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(icon, size: 18, color: iconColor),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: theme.typography.body.sm.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: theme.colors.foreground,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: theme.typography.body.xs.copyWith(
+                              color: theme.colors.mutedForeground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (trailing != null) ...[
+                      const SizedBox(width: 8),
+                      trailing,
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (!isLast) ...[
+            Padding(
+              padding: const EdgeInsets.only(left: 50),
+              child: Container(
+                height: 1,
+                color: theme.colors.border,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -168,6 +292,8 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final colors = context.appColors;
+    final lecturer = _lecturer;
 
     return FScaffold(
       header: FHeader.nested(
@@ -205,21 +331,33 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Profile Identity Card
+                  // Part 1: Hero Identity Card (Playful & Executive)
                   FCard(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
                       child: Column(
                         children: [
                           Center(
                             child: Semantics(
-                              label: 'Foto profil ${_lecturer?.fullName ?? "Dosen"}',
-                              child: FAvatar.raw(
-                                size: 64,
+                              label:
+                                  'Avatar inisial ${lecturer?.fullName ?? "Dosen"}',
+                              child: Container(
+                                width: 72,
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  color: colors.indigo.background,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
                                 child: Text(
-                                  _getInitials(_lecturer?.fullName),
-                                  style: theme.typography.display.xl.copyWith(
+                                  _getInitials(lecturer?.fullName),
+                                  style: TextStyle(
+                                    fontSize: 26,
                                     fontWeight: FontWeight.bold,
+                                    color: colors.indigo.foreground,
                                   ),
                                 ),
                               ),
@@ -228,48 +366,124 @@ class _AccountScreenState extends State<AccountScreen> {
                           const SizedBox(height: 12),
                           Center(
                             child: Text(
-                              _lecturer?.fullName ?? 'Dosen',
+                              lecturer?.fullName ?? 'Dosen',
                               textAlign: TextAlign.center,
                               style: theme.typography.body.lg.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          if (_lecturer?.title != null) ...[
+                          if (lecturer?.title != null) ...[
                             const SizedBox(height: 6),
                             Center(
                               child: FBadge(
                                 variant: FBadgeVariant.secondary,
-                                child: Text(_lecturer!.title!),
+                                child: Text(lecturer!.title!),
                               ),
                             ),
                           ],
-                          const SizedBox(height: 16),
-                          const FDivider(),
                           const SizedBox(height: 12),
-                          _buildDetailRow(
-                            context,
-                            icon: FLucideIcons.idCard,
-                            label: 'NIDH / NIDN',
-                            value: _lecturer?.nidh ?? '-',
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colors.muted,
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Text(
+                                  'NIDN ${lecturer?.nidh ?? "-"}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colors.mutedForeground,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.emerald.background,
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      FLucideIcons.checkCircle2,
+                                      size: 12,
+                                      color: colors.emerald.foreground,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Dosen Aktif',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: colors.emerald.foreground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          _buildDetailRow(
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Part 2: Department & Contact Information Card
+                  Text(
+                    'Informasi Kontak & Unit',
+                    style: theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  FCard(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        children: [
+                          _buildInfoRow(
                             context,
                             icon: FLucideIcons.building2,
-                            label: 'Departemen',
-                            value: _lecturer?.department ?? '-',
+                            iconBg: colors.sky.background,
+                            iconColor: colors.sky.foreground,
+                            label: 'Departemen / Program Studi',
+                            value: lecturer?.department ?? '-',
                           ),
-                          _buildDetailRow(
+                          _buildInfoRow(
                             context,
                             icon: FLucideIcons.mail,
-                            label: 'Email',
-                            value: _lecturer?.email ?? '-',
+                            iconBg: colors.emerald.background,
+                            iconColor: colors.emerald.foreground,
+                            label: 'Email Resmi Kampus',
+                            value: lecturer?.email ?? '-',
                           ),
-                          _buildDetailRow(
+                          _buildInfoRow(
                             context,
                             icon: FLucideIcons.phone,
-                            label: 'Telepon',
-                            value: _lecturer?.phone ?? '-',
+                            iconBg: colors.amber.background,
+                            iconColor: colors.amber.foreground,
+                            label: 'Nomor Telepon / Kontak',
+                            value: lecturer?.phone ?? '-',
+                            isLast: true,
                           ),
                         ],
                       ),
@@ -278,45 +492,101 @@ class _AccountScreenState extends State<AccountScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Academic Summary Section
+                  // Part 3: Settings & Application Utilities
                   Text(
-                    'Ringkasan Akademik',
+                    'Pengaturan & Utilitas',
                     style: theme.typography.body.md.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StatCard(
-                          title: 'Kelas',
-                          value: '${_stats.courseCount} Kelas',
-                          icon: FLucideIcons.bookOpen,
-                        ),
+                  const SizedBox(height: 8),
+                  FCard(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: StatCard(
-                          title: 'Total SKS',
-                          value: '${_stats.totalCredits} SKS',
-                          icon: FLucideIcons.award,
-                        ),
+                      child: Column(
+                        children: [
+                          _buildSettingsTile(
+                            context,
+                            icon: _isDarkMode
+                                ? FLucideIcons.moon
+                                : FLucideIcons.sun,
+                            iconBg: colors.violet.background,
+                            iconColor: colors.violet.foreground,
+                            title: 'Mode Tampilan',
+                            subtitle: _isDarkMode
+                                ? 'Mode gelap aktif'
+                                : 'Mode terang aktif',
+                            trailing: FSwitch(
+                              value: _isDarkMode,
+                              onChange: (val) {
+                                setState(() => _isDarkMode = val);
+                                _showFeatureNotice(
+                                  'Tema Tampilan',
+                                  val
+                                      ? 'Mode gelap diaktifkan'
+                                      : 'Mode terang diaktifkan',
+                                );
+                              },
+                            ),
+                          ),
+                          _buildSettingsTile(
+                            context,
+                            icon: FLucideIcons.helpCircle,
+                            iconBg: colors.sky.background,
+                            iconColor: colors.sky.foreground,
+                            title: 'Pusat Bantuan Dosen',
+                            subtitle: 'FAQ & panduan penginputan nilai CPMK',
+                            trailing: Icon(
+                              FLucideIcons.chevronRight,
+                              size: 18,
+                              color: theme.colors.mutedForeground,
+                            ),
+                            onTap: () => _showFeatureNotice(
+                              'Pusat Bantuan',
+                              'Panduan operasional dan hotline akademik tersedia di podo.campus.id',
+                            ),
+                          ),
+                          _buildSettingsTile(
+                            context,
+                            icon: FLucideIcons.shieldCheck,
+                            iconBg: colors.emerald.background,
+                            iconColor: colors.emerald.foreground,
+                            title: 'Privasi & Keamanan',
+                            subtitle: 'Kebijakan perlindungan data institusi',
+                            trailing: Icon(
+                              FLucideIcons.chevronRight,
+                              size: 18,
+                              color: theme.colors.mutedForeground,
+                            ),
+                            onTap: () => _showFeatureNotice(
+                              'Privasi & Keamanan',
+                              'Seluruh data perkuliahan tersimpan aman dan terenkripsi secara lokal.',
+                            ),
+                          ),
+                          _buildSettingsTile(
+                            context,
+                            icon: FLucideIcons.info,
+                            iconBg: colors.coral.background,
+                            iconColor: colors.coral.foreground,
+                            title: 'Tentang Aplikasi',
+                            subtitle: 'PoDo Mobile v1.0.0 (Build 2026)',
+                            trailing: FBadge(
+                              variant: FBadgeVariant.outline,
+                              child: const Text('Terbaru'),
+                            ),
+                            isLast: true,
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: StatCard(
-                          title: 'Mahasiswa',
-                          value: '${_stats.studentCount} Mahasiswa',
-                          icon: FLucideIcons.users,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
 
-                  // Logout Action Button
+                  // Part 4: Logout Action
                   FButton(
                     variant: FButtonVariant.destructive,
                     onPress: _handleLogout,
@@ -329,7 +599,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

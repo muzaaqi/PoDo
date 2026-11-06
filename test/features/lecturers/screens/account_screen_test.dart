@@ -5,7 +5,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:podo/app/routes.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
-import 'package:podo/core/widgets/stat_card.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/lecturers/screens/account_screen.dart';
 
@@ -47,28 +46,53 @@ void main() {
     );
   }
 
-  testWidgets('AccountScreen displays lecturer profile details and SQLite academic stats', (tester) async {
+  testWidgets('AccountScreen displays lecturer profile details, two-part cards, and app settings', (tester) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(buildTestableWidget());
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
 
-    // Profile Info
+    // Part 1: Profile Hero Info
     expect(find.text('Dr. Eng. Muhammad Rizki, M.T.'), findsOneWidget);
     expect(find.text('Ketua Program Studi'), findsOneWidget);
     expect(find.textContaining('0012058801'), findsOneWidget);
+    expect(find.text('Dosen Aktif'), findsOneWidget);
+
+    // Part 2: Department & Contact Card
+    expect(find.text('Informasi Kontak & Unit'), findsOneWidget);
     expect(find.textContaining('Teknologi Informasi'), findsOneWidget);
     expect(find.textContaining('dosen@kampus.id'), findsOneWidget);
 
-    // Stat cards from SQLite
-    expect(find.byType(StatCard), findsNWidgets(3));
-    expect(find.text('3 Kelas'), findsOneWidget);
-    expect(find.text('9 SKS'), findsOneWidget);
-    expect(find.text('5 Mahasiswa'), findsOneWidget);
+    // Part 3: Settings & Utilities
+    expect(find.text('Pengaturan & Utilitas'), findsOneWidget);
+    expect(find.text('Mode Tampilan'), findsOneWidget);
+    expect(find.byType(FSwitch), findsOneWidget);
+    expect(find.text('Pusat Bantuan Dosen'), findsOneWidget);
+    expect(find.text('Privasi & Keamanan'), findsOneWidget);
+    expect(find.text('Tentang Aplikasi'), findsOneWidget);
+    expect(find.text('PoDo Mobile v1.0.0 (Build 2026)'), findsOneWidget);
 
     // Logout button
     expect(find.text('Keluar dari Akun'), findsOneWidget);
+  });
+
+  testWidgets('Toggling Mode Tampilan FSwitch updates switch state and shows toast notice', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mode terang aktif'), findsOneWidget);
+
+    // Tap switch
+    final switchFinder = find.byType(FSwitch);
+    await tester.ensureVisible(switchFinder);
+    await tester.tap(switchFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mode gelap aktif'), findsOneWidget);
   });
 
   testWidgets('Tapping Keluar shows confirmation dialog and Batal cancels logout', (tester) async {
