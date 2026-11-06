@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/students/models/student.dart';
 import 'package:podo/features/students/repositories/student_repository.dart';
 import 'package:podo/features/students/screens/student_biodata_form_screen.dart';
@@ -17,15 +18,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
   String _selectedProgram = 'Semua';
   bool _isLoading = true;
   String? _errorMessage;
-
-  static const _pastelPalette = [
-    (bg: Color(0xFFEEF2FF), fg: Color(0xFF4F46E5)), // Indigo
-    (bg: Color(0xFFF0FDF4), fg: Color(0xFF16A34A)), // Emerald
-    (bg: Color(0xFFFEF3C7), fg: Color(0xFFD97706)), // Amber
-    (bg: Color(0xFFF3E8FF), fg: Color(0xFF9333EA)), // Purple
-    (bg: Color(0xFFE0F2FE), fg: Color(0xFF0284C7)), // Sky
-    (bg: Color(0xFFFFE4E6), fg: Color(0xFFE11D48)), // Rose
-  ];
 
   @override
   void initState() {
@@ -125,6 +117,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   Widget _buildHeroOverviewCard(BuildContext context) {
     final theme = context.theme;
+    final colors = context.appColors;
     final totalStudents = _allStudents.length;
     final prodiCount = _uniqueStudyPrograms.where((p) => p != 'Semua').length;
 
@@ -142,14 +135,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
+                        color: colors.indigo.background,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           FLucideIcons.users,
                           size: 20,
-                          color: Color(0xFF4F46E5),
+                          color: colors.indigo.foreground,
                         ),
                       ),
                     ),
@@ -194,14 +187,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4),
+                        color: colors.emerald.background,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           FLucideIcons.graduationCap,
                           size: 20,
-                          color: Color(0xFF16A34A),
+                          color: colors.emerald.foreground,
                         ),
                       ),
                     ),
@@ -379,7 +372,16 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   Widget _buildStudentCard(BuildContext context, Student student) {
     final theme = context.theme;
-    final palette = _pastelPalette[student.nim.hashCode.abs() % _pastelPalette.length];
+    final colors = context.appColors;
+    final pastelTokens = [
+      colors.indigo,
+      colors.emerald,
+      colors.amber,
+      colors.violet,
+      colors.sky,
+      colors.coral,
+    ];
+    final token = pastelTokens[student.nim.hashCode.abs() % pastelTokens.length];
     final initials = _getInitials(student.fullName);
 
     return Padding(
@@ -399,14 +401,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: palette.bg,
+                      color: token.background,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
                         initials,
                         style: theme.typography.body.sm.copyWith(
-                          color: palette.fg,
+                          color: token.foreground,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

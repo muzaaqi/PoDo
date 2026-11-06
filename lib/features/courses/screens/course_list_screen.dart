@@ -569,7 +569,7 @@ class _CourseListScreenState extends State<CourseListScreen>
                         Icon(
                           FLucideIcons.users,
                           size: 13,
-                          color: cardToken.foreground.withValues(alpha: 0.7),
+                          color: cardToken.foreground,
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -577,7 +577,7 @@ class _CourseListScreenState extends State<CourseListScreen>
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: cardToken.foreground.withValues(alpha: 0.85),
+                            color: cardToken.foreground,
                           ),
                         ),
                       ],
@@ -589,7 +589,7 @@ class _CourseListScreenState extends State<CourseListScreen>
                         Icon(
                           FLucideIcons.calendar,
                           size: 13,
-                          color: cardToken.foreground.withValues(alpha: 0.7),
+                          color: cardToken.foreground,
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -597,7 +597,7 @@ class _CourseListScreenState extends State<CourseListScreen>
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: cardToken.foreground.withValues(alpha: 0.85),
+                            color: cardToken.foreground,
                           ),
                         ),
                       ],
@@ -803,12 +803,11 @@ class _CourseListScreenState extends State<CourseListScreen>
                                 decoration: BoxDecoration(
                                   color: theme.colors.primary,
                                   borderRadius: BorderRadius.circular(14),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
-                                      color: theme.colors.primary
-                                          .withValues(alpha: 0.3),
+                                      color: Color(0x1E000000),
                                       blurRadius: 10,
-                                      offset: const Offset(0, 4),
+                                      offset: Offset(0, 4),
                                     ),
                                   ],
                                 ),
@@ -887,12 +886,11 @@ class _CourseListScreenState extends State<CourseListScreen>
                                 decoration: BoxDecoration(
                                   color: theme.colors.primary,
                                   borderRadius: BorderRadius.circular(14),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
-                                      color: theme.colors.primary
-                                          .withValues(alpha: 0.3),
+                                      color: Color(0x1E000000),
                                       blurRadius: 10,
-                                      offset: const Offset(0, 4),
+                                      offset: Offset(0, 4),
                                     ),
                                   ],
                                 ),
@@ -916,11 +914,11 @@ class _CourseListScreenState extends State<CourseListScreen>
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
-                        color: theme.colors.primary.withValues(alpha: 0.35),
+                        color: Color(0x28000000),
                         blurRadius: 14,
-                        offset: const Offset(0, 6),
+                        offset: Offset(0, 6),
                       ),
                     ],
                   ),

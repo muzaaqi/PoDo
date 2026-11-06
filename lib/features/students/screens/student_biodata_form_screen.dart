@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/students/models/student.dart';
 import 'package:podo/features/students/repositories/student_repository.dart';
 
@@ -222,6 +223,8 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
   }
 
   Widget _buildAcademicCard(BuildContext context) {
+    final colors = context.appColors;
+
     return FCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -231,8 +234,8 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
             _buildSectionHeader(
               context: context,
               icon: FLucideIcons.graduationCap,
-              iconColor: const Color(0xFF16A34A),
-              iconBg: const Color(0xFFF0FDF4),
+              iconColor: colors.emerald.foreground,
+              iconBg: colors.emerald.background,
               title: 'Data Akademik & Identitas',
               subtitle: 'Informasi pokok mahasiswa dan program studi',
             ),
@@ -298,6 +301,8 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
   }
 
   Widget _buildContactCard(BuildContext context) {
+    final colors = context.appColors;
+
     return FCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -307,8 +312,8 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
             _buildSectionHeader(
               context: context,
               icon: FLucideIcons.phone,
-              iconColor: const Color(0xFF4F46E5),
-              iconBg: const Color(0xFFEEF2FF),
+              iconColor: colors.indigo.foreground,
+              iconBg: colors.indigo.background,
               title: 'Kontak & Domisili',
               subtitle: 'Nomor telepon dan alamat tempat tinggal',
             ),

@@ -311,6 +311,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     required StudentStatusFilter filter,
   }) {
     final theme = context.theme;
+    final colors = context.appColors;
     final isSelected = _selectedFilter == filter;
 
     return FTappable(
@@ -347,7 +348,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? theme.colors.primaryForeground.withValues(alpha: 0.2)
+                    ? colors.indigo.background
                     : theme.colors.muted,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -357,7 +358,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   color: isSelected
-                      ? theme.colors.primaryForeground
+                      ? colors.indigo.foreground
                       : theme.colors.mutedForeground,
                 ),
               ),
@@ -500,7 +501,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: theme.colors.muted.withValues(alpha: 0.5),
+                        color: theme.colors.muted,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
