@@ -434,53 +434,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
                         ),
                         if (student.studyProgram != null && student.studyProgram!.isNotEmpty) ...[
                           const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              FBadge(
-                                variant: FBadgeVariant.secondary,
-                                child: Text(student.studyProgram!),
-                              ),
-                              if (student.phone != null && student.phone!.isNotEmpty)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      FLucideIcons.phone,
-                                      size: 11,
-                                      color: theme.colors.mutedForeground,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      student.phone!,
-                                      style: theme.typography.body.xs.copyWith(
-                                        color: theme.colors.mutedForeground,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          ),
-                        ] else if (student.phone != null && student.phone!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                FLucideIcons.phone,
-                                size: 11,
-                                color: theme.colors.mutedForeground,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                student.phone!,
-                                style: theme.typography.body.xs.copyWith(
-                                  color: theme.colors.mutedForeground,
-                                ),
-                              ),
-                            ],
+                          FBadge(
+                            variant: FBadgeVariant.secondary,
+                            child: Text(student.studyProgram!),
                           ),
                         ],
                       ],

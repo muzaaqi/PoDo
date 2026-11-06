@@ -194,6 +194,17 @@ void main() {
     expect(find.text('Ahmad Fauzi'), findsOneWidget);
   });
 
+  testWidgets('Phone number and phone icon are not displayed in StudentListScreen', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(FLucideIcons.phone), findsNothing);
+    expect(find.text('082111111111'), findsNothing);
+  });
+
   testWidgets('No bullet point character exists in StudentListScreen', (tester) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(buildTestableWidget());
