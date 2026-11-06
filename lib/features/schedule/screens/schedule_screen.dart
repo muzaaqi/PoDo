@@ -191,19 +191,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        schedule.courseName,
-                        style: theme.typography.body.md.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Kelas ${schedule.className}',
-                            style: theme.typography.body.xs.copyWith(
-                              color: theme.colors.mutedForeground,
+                          Expanded(
+                            child: Text(
+                              schedule.courseName,
+                              style: theme.typography.body.md.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -213,7 +209,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(
+                            FLucideIcons.users,
+                            size: 14,
+                            color: theme.colors.mutedForeground,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Kelas ${schedule.className}',
+                            style: theme.typography.body.xs.copyWith(
+                              color: theme.colors.mutedForeground,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
                           Icon(
