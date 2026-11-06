@@ -24,6 +24,8 @@ class _CourseListScreenState extends State<CourseListScreen>
 
   List<CourseOffering> _offerings = [];
   bool _isLoading = true;
+  bool _hasError = false;
+  String? _errorMessage;
   bool _showAppbarTitle = false;
   bool _isFabExpanded = false;
 
@@ -87,8 +89,21 @@ class _CourseListScreenState extends State<CourseListScreen>
   Future<void> _loadOfferings({String? query}) async {
     final lecturerId = AuthRepository.instance.activeLecturerId;
     if (lecturerId == null) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = false;
+        });
+      }
       return;
+    }
+
+    if (!_isLoading && mounted) {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+        _errorMessage = null;
+      });
     }
 
     try {
@@ -100,6 +115,8 @@ class _CourseListScreenState extends State<CourseListScreen>
         setState(() {
           _offerings = offerings;
           _isLoading = false;
+          _hasError = false;
+          _errorMessage = null;
         });
       }
     } catch (_) {
@@ -107,6 +124,8 @@ class _CourseListScreenState extends State<CourseListScreen>
         setState(() {
           _offerings = [];
           _isLoading = false;
+          _hasError = true;
+          _errorMessage = 'Gagal memuat mata kuliah. Silakan coba lagi.';
         });
       }
     }
@@ -244,21 +263,29 @@ class _CourseListScreenState extends State<CourseListScreen>
               child: Icon(icon, size: 12, color: iconColor),
             ),
             const SizedBox(width: 6),
-            Text(
-              value,
-              style: theme.typography.display.sm.copyWith(
-                fontWeight: FontWeight.bold,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: theme.typography.display.sm.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
         ),
         const SizedBox(height: 4),
-        Text(
-          title,
-          style: theme.typography.body.xs.copyWith(
-            color: theme.colors.mutedForeground,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            title,
+            style: theme.typography.body.xs.copyWith(
+              color: theme.colors.mutedForeground,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -327,6 +354,64 @@ class _CourseListScreenState extends State<CourseListScreen>
                     onPress: _showAddClassSheet,
                     child: const Text('Kuliah'),
                   ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorView(BuildContext context) {
+    final theme = context.theme;
+    final colors = context.appColors;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: FCard(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: colors.coral.background,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    FLucideIcons.circleAlert,
+                    size: 26,
+                    color: colors.coral.foreground,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Kendala Memuat Mata Kuliah',
+                  style: theme.typography.body.md.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _errorMessage ??
+                      'Terjadi kendala saat memuat data mata kuliah.',
+                  style: theme.typography.body.sm.copyWith(
+                    color: theme.colors.mutedForeground,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FButton(
+                  size: FButtonSizeVariant.sm,
+                  onPress: () => _loadOfferings(query: _searchController.text),
+                  child: const Text('Coba Lagi'),
+                ),
               ],
             ),
           ),
@@ -591,19 +676,41 @@ class _CourseListScreenState extends State<CourseListScreen>
               const SizedBox(height: 12),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: Text('Memuat mata kuliah...'))
-                    : _offerings.isEmpty
-                        ? _buildEmptyState(context)
-                        : ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
-                            itemCount: _offerings.length,
-                            itemBuilder: (context, index) => _buildCourseCard(
-                              context,
-                              _offerings[index],
-                              index,
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const FCircularProgress(
+                              size: FCircularProgressSizeVariant.lg,
                             ),
-                          ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Memuat mata kuliah...',
+                              style: theme.typography.body.sm.copyWith(
+                                color: theme.colors.mutedForeground,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _hasError
+                        ? _buildErrorView(context)
+                        : _offerings.isEmpty
+                            ? _buildEmptyState(context)
+                            : ListView.builder(
+                                controller: _scrollController,
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 0, 16, 88),
+                                itemCount: _offerings.length,
+                                itemBuilder: (context, index) =>
+                                    _buildCourseCard(
+                                  context,
+                                  _offerings[index],
+                                  index,
+                                ),
+                              ),
               ),
             ],
           ),
@@ -611,13 +718,17 @@ class _CourseListScreenState extends State<CourseListScreen>
           // Dismiss barrier when speed dial is open
           if (_isFabExpanded)
             Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _collapseFab,
-                child: FadeTransition(
-                  opacity: _fabAnimation,
-                  child: Container(
-                    color: const Color(0x33000000),
+              child: Semantics(
+                button: true,
+                label: 'Tutup menu aksi tambah',
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _collapseFab,
+                  child: FadeTransition(
+                    opacity: _fabAnimation,
+                    child: Container(
+                      color: const Color(0x33000000),
+                    ),
                   ),
                 ),
               ),
@@ -638,59 +749,78 @@ class _CourseListScreenState extends State<CourseListScreen>
                     child: ScaleTransition(
                       scale: _fabAnimation,
                       alignment: Alignment.bottomRight,
-                      child: FTappable(
-                        onPress: _showAddCourseSheet,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 7,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colors.card,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x14000000),
-                                    blurRadius: 10,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                'Tambah Mata Kuliah',
-                                style: theme.typography.body.xs.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colors.foreground,
+                      child: Semantics(
+                        button: true,
+                        label: 'Tambah mata kuliah master kurikulum',
+                        child: FTappable(
+                          onPress: _showAddCourseSheet,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colors.card,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x14000000),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Tambah Mata Kuliah',
+                                      style: theme.typography.body.xs.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colors.foreground,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      'Master Kurikulum',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: theme.colors.mutedForeground,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: theme.colors.primary,
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colors.primary
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                              const SizedBox(width: 10),
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: theme.colors.primary,
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.colors.primary
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  FLucideIcons.bookPlus,
+                                  size: 18,
+                                  color: theme.colors.primaryForeground,
+                                ),
                               ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                FLucideIcons.bookPlus,
-                                size: 18,
-                                color: theme.colors.primaryForeground,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -703,59 +833,78 @@ class _CourseListScreenState extends State<CourseListScreen>
                     child: ScaleTransition(
                       scale: _fabAnimation,
                       alignment: Alignment.bottomRight,
-                      child: FTappable(
-                        onPress: _showAddClassSheet,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 7,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colors.card,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x14000000),
-                                    blurRadius: 10,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                'Tambah Kelas',
-                                style: theme.typography.body.xs.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colors.foreground,
+                      child: Semantics(
+                        button: true,
+                        label: 'Tambah kelas perkuliahan semester ini',
+                        child: FTappable(
+                          onPress: _showAddClassSheet,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colors.card,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x14000000),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Tambah Kelas',
+                                      style: theme.typography.body.xs.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colors.foreground,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      'Kelas Semester Ini',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: theme.colors.mutedForeground,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: theme.colors.primary,
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colors.primary
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                              const SizedBox(width: 10),
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: theme.colors.primary,
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.colors.primary
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  FLucideIcons.school,
+                                  size: 18,
+                                  color: theme.colors.primaryForeground,
+                                ),
                               ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                FLucideIcons.school,
-                                size: 18,
-                                color: theme.colors.primaryForeground,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

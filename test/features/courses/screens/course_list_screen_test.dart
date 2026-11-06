@@ -346,5 +346,58 @@ void main() {
       // Sheet should be dismissed
       expect(find.byType(AddCourseSheet), findsNothing);
     });
+
+    testWidgets('ListView has keyboardDismissBehavior set to onDrag', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      final listViewFinder = find.byType(ListView);
+      expect(listViewFinder, findsOneWidget);
+      final listView = tester.widget<ListView>(listViewFinder);
+      expect(listView.keyboardDismissBehavior, ScrollViewKeyboardDismissBehavior.onDrag);
+    });
+
+    testWidgets('shows error state when query fails and recovers on Coba Lagi', (tester) async {
+      await tester.runAsync(() async {
+        final db = await DatabaseHelper.instance.database;
+        await db.execute('ALTER TABLE course_offerings RENAME TO course_offerings_bak');
+      });
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kendala Memuat Mata Kuliah'), findsOneWidget);
+      expect(find.text('Coba Lagi'), findsOneWidget);
+
+      // Restore table
+      await tester.runAsync(() async {
+        final db = await DatabaseHelper.instance.database;
+        await db.execute('ALTER TABLE course_offerings_bak RENAME TO course_offerings');
+      });
+
+      await tester.tap(find.text('Coba Lagi'));
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kendala Memuat Mata Kuliah'), findsNothing);
+      expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    });
   });
 }
