@@ -142,9 +142,13 @@ void main() {
     expect(find.text('Sistem Terdistribusi'), findsOneWidget);
     expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
 
-    expect(find.text('Selesai'), findsOneWidget);
-    expect(find.text('Berlangsung'), findsOneWidget);
-    expect(find.textContaining('Waktu Berjalan'), findsOneWidget);
+    expect(find.byIcon(FLucideIcons.check), findsOneWidget);
+    expect(find.byType(FDeterminateProgress), findsOneWidget);
+    expect(find.textContaining('Tersisa'), findsOneWidget);
+    expect(find.textContaining('%'), findsOneWidget);
+    expect(find.text('Berlangsung'), findsNothing);
+    expect(find.text('Selesai'), findsNothing);
+    expect(find.textContaining('Waktu Berjalan'), findsNothing);
   });
 
   testWidgets('Tapping schedule card navigates to CourseDetailScreen', (tester) async {
@@ -189,9 +193,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
-    expect(find.text('Berlangsung'), findsOneWidget);
-    expect(find.textContaining('Waktu Berjalan'), findsOneWidget);
+    expect(find.byType(FDeterminateProgress), findsOneWidget);
+    expect(find.textContaining('%'), findsOneWidget);
     expect(find.textContaining('Tersisa'), findsOneWidget);
+    expect(find.text('Berlangsung'), findsNothing);
+    expect(find.textContaining('Waktu Berjalan'), findsNothing);
 
     final scheduleSemantics = find.byWidgetPredicate(
       (widget) =>
@@ -212,7 +218,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
-    expect(find.text('Selesai'), findsOneWidget);
+    expect(find.byIcon(FLucideIcons.check), findsOneWidget);
+    expect(find.text('Selesai'), findsNothing);
 
     final scheduleSemantics = find.byWidgetPredicate(
       (widget) =>

@@ -479,69 +479,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ),
                                 ),
                               ),
-                              if (status == ScheduleTimelineStatus.ongoing)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colors.card,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6,
-                                        height: 6,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: colors.emerald.foreground,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Berlangsung',
-                                        style: TextStyle(
-                                          color: token.foreground,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              else if (status == ScheduleTimelineStatus.past)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colors.card,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        FLucideIcons.check,
-                                        size: 10,
-                                        color: colors.emerald.foreground,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Selesai',
-                                        style: TextStyle(
-                                          color: token.foreground,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                             ],
                           ),
                         ],
@@ -625,27 +562,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  FLucideIcons.timer,
-                                  size: 13,
-                                  color: token.foreground,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'Waktu Berjalan (${(progress * 100).toInt()}%)',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: token.foreground,
-                                  ),
-                                ),
-                              ],
+                            Icon(
+                              FLucideIcons.timer,
+                              size: 13,
+                              color: remainingMinutes <= 15
+                                  ? colors.coral.foreground
+                                  : token.foreground,
                             ),
+                            const SizedBox(width: 5),
                             Text(
                               remainingMinutes > 0
                                   ? 'Tersisa $remainingMinutes mnt'
