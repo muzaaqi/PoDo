@@ -641,12 +641,22 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       button: true,
                       label:
                           'Keluarkan mahasiswa ${student.studentName} dari kelas',
-                      child: FButton(
-                        size: FButtonSizeVariant.sm,
-                        variant: FButtonVariant.destructive,
-                        prefix: const Icon(FLucideIcons.userMinus, size: 14),
+                      child: FTappable(
                         onPress: () => _unenrollStudent(student),
-                        child: const Text('Keluarkan'),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: colors.coral.background,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            FLucideIcons.userMinus,
+                            size: 16,
+                            color: colors.coral.foreground,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -883,7 +893,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       ),
                       FTile(
                         prefix: const Icon(FLucideIcons.pencil),
-                        title: const Text('Edit Informasi Kelas'),
+                        title: const Text('Edit Kelas'),
                         onPress: () {
                           controller.hide();
                           _editOffering(offering);
@@ -900,7 +910,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       FTile(
                         variant: FItemVariant.destructive,
                         prefix: const Icon(FLucideIcons.trash2),
-                        title: const Text('Hapus Kelas Perkuliahan'),
+                        title: const Text('Hapus Kelas'),
                         onPress: () {
                           controller.hide();
                           _deleteOffering(offering);
@@ -1010,7 +1020,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Mode Kelola Mahasiswa aktif. Ketuk Keluarkan untuk menghapus mahasiswa dari kelas ini.',
+                                  'Mode Kelola Mahasiswa aktif. Ketuk ikon minus pada mahasiswa untuk mengeluarkannya.',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,

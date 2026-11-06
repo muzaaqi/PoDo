@@ -340,7 +340,7 @@ void main() {
       expect(find.text('Dewi Lestari'), findsOneWidget);
     });
 
-    testWidgets('tapping 3-dot and Edit Informasi Kelas opens AddClassOfferingSheet in edit mode and updates offering', (tester) async {
+    testWidgets('tapping 3-dot and Edit Kelas opens AddClassOfferingSheet in edit mode and updates offering', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -353,7 +353,7 @@ void main() {
       await tester.tap(moreMenu);
       await tester.pumpAndSettle();
 
-      final editOption = find.text('Edit Informasi Kelas');
+      final editOption = find.text('Edit Kelas');
       expect(editOption, findsOneWidget);
 
       await tester.tap(editOption);
@@ -369,7 +369,7 @@ void main() {
       expect(find.text('Simpan Perubahan'), findsOneWidget);
     });
 
-    testWidgets('tapping 3-dot and Hapus Kelas Perkuliahan shows confirmation dialog and deleting removes offering and pops', (tester) async {
+    testWidgets('tapping 3-dot and Hapus Kelas shows confirmation dialog and deleting removes offering and pops', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
@@ -382,7 +382,7 @@ void main() {
       await tester.tap(moreMenu);
       await tester.pumpAndSettle();
 
-      final deleteOption = find.text('Hapus Kelas Perkuliahan');
+      final deleteOption = find.text('Hapus Kelas');
       expect(deleteOption, findsOneWidget);
 
       await tester.tap(deleteOption);
@@ -435,11 +435,11 @@ void main() {
       expect(find.text('Batal'), findsOneWidget);
       expect(find.textContaining('Mode Kelola Mahasiswa aktif'), findsOneWidget);
 
-      // "Keluarkan" buttons are now visible on each student card
-      final unenrollButtons = find.text('Keluarkan');
+      // Minus icons are now visible on each student card
+      final unenrollButtons = find.byIcon(FLucideIcons.userMinus);
       expect(unenrollButtons, findsWidgets);
 
-      await tester.tap(unenrollButtons.first);
+      await tester.tap(unenrollButtons.at(1)); // at(0) is the banner icon, at(1) is first student card
       await tester.pumpAndSettle();
 
       expect(find.text('Keluarkan Mahasiswa?'), findsOneWidget);
