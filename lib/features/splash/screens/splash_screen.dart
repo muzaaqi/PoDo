@@ -17,12 +17,28 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _timer;
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    final curved = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(curved);
+    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(curved);
+    _animController.forward();
+
     if (widget.autoNavigate) {
       _timer = Timer(widget.duration, () {
         if (mounted) {
@@ -35,37 +51,48 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _animController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.theme;
+
     return FScaffold(
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/logo.png',
-              width: 120,
-              height: 120,
-              fit: BoxFit.contain,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 110,
+                  height: 110,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'PoDo',
+                  style: theme.typography.display.xl4.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Portal Dosen',
+                  style: theme.typography.body.md.copyWith(
+                    color: theme.colors.mutedForeground,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              'PoDo',
-              style: context.theme.typography.display.xl4.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Portal Dosen',
-              style: context.theme.typography.body.md.copyWith(
-                color: context.theme.colors.mutedForeground,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

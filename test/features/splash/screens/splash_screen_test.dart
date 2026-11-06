@@ -48,4 +48,23 @@ void main() {
 
     expect(navigatedToLogin, isTrue);
   });
+
+  testWidgets('No bullet point character exists in SplashScreen', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => FTheme(
+          data: AppTheme.lightTheme,
+          child: child ?? const SizedBox.shrink(),
+        ),
+        home: const SplashScreen(autoNavigate: false),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final allTextWidgets = tester.widgetList<Text>(find.byType(Text));
+    for (final textWidget in allTextWidgets) {
+      final data = textWidget.data ?? textWidget.textSpan?.toPlainText() ?? '';
+      expect(data.contains('•'), isFalse, reason: 'Text contains banned bullet: "$data"');
+    }
+  });
 }
