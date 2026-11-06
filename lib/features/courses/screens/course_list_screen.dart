@@ -145,24 +145,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            offering.courseCode,
-                            style: theme.typography.body.xs.copyWith(
-                              color: theme.colors.mutedForeground,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            offering.courseName,
-                            style: theme.typography.body.md.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        offering.courseName,
+                        style: theme.typography.body.md.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -172,14 +159,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Kelas ${offering.className} • ${offering.academicYear} (${offering.term})',
-                  style: theme.typography.body.xs.copyWith(
-                    color: theme.colors.mutedForeground,
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Icon(
@@ -189,10 +169,43 @@ class _CourseListScreenState extends State<CourseListScreen> {
                     ),
                     const SizedBox(width: 6),
                     Text(
+                      'Kelas ${offering.className}',
+                      style: theme.typography.body.xs.copyWith(
+                        color: theme.colors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      FLucideIcons.graduationCap,
+                      size: 14,
+                      color: theme.colors.mutedForeground,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
                       '${offering.enrolledCount} Mahasiswa',
                       style: theme.typography.body.xs.copyWith(
                         color: theme.colors.mutedForeground,
-                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      FLucideIcons.calendar,
+                      size: 14,
+                      color: theme.colors.mutedForeground,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${offering.academicYear} (${offering.term})',
+                      style: theme.typography.body.xs.copyWith(
+                        color: theme.colors.mutedForeground,
                       ),
                     ),
                     const Spacer(),
