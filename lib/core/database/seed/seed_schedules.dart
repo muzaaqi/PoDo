@@ -96,4 +96,14 @@ const List<Map<String, dynamic>> seedSchedules = [
     'start_time': '19:30',
     'end_time': '21:00',
   },
+
+  // Sabtu (1 kelas untuk L001)
+  {
+    'id': 12,
+    'offering_id': 'OFF001',
+    'day_of_week': 'Sabtu',
+    'room': 'KU3.01',
+    'start_time': '07:00',
+    'end_time': '09:30',
+  },
 ];

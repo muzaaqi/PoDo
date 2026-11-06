@@ -25,9 +25,9 @@ void main() {
     test('getSchedulesByLecturer returns all schedules sorted by day and time for L001', () async {
       final schedules = await ScheduleRepository.instance.getSchedulesByLecturer('L001');
 
-      expect(schedules.length, 9);
+      expect(schedules.length, 10);
 
-      // Verify order: Senin -> Selasa -> Kamis -> Jumat
+      // Verify order: Senin -> Selasa -> Kamis -> Jumat -> Sabtu
       expect(schedules[0].dayOfWeek, 'Senin');
       expect(schedules[0].courseCode, 'IF101');
       expect(schedules[0].courseName, 'Pemrograman Mobile');
@@ -122,9 +122,9 @@ void main() {
       final newId = await ScheduleRepository.instance.createSchedule(
         offeringId: 'OFF001',
         dayOfWeek: 'Sabtu',
-        room: 'LAB-02',
-        startTime: '08:00',
-        endTime: '10:00',
+        room: 'LAB-05',
+        startTime: '10:00',
+        endTime: '12:30',
       );
       expect(newId, isPositive);
 
@@ -132,8 +132,8 @@ void main() {
         'L001',
         dayOfWeek: 'Sabtu',
       );
-      expect(sabtuSchedules.length, 1);
-      expect(sabtuSchedules.first.room, 'LAB-02');
+      expect(sabtuSchedules.length, 2);
+      expect(sabtuSchedules.any((s) => s.room == 'LAB-05'), isTrue);
     });
   });
 }

@@ -127,6 +127,24 @@ void main() {
     expect(find.textContaining('13:00 - 15:30'), findsOneWidget);
   });
 
+  testWidgets('Tapping Sabtu tab displays Saturday schedule at 07:00 - 09:30', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final sabtuTab = find.text('Sabtu');
+    expect(sabtuTab, findsOneWidget);
+    await tester.tap(sabtuTab);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Kelas IF-44-01'), findsOneWidget);
+    expect(find.textContaining('07:00 - 09:30'), findsOneWidget);
+    expect(find.textContaining('KU3.01'), findsOneWidget);
+  });
+
   testWidgets('Tapping Jumat tab displays all 3 Friday classes with real-time status', (tester) async {
     final fridayAfternoon = DateTime(2026, 11, 6, 17, 30);
     await tester.runAsync(() async {
