@@ -151,8 +151,8 @@ void main() {
     });
     await tester.pumpAndSettle();
 
-    expect(find.text('Jadwal Sekarang'), findsOneWidget);
-    expect(find.text('Pemrograman Mobile'), findsOneWidget);
+    expect(find.text('Jadwal Kuliah'), findsOneWidget);
+    expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
     expect(find.text('Berlangsung'), findsNothing);
     expect(find.textContaining('Waktu Berjalan'), findsNothing);
     expect(find.textContaining('Tersisa'), findsOneWidget);
@@ -168,18 +168,113 @@ void main() {
     expect(heroScheduleSemantics, findsOneWidget);
   });
 
-  testWidgets('Hero section renders empty state when outside class schedule hours', (tester) async {
-    // 2026-11-02 was a Monday, 22:00 is outside class hours
-    final mondayNight = DateTime(2026, 11, 2, 22, 0);
+  testWidgets('Tapping schedule card navigates to CourseDetailScreen', (tester) async {
+    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
 
     await tester.runAsync(() async {
-      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayNight));
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
 
-    expect(find.text('Jadwal Sekarang'), findsOneWidget);
-    expect(find.text('Tidak Ada Kelas Berlangsung'), findsOneWidget);
-    expect(find.text('Pemrograman Mobile'), findsNothing);
+    // Tap the ongoing card
+    final cardFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label != null &&
+          widget.properties.label!.startsWith('Jadwal sekarang:'),
+    );
+    expect(cardFinder, findsOneWidget);
+
+    await tester.runAsync(() async {
+      await tester.tap(cardFinder);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    // Verify CourseDetailScreen is opened (contains Daftar Mahasiswa Terdaftar and Total Mahasiswa)
+    expect(find.text('Daftar Mahasiswa Terdaftar'), findsOneWidget);
+    expect(find.text('Total Mahasiswa'), findsOneWidget);
+  });
+
+  testWidgets('Tapping Lihat Semua in schedule header switches to Jadwal tab (index 1)', (tester) async {
+    int? selectedTab;
+    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(
+        currentDateTime: mondayMorning,
+        onSwitchTab: (index) => selectedTab = index,
+      ));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final lihatSemuaFinder = find.text('Lihat Semua');
+    expect(lihatSemuaFinder, findsOneWidget);
+    await tester.tap(lihatSemuaFinder);
+    await tester.pumpAndSettle();
+
+    expect(selectedTab, equals(1));
+  });
+
+  testWidgets('Tapping next and prev buttons in card stack switches courses infinitely', (tester) async {
+    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    // Initial card is Monday's Pemrograman Mobile
+    expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
+
+    // Tap next arrow button
+    final nextBtn = find.bySemanticsLabel('Jadwal berikutnya');
+    expect(nextBtn, findsOneWidget);
+    await tester.tap(nextBtn);
+    await tester.pumpAndSettle();
+
+    // Next course in chronological order is Rekayasa Perangkat Lunak (Selasa)
+    expect(find.text('Rekayasa Perangkat Lunak'), findsAtLeastNWidgets(1));
+
+    // Tap prev arrow button to return to Pemrograman Mobile
+    final prevBtn = find.bySemanticsLabel('Jadwal sebelumnya');
+    expect(prevBtn, findsOneWidget);
+    await tester.tap(prevBtn);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
+  });
+
+  testWidgets('Swiping card stack to the left navigates to next course', (tester) async {
+    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
+
+    // Drag left on the stack to advance to next card
+    final cardFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label != null &&
+          widget.properties.label!.startsWith('Jadwal sekarang:'),
+    );
+    await tester.drag(cardFinder, const Offset(-200, 0));
+    await tester.pumpAndSettle();
+
+    // Now showing next course: Rekayasa Perangkat Lunak (Selasa)
+    expect(find.text('Rekayasa Perangkat Lunak'), findsAtLeastNWidgets(1));
   });
 }

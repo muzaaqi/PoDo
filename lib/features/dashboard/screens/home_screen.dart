@@ -6,7 +6,10 @@ import 'package:podo/app/main_screen.dart';
 import 'package:podo/app/routes.dart';
 import 'package:podo/core/theme/app_colors.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
+import 'package:podo/features/courses/models/course_offering.dart';
+import 'package:podo/features/courses/repositories/course_repository.dart';
 import 'package:podo/features/dashboard/models/announcement.dart';
+import 'package:podo/features/dashboard/widgets/schedule_card_stack.dart';
 import 'package:podo/features/lecturers/models/lecturer.dart';
 import 'package:podo/features/lecturers/repositories/lecturer_repository.dart';
 import 'package:podo/features/schedule/models/teaching_schedule.dart';
@@ -23,7 +26,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Lecturer? _lecturer;
-  TeachingSchedule? _currentSchedule;
   List<TeachingSchedule> _schedules = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -43,9 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (widget.currentDateTime != null) return;
     _liveTicker = Timer.periodic(const Duration(seconds: 15), (_) {
       if (mounted) {
-        setState(() {
-          _currentSchedule = _findCurrentSchedule(_schedules);
-        });
+        setState(() {});
       }
     });
   }
@@ -62,6 +62,57 @@ class _HomeScreenState extends State<HomeScreen> {
     final show = _scrollController.hasClients && _scrollController.offset > 40;
     if (show != _showAppbarTitle) {
       setState(() => _showAppbarTitle = show);
+    }
+  }
+
+  int _getDayOrder(String day) {
+    switch (day.trim().toLowerCase()) {
+      case 'senin':
+        return 1;
+      case 'selasa':
+        return 2;
+      case 'rabu':
+        return 3;
+      case 'kamis':
+        return 4;
+      case 'jumat':
+        return 5;
+      case 'sabtu':
+        return 6;
+      default:
+        return 7;
+    }
+  }
+
+  void _sortSchedules(List<TeachingSchedule> schedules) {
+    schedules.sort((a, b) {
+      final dayA = _getDayOrder(a.dayOfWeek);
+      final dayB = _getDayOrder(b.dayOfWeek);
+      if (dayA != dayB) return dayA.compareTo(dayB);
+      final startA = _parseTimeToMinutes(a.startTime) ?? 0;
+      final startB = _parseTimeToMinutes(b.startTime) ?? 0;
+      return startA.compareTo(startB);
+    });
+  }
+
+  Future<void> _navigateToCourseDetail(TeachingSchedule schedule) async {
+    final offering =
+        await CourseRepository.instance.getOfferingById(schedule.offeringId) ??
+            CourseOffering(
+              offeringId: schedule.offeringId,
+              courseCode: schedule.courseCode,
+              lecturerId: AuthRepository.instance.activeLecturerId ?? '',
+              className: schedule.className,
+              academicYear: schedule.academicYear,
+              term: schedule.term,
+              courseName: schedule.courseName,
+              credits: schedule.credits,
+            );
+    if (mounted) {
+      Navigator.of(context).pushNamed(
+        AppRoutes.courseDetail,
+        arguments: offering,
+      );
     }
   }
 
@@ -82,12 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final lecturer = results[0] as Lecturer?;
         final schedules = results[1] as List<TeachingSchedule>;
+        _sortSchedules(schedules);
 
         if (mounted) {
           setState(() {
             _lecturer = lecturer;
             _schedules = schedules;
-            _currentSchedule = _findCurrentSchedule(schedules);
             _isLoading = false;
           });
         }
@@ -113,45 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
-  TeachingSchedule? _findCurrentSchedule(List<TeachingSchedule> schedules) {
-    final now = widget.currentDateTime ?? DateTime.now();
-    final dayName = _getDayName(now.weekday);
-    final currentMinutes = now.hour * 60 + now.minute;
 
-    for (final schedule in schedules) {
-      if (schedule.dayOfWeek.trim().toLowerCase() != dayName.toLowerCase()) {
-        continue;
-      }
-      final startMinutes = _parseTimeToMinutes(schedule.startTime);
-      final endMinutes = _parseTimeToMinutes(schedule.endTime);
-
-      if (startMinutes != null && endMinutes != null) {
-        if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
-          return schedule;
-        }
-      }
-    }
-    return null;
-  }
-
-  String _getDayName(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return 'Senin';
-      case DateTime.tuesday:
-        return 'Selasa';
-      case DateTime.wednesday:
-        return 'Rabu';
-      case DateTime.thursday:
-        return 'Kamis';
-      case DateTime.friday:
-        return 'Jumat';
-      case DateTime.saturday:
-        return 'Sabtu';
-      default:
-        return 'Minggu';
-    }
-  }
 
   int? _parseTimeToMinutes(String time) {
     try {
@@ -416,323 +429,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeroScheduleCard(BuildContext context, TeachingSchedule schedule) {
-    final theme = context.theme;
-    final colors = context.appColors;
-
-    final now = widget.currentDateTime ?? DateTime.now();
-    final startMinutes = _parseTimeToMinutes(schedule.startTime) ?? 0;
-    final endMinutes = _parseTimeToMinutes(schedule.endTime) ?? 0;
-    final currentMinutes = now.hour * 60 + now.minute;
-    final totalDuration = (endMinutes - startMinutes).clamp(1, 1440);
-    final elapsedMinutes = (currentMinutes - startMinutes).clamp(0, totalDuration);
-    final remainingMinutes = (endMinutes - currentMinutes).clamp(0, totalDuration);
-    final progress = (elapsedMinutes / totalDuration).clamp(0.0, 1.0);
-
-    final scheduleSemantics = 'Jadwal sekarang: ${schedule.courseName}, '
-        'Kelas ${schedule.className}, ${schedule.credits} SKS, '
-        'Ruangan ${schedule.room}, pukul ${schedule.startTime} sampai ${schedule.endTime}. '
-        'Waktu berjalan ${(progress * 100).toInt()} persen, tersisa $remainingMinutes menit. '
-        'Ketuk untuk membuka jadwal lengkap.';
-
-    return Semantics(
-      button: true,
-      label: scheduleSemantics,
-      excludeSemantics: true,
-      child: FTappable(
-        onPress: () => MainScreenScope.of(context)?.switchToTab(1),
-        child: Container(
-        decoration: BoxDecoration(
-          color: colors.amber.background,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top row: Calendar icon container, Course title, Class & SKS Pills, Chevron
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: theme.colors.card,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    FLucideIcons.calendarClock,
-                    size: 22,
-                    color: colors.amber.foreground,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        schedule.courseName,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: colors.amber.foreground,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colors.card,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            child: Text(
-                              'Kelas ${schedule.className}',
-                              style: TextStyle(
-                                color: colors.amber.foreground,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colors.card,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            child: Text(
-                              '${schedule.credits} SKS',
-                              style: TextStyle(
-                                color: colors.amber.foreground,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: theme.colors.card,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    FLucideIcons.chevronRight,
-                    size: 16,
-                    color: colors.amber.foreground,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Bottom info row: Day & Time with Clock Icon, Room with MapPin Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      FLucideIcons.clock,
-                      size: 15,
-                      color: colors.amber.foreground,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${schedule.dayOfWeek}, ${schedule.startTime} - ${schedule.endTime}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: colors.amber.foreground,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      FLucideIcons.mapPin,
-                      size: 15,
-                      color: colors.amber.foreground,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      schedule.room,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colors.amber.foreground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 14),
-
-            // Live In-Card Real-Time Timeline Progress
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: theme.colors.card,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        FLucideIcons.timer,
-                        size: 13,
-                        color: remainingMinutes <= 15
-                            ? colors.coral.foreground
-                            : colors.amber.foreground,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        remainingMinutes > 0
-                            ? 'Tersisa $remainingMinutes mnt'
-                            : 'Waktu Habis',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: remainingMinutes <= 15
-                              ? colors.coral.foreground
-                              : colors.amber.foreground,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 20,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // Forui Determinate Progress
-                        FDeterminateProgress(
-                          value: progress,
-                          style: FDeterminateProgressStyle(
-                            constraints:
-                                const BoxConstraints.tightFor(height: 6),
-                            trackDecoration: BoxDecoration(
-                              color: colors.amber.background,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            fillDecoration: BoxDecoration(
-                              color: colors.amber.foreground,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                          ),
-                        ),
-                        // Real-time current position dot showing percentage
-                        Align(
-                          alignment: Alignment(
-                            (-1.0 + 2.0 * progress).clamp(-1.0, 1.0),
-                            0.0,
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colors.amber.foreground,
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(
-                                color: theme.colors.card,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Text(
-                              '${(progress * 100).toInt()}%',
-                              style: const TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFFFFFFFF),
-                                height: 1.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        schedule.startTime,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: theme.colors.mutedForeground,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        'Pukul ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: colors.amber.foreground,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        schedule.endTime,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: theme.colors.mutedForeground,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
   Widget _buildEmptyScheduleCard(BuildContext context) {
     final theme = context.theme;
     final colors = context.appColors;
 
     return Semantics(
-      label: 'Tidak ada jadwal mengajar yang sedang berlangsung saat ini.',
+      label: 'Tidak ada jadwal perkuliahan yang terdaftar.',
       excludeSemantics: true,
       child: Container(
         decoration: BoxDecoration(
@@ -762,7 +464,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tidak Ada Kelas Berlangsung',
+                    'Tidak Ada Jadwal Perkuliahan',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -771,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Saat ini tidak ada perkuliahan dalam rentang jam mengajar aktif.',
+                    'Saat ini belum ada jadwal mengajar yang terdaftar dalam sistem.',
                     style: TextStyle(
                       fontSize: 12,
                       color: colors.emerald.foreground,
@@ -938,12 +640,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 22),
 
-                  // Zone 2: Current Schedule Hero Card (Jadwal Sekarang)
+                  // Zone 2: Swipeable Teaching Schedule Card Stack (Jadwal Kuliah)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Jadwal Sekarang',
+                        'Jadwal Kuliah',
                         style: theme.typography.body.md.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colors.foreground,
@@ -974,8 +676,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  if (_currentSchedule != null)
-                    _buildHeroScheduleCard(context, _currentSchedule!)
+                  if (_schedules.isNotEmpty)
+                    ScheduleCardStack(
+                      schedules: _schedules,
+                      currentDateTime: widget.currentDateTime,
+                      onScheduleTap: _navigateToCourseDetail,
+                    )
                   else
                     _buildEmptyScheduleCard(context),
 
