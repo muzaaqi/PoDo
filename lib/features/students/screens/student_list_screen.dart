@@ -13,8 +13,19 @@ class StudentListScreen extends StatefulWidget {
 
 class _StudentListScreenState extends State<StudentListScreen> {
   late final TextEditingController _searchController;
-  List<Student> _students = [];
+  List<Student> _allStudents = [];
+  String _selectedProgram = 'Semua';
   bool _isLoading = true;
+  String? _errorMessage;
+
+  static const _pastelPalette = [
+    (bg: Color(0xFFEEF2FF), fg: Color(0xFF4F46E5)), // Indigo
+    (bg: Color(0xFFF0FDF4), fg: Color(0xFF16A34A)), // Emerald
+    (bg: Color(0xFFFEF3C7), fg: Color(0xFFD97706)), // Amber
+    (bg: Color(0xFFF3E8FF), fg: Color(0xFF9333EA)), // Purple
+    (bg: Color(0xFFE0F2FE), fg: Color(0xFF0284C7)), // Sky
+    (bg: Color(0xFFFFE4E6), fg: Color(0xFFE11D48)), // Rose
+  ];
 
   @override
   void initState() {
@@ -32,17 +43,55 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 
   void _onSearchChanged() {
-    _loadStudents(query: _searchController.text);
+    setState(() {});
   }
 
-  Future<void> _loadStudents({String? query}) async {
-    final students = await StudentRepository.instance.getAllStudents(query: query);
-    if (mounted) {
-      setState(() {
-        _students = students;
-        _isLoading = false;
-      });
+  Future<void> _loadStudents() async {
+    try {
+      final students = await StudentRepository.instance.getAllStudents();
+      if (mounted) {
+        setState(() {
+          _allStudents = students;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Gagal memuat data mahasiswa.';
+        });
+      }
     }
+  }
+
+  List<String> get _uniqueStudyPrograms {
+    final prodis = <String>{};
+    for (final s in _allStudents) {
+      final p = s.studyProgram?.trim();
+      if (p != null && p.isNotEmpty) {
+        prodis.add(p);
+      }
+    }
+    final sorted = prodis.toList()..sort();
+    return ['Semua', ...sorted];
+  }
+
+  List<Student> get _filteredStudents {
+    var list = _allStudents;
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      list = list.where((s) {
+        final matchesName = s.fullName.toLowerCase().contains(query);
+        final matchesNim = s.nim.toLowerCase().contains(query);
+        return matchesName || matchesNim;
+      }).toList();
+    }
+    if (_selectedProgram != 'Semua') {
+      list = list.where((s) => s.studyProgram == _selectedProgram).toList();
+    }
+    return list;
   }
 
   String _getInitials(String? name) {
@@ -59,7 +108,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
       ),
     );
     if (result == true) {
-      _loadStudents(query: _searchController.text);
+      _loadStudents();
     }
   }
 
@@ -70,12 +119,207 @@ class _StudentListScreenState extends State<StudentListScreen> {
       ),
     );
     if (result == true) {
-      _loadStudents(query: _searchController.text);
+      _loadStudents();
     }
+  }
+
+  Widget _buildHeroOverviewCard(BuildContext context) {
+    final theme = context.theme;
+    final totalStudents = _allStudents.length;
+    final prodiCount = _uniqueStudyPrograms.where((p) => p != 'Semua').length;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      child: FCard(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEF2FF),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          FLucideIcons.users,
+                          size: 20,
+                          color: Color(0xFF4F46E5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '$totalStudents',
+                            style: theme.typography.body.lg.copyWith(
+                              fontWeight: FontWeight.bold,
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Total Mahasiswa',
+                            style: theme.typography.body.xs.copyWith(
+                              color: theme.colors.mutedForeground,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: theme.colors.border,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          FLucideIcons.graduationCap,
+                          size: 20,
+                          color: Color(0xFF16A34A),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '$prodiCount',
+                            style: theme.typography.body.lg.copyWith(
+                              fontWeight: FontWeight.bold,
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Program Studi',
+                            style: theme.typography.body.xs.copyWith(
+                              color: theme.colors.mutedForeground,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+      child: FTextField(
+        hint: 'Cari nama atau NIM mahasiswa...',
+        clearable: (value) => value.text.isNotEmpty,
+        prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
+          context,
+          style,
+          variants,
+          const Icon(FLucideIcons.search),
+        ),
+        control: FTextFieldControl.managed(controller: _searchController),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    final theme = context.theme;
+    final programs = _uniqueStudyPrograms;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int i = 0; i < programs.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                _buildFilterChip(context, theme, programs[i]),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(BuildContext context, FThemeData theme, String program) {
+    final isSelected = _selectedProgram == program;
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: 'Filter program studi $program',
+      child: FTappable(
+        onPress: () {
+          setState(() {
+            _selectedProgram = program;
+          });
+        },
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 36, minWidth: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.colors.primary : theme.colors.secondary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            program,
+            style: theme.typography.body.xs.copyWith(
+              color: isSelected
+                  ? theme.colors.primaryForeground
+                  : theme.colors.secondaryForeground,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildEmptyState(BuildContext context) {
     final theme = context.theme;
+    final isFiltered = _searchController.text.trim().isNotEmpty || _selectedProgram != 'Semua';
 
     return Center(
       child: Padding(
@@ -101,17 +345,30 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Coba gunakan kata kunci pencarian lain atau tambahkan data mahasiswa baru.',
+                  isFiltered
+                      ? 'Tidak ada mahasiswa yang cocok dengan filter atau kata kunci pencarian.'
+                      : 'Belum ada data mahasiswa terdaftar. Silakan tambahkan data baru.',
                   style: theme.typography.body.xs.copyWith(
                     color: theme.colors.mutedForeground,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                FButton(
-                  onPress: _navigateToAddStudent,
-                  child: const Text('Tambah Mahasiswa'),
-                ),
+                if (isFiltered)
+                  FButton(
+                    onPress: () {
+                      _searchController.clear();
+                      setState(() {
+                        _selectedProgram = 'Semua';
+                      });
+                    },
+                    child: const Text('Reset Filter'),
+                  )
+                else
+                  FButton(
+                    onPress: _navigateToAddStudent,
+                    child: const Text('Tambah Mahasiswa'),
+                  ),
               ],
             ),
           ),
@@ -122,59 +379,121 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   Widget _buildStudentCard(BuildContext context, Student student) {
     final theme = context.theme;
+    final palette = _pastelPalette[student.nim.hashCode.abs() % _pastelPalette.length];
+    final initials = _getInitials(student.fullName);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: FTappable(
-        onPress: () => _navigateToEditStudent(student),
-        child: FCard(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                FAvatar.raw(
-                  size: 42,
-                  child: Text(
-                    _getInitials(student.fullName),
-                    style: theme.typography.body.sm.copyWith(
-                      fontWeight: FontWeight.bold,
+      child: Semantics(
+        button: true,
+        label: 'Buka biodata ${student.fullName}',
+        child: FTappable(
+          onPress: () => _navigateToEditStudent(student),
+          child: FCard(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: palette.bg,
+                      shape: BoxShape.circle,
                     ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        student.fullName,
+                    child: Center(
+                      child: Text(
+                        initials,
                         style: theme.typography.body.sm.copyWith(
+                          color: palette.fg,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'NIM: ${student.nim}',
-                        style: theme.typography.body.xs.copyWith(
-                          color: theme.colors.mutedForeground,
-                        ),
-                      ),
-                      if (student.studyProgram != null) ...[
-                        const SizedBox(height: 6),
-                        FBadge(
-                          variant: FBadgeVariant.secondary,
-                          child: Text(student.studyProgram!),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
-                ),
-                Icon(
-                  FLucideIcons.chevronRight,
-                  size: 18,
-                  color: theme.colors.mutedForeground,
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          student.fullName,
+                          style: theme.typography.body.sm.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'NIM: ${student.nim}',
+                          style: theme.typography.body.xs.copyWith(
+                            color: theme.colors.mutedForeground,
+                          ),
+                        ),
+                        if (student.studyProgram != null && student.studyProgram!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              FBadge(
+                                variant: FBadgeVariant.secondary,
+                                child: Text(student.studyProgram!),
+                              ),
+                              if (student.phone != null && student.phone!.isNotEmpty)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      FLucideIcons.phone,
+                                      size: 11,
+                                      color: theme.colors.mutedForeground,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      student.phone!,
+                                      style: theme.typography.body.xs.copyWith(
+                                        color: theme.colors.mutedForeground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ] else if (student.phone != null && student.phone!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                FLucideIcons.phone,
+                                size: 11,
+                                color: theme.colors.mutedForeground,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                student.phone!,
+                                style: theme.typography.body.xs.copyWith(
+                                  color: theme.colors.mutedForeground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    FLucideIcons.chevronRight,
+                    size: 18,
+                    color: theme.colors.mutedForeground,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -188,10 +507,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
       header: FHeader.nested(
         title: const Text('Daftar Mahasiswa'),
         prefixes: [
-          FHeaderAction.back(onPress: () => Navigator.of(context).maybePop()),
+          FHeaderAction.back(
+            semanticsLabel: 'Kembali',
+            onPress: () => Navigator.of(context).maybePop(),
+          ),
         ],
         suffixes: [
           FHeaderAction(
+            semanticsLabel: 'Tambah Mahasiswa',
             icon: const Icon(FLucideIcons.userPlus),
             onPress: _navigateToAddStudent,
           ),
@@ -199,30 +522,48 @@ class _StudentListScreenState extends State<StudentListScreen> {
       ),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: FTextField(
-              hint: 'Cari berdasarkan nama atau NIM...',
-              prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
-                context,
-                style,
-                variants,
-                const Icon(FLucideIcons.search),
-              ),
-              control: FTextFieldControl.managed(controller: _searchController),
-            ),
-          ),
+          _buildHeroOverviewCard(context),
+          _buildSearchBar(context),
+          _buildFilterChips(context),
           Expanded(
             child: _isLoading
                 ? const Center(child: Text('Memuat data...'))
-                : _students.isEmpty
-                    ? _buildEmptyState(context)
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                        itemCount: _students.length,
-                        itemBuilder: (context, index) =>
-                            _buildStudentCard(context, _students[index]),
-                      ),
+                : _errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: FCard(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _errorMessage!,
+                                    style: context.theme.typography.body.sm,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  FButton(
+                                    onPress: _loadStudents,
+                                    child: const Text('Coba Lagi'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : _filteredStudents.isEmpty
+                        ? _buildEmptyState(context)
+                        : ListView.builder(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                            itemCount: _filteredStudents.length,
+                            itemBuilder: (context, index) =>
+                                _buildStudentCard(context, _filteredStudents[index]),
+                          ),
           ),
         ],
       ),
