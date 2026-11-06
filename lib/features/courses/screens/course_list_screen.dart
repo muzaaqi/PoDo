@@ -110,104 +110,52 @@ class _CourseListScreenState extends State<CourseListScreen> {
   }
 
   Widget _buildHeroBanner(BuildContext context) {
-    final theme = context.theme;
     final colors = context.appColors;
 
     return FCard(
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: colors.violet.background,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    FLucideIcons.graduationCap,
-                    size: 20,
-                    color: colors.violet.foreground,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'SEMESTER AKTIF',
-                        style: theme.typography.body.xs.copyWith(
-                          color: theme.colors.mutedForeground,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      Text(
-                        '2024/2025 • Ganjil',
-                        style: theme.typography.body.sm.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            Expanded(
+              child: _buildMetricItem(
+                context,
+                title: 'Total Kelas',
+                value: '${_offerings.length}',
+                icon: FLucideIcons.bookOpen,
+                iconBg: colors.sky.background,
+                iconColor: colors.sky.foreground,
+              ),
             ),
-            const SizedBox(height: 14),
             Container(
-              height: 1,
-              color: theme.colors.border,
+              width: 1,
+              height: 36,
+              color: context.theme.colors.border,
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricItem(
-                    context,
-                    title: 'Total Kelas',
-                    value: '${_offerings.length}',
-                    icon: FLucideIcons.bookOpen,
-                    iconBg: colors.sky.background,
-                    iconColor: colors.sky.foreground,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: theme.colors.border,
-                ),
-                Expanded(
-                  child: _buildMetricItem(
-                    context,
-                    title: 'Total SKS',
-                    value: '$_totalCredits',
-                    icon: FLucideIcons.award,
-                    iconBg: colors.amber.background,
-                    iconColor: colors.amber.foreground,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: theme.colors.border,
-                ),
-                Expanded(
-                  child: _buildMetricItem(
-                    context,
-                    title: 'Total Mahasiswa',
-                    value: '$_totalStudents',
-                    icon: FLucideIcons.users,
-                    iconBg: colors.emerald.background,
-                    iconColor: colors.emerald.foreground,
-                  ),
-                ),
-              ],
+            Expanded(
+              child: _buildMetricItem(
+                context,
+                title: 'Total SKS',
+                value: '$_totalCredits',
+                icon: FLucideIcons.award,
+                iconBg: colors.amber.background,
+                iconColor: colors.amber.foreground,
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 36,
+              color: context.theme.colors.border,
+            ),
+            Expanded(
+              child: _buildMetricItem(
+                context,
+                title: 'Total Mahasiswa',
+                value: '$_totalStudents',
+                icon: FLucideIcons.users,
+                iconBg: colors.emerald.background,
+                iconColor: colors.emerald.foreground,
+              ),
             ),
           ],
         ),
@@ -322,7 +270,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                     size: FButtonSizeVariant.sm,
                     prefix: const Icon(FLucideIcons.plus),
                     onPress: _showAddOfferingSheet,
-                    child: const Text('Tambah Kelas'),
+                    child: const Text('Kuliah'),
                   ),
               ],
             ),
@@ -570,7 +518,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                       size: FButtonSizeVariant.sm,
                       prefix: const Icon(FLucideIcons.plus),
                       onPress: _showAddOfferingSheet,
-                      child: const Text('Tambah Kelas'),
+                      child: const Text('Kuliah'),
                     ),
                   ],
                 ),

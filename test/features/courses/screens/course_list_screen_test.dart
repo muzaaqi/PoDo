@@ -67,7 +67,7 @@ void main() {
 
       // Verify Header
       expect(find.text('Mata Kuliah'), findsWidgets);
-      expect(find.text('Tambah Kelas'), findsOneWidget);
+      expect(find.text('Kuliah'), findsOneWidget);
 
       // Verify Hero Summary Banner: 3 classes, 9 SKS, 9 students (3 per class)
       expect(find.text('Total Kelas'), findsOneWidget);
@@ -193,15 +193,15 @@ void main() {
       expect(find.text('Rekayasa Perangkat Lunak'), findsOneWidget);
     });
 
-    testWidgets('tapping Tambah Kelas opens AddCourseOfferingSheet', (tester) async {
+    testWidgets('tapping Kuliah opens AddCourseOfferingSheet', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       });
       await tester.pumpAndSettle();
 
-      // Tap Tambah Kelas button
-      await tester.tap(find.text('Tambah Kelas'));
+      // Tap Kuliah button
+      await tester.tap(find.text('Kuliah'));
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
@@ -228,7 +228,7 @@ void main() {
       expect(find.text('3'), findsOneWidget);
 
       // Open AddCourseOfferingSheet
-      await tester.tap(find.text('Tambah Kelas'));
+      await tester.tap(find.text('Kuliah'));
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
