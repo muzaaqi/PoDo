@@ -151,7 +151,7 @@ void main() {
     });
     await tester.pumpAndSettle();
 
-    expect(find.text('Jadwal Kuliah'), findsOneWidget);
+    expect(find.text('Jadwal Hari Ini'), findsOneWidget);
     expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
     expect(find.text('Berlangsung'), findsNothing);
     expect(find.textContaining('Waktu Berjalan'), findsNothing);
@@ -223,58 +223,58 @@ void main() {
     expect(selectedTab, equals(1));
   });
 
-  testWidgets('Tapping next and prev buttons in card stack switches courses infinitely', (tester) async {
-    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
+  testWidgets('Friday has multiple schedules: displays stacked card deck with dots only and supports swipe', (tester) async {
+    // 2026-11-06 was a Friday, 14:00 is within Friday 13:30 - 16:00
+    final fridayAfternoon = DateTime(2026, 11, 6, 14, 0);
 
     await tester.runAsync(() async {
-      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: fridayAfternoon));
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
 
-    // Initial card is Monday's Pemrograman Mobile
+    // Header and ongoing course
+    expect(find.text('Jadwal Hari Ini'), findsOneWidget);
     expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
 
-    // Tap next arrow button
-    final nextBtn = find.bySemanticsLabel('Jadwal berikutnya');
-    expect(nextBtn, findsOneWidget);
-    await tester.tap(nextBtn);
+    // Verify dots are present (Friday has 3 classes: dot 1, dot 2, dot 3)
+    expect(find.bySemanticsLabel('Jadwal ke-1'), findsOneWidget);
+    expect(find.bySemanticsLabel('Jadwal ke-2'), findsOneWidget);
+    expect(find.bySemanticsLabel('Jadwal ke-3'), findsOneWidget);
+
+    // Verify chevron buttons are NOT present (cukup dots aja)
+    expect(find.bySemanticsLabel('Jadwal berikutnya'), findsNothing);
+    expect(find.bySemanticsLabel('Jadwal sebelumnya'), findsNothing);
+
+    // Tap dot 2 to navigate to next class today (Sistem Terdistribusi 16:30 - 19:00)
+    await tester.tap(find.bySemanticsLabel('Jadwal ke-2'));
     await tester.pumpAndSettle();
+    expect(find.text('Sistem Terdistribusi'), findsAtLeastNWidgets(1));
 
-    // Next course in chronological order is Rekayasa Perangkat Lunak (Selasa)
-    expect(find.text('Rekayasa Perangkat Lunak'), findsAtLeastNWidgets(1));
-
-    // Tap prev arrow button to return to Pemrograman Mobile
-    final prevBtn = find.bySemanticsLabel('Jadwal sebelumnya');
-    expect(prevBtn, findsOneWidget);
-    await tester.tap(prevBtn);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
-  });
-
-  testWidgets('Swiping card stack to the left navigates to next course', (tester) async {
-    final mondayMorning = DateTime(2026, 11, 2, 9, 0);
-
-    await tester.runAsync(() async {
-      await tester.pumpWidget(buildTestableWidget(currentDateTime: mondayMorning));
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    });
-    await tester.pumpAndSettle();
-
-    expect(find.text('Pemrograman Mobile'), findsAtLeastNWidgets(1));
-
-    // Drag left on the stack to advance to next card
+    // Drag left to swipe to the third class today (Rekayasa Perangkat Lunak 19:30 - 21:00)
     final cardFinder = find.byWidgetPredicate(
       (widget) =>
           widget is Semantics &&
           widget.properties.label != null &&
-          widget.properties.label!.startsWith('Jadwal sekarang:'),
+          widget.properties.label!.contains('Sistem Terdistribusi'),
     );
     await tester.drag(cardFinder, const Offset(-200, 0));
     await tester.pumpAndSettle();
-
-    // Now showing next course: Rekayasa Perangkat Lunak (Selasa)
     expect(find.text('Rekayasa Perangkat Lunak'), findsAtLeastNWidgets(1));
+  });
+
+  testWidgets('Sunday has no schedules: renders empty state card', (tester) async {
+    // 2026-11-08 was a Sunday
+    final sunday = DateTime(2026, 11, 8, 10, 0);
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget(currentDateTime: sunday));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Jadwal Hari Ini'), findsOneWidget);
+    expect(find.text('Tidak Ada Jadwal Hari Ini'), findsOneWidget);
+    expect(find.textContaining('tidak ada perkuliahan yang terjadwal untuk hari ini'), findsOneWidget);
   });
 }

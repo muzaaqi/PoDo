@@ -84,6 +84,39 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Senin';
+      case DateTime.tuesday:
+        return 'Selasa';
+      case DateTime.wednesday:
+        return 'Rabu';
+      case DateTime.thursday:
+        return 'Kamis';
+      case DateTime.friday:
+        return 'Jumat';
+      case DateTime.saturday:
+        return 'Sabtu';
+      default:
+        return 'Minggu';
+    }
+  }
+
+  List<TeachingSchedule> _getTodaySchedules(List<TeachingSchedule> schedules) {
+    final now = widget.currentDateTime ?? DateTime.now();
+    final todayName = _getDayName(now.weekday);
+    final todaySchedules = schedules
+        .where((s) => s.dayOfWeek.trim().toLowerCase() == todayName.toLowerCase())
+        .toList();
+    todaySchedules.sort((a, b) {
+      final startA = _parseTimeToMinutes(a.startTime) ?? 0;
+      final startB = _parseTimeToMinutes(b.startTime) ?? 0;
+      return startA.compareTo(startB);
+    });
+    return todaySchedules;
+  }
+
   void _sortSchedules(List<TeachingSchedule> schedules) {
     schedules.sort((a, b) {
       final dayA = _getDayOrder(a.dayOfWeek);
@@ -434,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final colors = context.appColors;
 
     return Semantics(
-      label: 'Tidak ada jadwal perkuliahan yang terdaftar.',
+      label: 'Tidak ada jadwal perkuliahan hari ini.',
       excludeSemantics: true,
       child: Container(
         decoration: BoxDecoration(
@@ -464,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tidak Ada Jadwal Perkuliahan',
+                    'Tidak Ada Jadwal Hari Ini',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -473,7 +506,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Saat ini belum ada jadwal mengajar yang terdaftar dalam sistem.',
+                    'Saat ini tidak ada perkuliahan yang terjadwal untuk hari ini.',
                     style: TextStyle(
                       fontSize: 12,
                       color: colors.emerald.foreground,
@@ -640,12 +673,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 22),
 
-                  // Zone 2: Swipeable Teaching Schedule Card Stack (Jadwal Kuliah)
+                  // Zone 2: Swipeable Teaching Schedule Card Stack (Jadwal Hari Ini)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Jadwal Kuliah',
+                        'Jadwal Hari Ini',
                         style: theme.typography.body.md.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colors.foreground,
@@ -676,14 +709,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  if (_schedules.isNotEmpty)
-                    ScheduleCardStack(
-                      schedules: _schedules,
-                      currentDateTime: widget.currentDateTime,
-                      onScheduleTap: _navigateToCourseDetail,
-                    )
-                  else
-                    _buildEmptyScheduleCard(context),
+                  Builder(
+                    builder: (context) {
+                      final todaySchedules = _getTodaySchedules(_schedules);
+                      if (todaySchedules.isNotEmpty) {
+                        return ScheduleCardStack(
+                          schedules: todaySchedules,
+                          currentDateTime: widget.currentDateTime,
+                          onScheduleTap: _navigateToCourseDetail,
+                        );
+                      }
+                      return _buildEmptyScheduleCard(context);
+                    },
+                  ),
 
                   const SizedBox(height: 24),
 

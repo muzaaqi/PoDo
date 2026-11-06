@@ -228,15 +228,7 @@ class _ScheduleCardStackState extends State<ScheduleCardStack>
     });
   }
 
-  void _swipeNext() {
-    if (widget.schedules.length <= 1 || _animController.isAnimating) return;
-    _animateCardExit(toLeft: true);
-  }
 
-  void _swipePrev() {
-    if (widget.schedules.length <= 1 || _animController.isAnimating) return;
-    _animateCardExit(toLeft: false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -371,31 +363,23 @@ class _ScheduleCardStackState extends State<ScheduleCardStack>
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Semantics(
+      children: List.generate(total, (index) {
+        final isSelected = index == (_currentIndex % total);
+        return Semantics(
           button: true,
-          label: 'Jadwal sebelumnya',
+          label: 'Jadwal ke-${index + 1}',
           child: FTappable(
-            onPress: _swipePrev,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Icon(
-                FLucideIcons.chevronLeft,
-                size: 18,
-                color: theme.colors.mutedForeground,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(total, (index) {
-            final isSelected = index == (_currentIndex % total);
-            return AnimatedContainer(
+            onPress: () {
+              if (index != (_currentIndex % total)) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              }
+            },
+            child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOut,
-              margin: const EdgeInsets.symmetric(horizontal: 3),
+              margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
               width: isSelected ? 18 : 6,
               height: 6,
               decoration: BoxDecoration(
@@ -404,26 +388,10 @@ class _ScheduleCardStackState extends State<ScheduleCardStack>
                     : theme.colors.border,
                 borderRadius: BorderRadius.circular(100),
               ),
-            );
-          }),
-        ),
-        const SizedBox(width: 4),
-        Semantics(
-          button: true,
-          label: 'Jadwal berikutnya',
-          child: FTappable(
-            onPress: _swipeNext,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Icon(
-                FLucideIcons.chevronRight,
-                size: 18,
-                color: theme.colors.mutedForeground,
-              ),
             ),
           ),
-        ),
-      ],
+        );
+      }),
     );
   }
 }
