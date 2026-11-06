@@ -71,7 +71,7 @@ void main() {
     expect(find.text('Isi Biodata'), findsOneWidget);
     expect(find.text('Input Nilai'), findsOneWidget);
     expect(find.text('Mahasiswa'), findsOneWidget);
-    expect(find.text('Jadwal'), findsOneWidget);
+    expect(find.text('Aksi Cepat'), findsNothing);
 
     // Announcements
     expect(find.textContaining('Pengumuman Kampus'), findsOneWidget);

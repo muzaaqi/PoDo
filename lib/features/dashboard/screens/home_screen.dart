@@ -354,22 +354,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
 
                   // Zone 4: Menu Utama (Quick Actions)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Menu Utama',
-                        style: theme.typography.body.md.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Aksi Cepat',
-                        style: theme.typography.body.xs.copyWith(
-                          color: theme.colors.mutedForeground,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Menu Utama',
+                    style: theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -396,13 +385,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: FLucideIcons.users,
                         onTap: () => Navigator.of(context)
                             .pushNamed(AppRoutes.studentList),
-                      ),
-                      _buildQuickActionItem(
-                        context,
-                        label: 'Jadwal',
-                        icon: FLucideIcons.calendarDays,
-                        onTap: () =>
-                            MainScreenScope.of(context)?.switchToTab(1),
                       ),
                     ],
                   ),
