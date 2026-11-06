@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/routes.dart';
 import 'package:podo/core/theme/app_colors.dart';
+import 'package:podo/core/theme/app_theme_controller.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/lecturers/models/lecturer.dart';
 import 'package:podo/features/lecturers/repositories/lecturer_repository.dart';
@@ -16,7 +17,6 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   Lecturer? _lecturer;
   bool _isLoading = true;
-  bool _isDarkMode = false;
   late final ScrollController _scrollController;
   bool _showAppbarTitle = false;
 
@@ -294,6 +294,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final theme = context.theme;
     final colors = context.appColors;
     final lecturer = _lecturer;
+    final isDark = theme.colors.brightness == Brightness.dark;
 
     return FScaffold(
       header: FHeader.nested(
@@ -510,19 +511,19 @@ class _AccountScreenState extends State<AccountScreen> {
                         children: [
                           _buildSettingsTile(
                             context,
-                            icon: _isDarkMode
+                            icon: isDark
                                 ? FLucideIcons.moon
                                 : FLucideIcons.sun,
                             iconBg: colors.violet.background,
                             iconColor: colors.violet.foreground,
                             title: 'Mode Tampilan',
-                            subtitle: _isDarkMode
+                            subtitle: isDark
                                 ? 'Mode gelap aktif'
                                 : 'Mode terang aktif',
                             trailing: FSwitch(
-                              value: _isDarkMode,
+                              value: isDark,
                               onChange: (val) {
-                                setState(() => _isDarkMode = val);
+                                AppThemeController.instance.toggleTheme(val);
                                 _showFeatureNotice(
                                   'Tema Tampilan',
                                   val

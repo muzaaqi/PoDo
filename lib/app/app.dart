@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/routes.dart';
 import 'package:podo/core/theme/app_theme.dart';
+import 'package:podo/core/theme/app_theme_controller.dart';
 
 class PoDoApp extends StatelessWidget {
   final String initialRoute;
@@ -14,52 +15,59 @@ class PoDoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PoDo',
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: FLocalizations.localizationsDelegates,
-      supportedLocales: FLocalizations.supportedLocales,
-      builder: (context, child) {
-        final brightness = MediaQuery.platformBrightnessOf(context);
-        final theme = brightness == Brightness.dark
-            ? AppTheme.darkTheme
-            : AppTheme.lightTheme;
+    return ListenableBuilder(
+      listenable: AppThemeController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'PoDo',
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: FLocalizations.localizationsDelegates,
+          supportedLocales: FLocalizations.supportedLocales,
+          builder: (context, child) {
+            final themeMode = AppThemeController.instance.value;
+            final platformBrightness = MediaQuery.platformBrightnessOf(context);
+            final isDark = themeMode == ThemeMode.dark ||
+                (themeMode == ThemeMode.system &&
+                    platformBrightness == Brightness.dark);
+            final theme = isDark ? AppTheme.darkTheme : AppTheme.lightTheme;
 
-        Widget content = child ?? const SizedBox.shrink();
-        if (kIsWeb) {
-          content = Container(
-            color: const Color(0xFFF1F5F9),
-            alignment: Alignment.center,
-            child: ClipRect(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 440),
-                decoration: const BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 24,
-                      spreadRadius: 2,
-                      offset: Offset(0, 4),
+            Widget content = child ?? const SizedBox.shrink();
+            if (kIsWeb) {
+              content = Container(
+                color: const Color(0xFFF1F5F9),
+                alignment: Alignment.center,
+                child: ClipRect(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    decoration: const BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x1A000000),
+                          blurRadius: 24,
+                          spreadRadius: 2,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: child,
+                  ),
                 ),
-                child: child,
-              ),
-            ),
-          );
-        }
+              );
+            }
 
-        return FTheme(
-          data: theme,
-          child: FToaster(
-            child: FTooltipGroup(
-              child: content,
-            ),
-          ),
+            return FTheme(
+              data: theme,
+              child: FToaster(
+                child: FTooltipGroup(
+                  child: content,
+                ),
+              ),
+            );
+          },
+          initialRoute: initialRoute,
+          routes: AppRoutes.routes,
         );
       },
-      initialRoute: initialRoute,
-      routes: AppRoutes.routes,
     );
   }
 }

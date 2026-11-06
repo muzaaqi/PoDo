@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:podo/app/routes.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
+import 'package:podo/core/theme/app_theme_controller.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
 import 'package:podo/features/lecturers/screens/account_screen.dart';
 
@@ -15,6 +16,7 @@ void main() {
   });
 
   setUp(() async {
+    AppThemeController.instance.value = ThemeMode.light;
     final helper = DatabaseHelper.instance;
     await helper.initDatabase(
       path: inMemoryDatabasePath,
@@ -24,25 +26,32 @@ void main() {
   });
 
   tearDown(() async {
+    AppThemeController.instance.value = ThemeMode.system;
     await DatabaseHelper.instance.close();
     await AuthRepository.instance.logout();
   });
 
   Widget buildTestableWidget() {
-    return MaterialApp(
-      initialRoute: '/account_test',
-      routes: {
-        ...AppRoutes.routes,
-        '/account_test': (context) => const AccountScreen(),
-      },
-      builder: (context, child) => FTheme(
-        data: AppTheme.lightTheme,
-        child: FToaster(
-          child: FTooltipGroup(
-            child: child ?? const SizedBox.shrink(),
+    return ListenableBuilder(
+      listenable: AppThemeController.instance,
+      builder: (context, _) {
+        final isDark = AppThemeController.instance.value == ThemeMode.dark;
+        return MaterialApp(
+          initialRoute: '/account_test',
+          routes: {
+            ...AppRoutes.routes,
+            '/account_test': (context) => const AccountScreen(),
+          },
+          builder: (context, child) => FTheme(
+            data: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            child: FToaster(
+              child: FTooltipGroup(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
