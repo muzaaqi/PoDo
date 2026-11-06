@@ -2,10 +2,10 @@
 name: PoDo (Portal Dosen)
 description: Portal akademik mobile dosen yang bersih, to the point, terstruktur rapi, dan playful dengan Forui
 colors:
-  primary: "#0F172A"
+  primary: "#4338CA"
   primary-foreground: "#FFFFFF"
-  neutral-bg: "#FFFFFF"
-  neutral-surface: "#F8FAFC"
+  neutral-bg: "#F8FAFC"
+  neutral-surface: "#FFFFFF"
   neutral-border: "#E2E8F0"
   neutral-text: "#0F172A"
   neutral-muted: "#64748B"

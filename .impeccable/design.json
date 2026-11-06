@@ -6,14 +6,14 @@
     "colorMeta": {
       "primary": {
         "role": "primary",
-        "displayName": "Deep Slate",
-        "canonical": "#0F172A",
-        "tonalRamp": ["#020617", "#0F172A", "#1E293B", "#334155", "#475569"]
+        "displayName": "Academic Indigo",
+        "canonical": "#4338CA",
+        "tonalRamp": ["#EEF2FF", "#C7D2FE", "#818CF8", "#4338CA", "#312E81"]
       },
       "neutral-bg": {
         "role": "neutral",
-        "displayName": "Pure White",
-        "canonical": "#FFFFFF",
+        "displayName": "Canvas Slate",
+        "canonical": "#F8FAFC",
         "tonalRamp": ["#FFFFFF", "#F8FAFC", "#F1F5F9", "#E2E8F0", "#CBD5E1"]
       },
       "accent-amber": {

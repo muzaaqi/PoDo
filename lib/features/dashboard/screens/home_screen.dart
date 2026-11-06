@@ -85,52 +85,48 @@ class _HomeScreenState extends State<HomeScreen> {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
-  Widget _buildQuickActionItem(
+  Widget _buildQuickActionCard(
     BuildContext context, {
     required String label,
     required IconData icon,
     required ColorToken token,
     required VoidCallback onTap,
   }) {
-    final theme = context.theme;
-
-    return Semantics(
-      button: true,
-      label: label,
-      child: FTappable(
-        onPress: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: token.background,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                icon,
-                size: 24,
-                color: token.foreground,
-              ),
+    return Expanded(
+      child: Semantics(
+        button: true,
+        label: label,
+        child: FTappable(
+          onPress: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            decoration: BoxDecoration(
+              color: token.background,
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: 90,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: theme.typography.body.xs.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: theme.colors.foreground,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 26,
+                  color: token.foreground,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: token.foreground,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -394,29 +390,56 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Zone 1: Top Bar (Avatar on left, Notification Bell on right - NO tahun ajaran)
+                  // Zone 1: Cohesive Top Bar (Avatar + Greeting & Name + Notification Bell)
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Semantics(
                         label: 'Profil ${_lecturer?.fullName ?? "Dosen"}',
                         child: FAvatar.raw(
-                          size: 40,
+                          size: 46,
                           child: Text(
                             _getInitials(_lecturer?.fullName),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Selamat Datang,',
+                              style: theme.typography.body.xs.copyWith(
+                                color: theme.colors.mutedForeground,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _lecturer?.fullName ?? 'Dosen',
+                              style: theme.typography.body.lg.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colors.foreground,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
                       Semantics(
                         button: true,
                         label: 'Notifikasi',
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
-                            color: theme.colors.secondary,
+                            color: theme.colors.card,
                             shape: BoxShape.circle,
+                            border: Border.all(color: theme.colors.border),
                           ),
                           alignment: Alignment.center,
                           child: Icon(
@@ -429,28 +452,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 22),
 
-                  // Zone 2: Large Greeting Headline
-                  Text(
-                    'Selamat Datang,',
-                    style: theme.typography.body.sm.copyWith(
-                      color: theme.colors.mutedForeground,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _lecturer?.fullName ?? 'Dosen',
-                    style: theme.typography.display.lg.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colors.foreground,
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // Zone 3: Upcoming Schedule Hero Card (Jadwal Terdekat)
+                  // Zone 2: Upcoming Schedule Hero Card (Jadwal Terdekat)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -470,30 +474,30 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               'Lihat Semua',
                               style: theme.typography.body.xs.copyWith(
-                                color: theme.colors.mutedForeground,
-                                fontWeight: FontWeight.w500,
+                                color: theme.colors.primary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(width: 4),
                             Icon(
                               FLucideIcons.arrowRight,
                               size: 14,
-                              color: theme.colors.mutedForeground,
+                              color: theme.colors.primary,
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   if (_upcomingSchedule != null)
                     _buildHeroScheduleCard(context, _upcomingSchedule!)
                   else
                     _buildEmptyScheduleCard(context),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                  // Zone 4: Menu Utama (Solid Matte Pastel Squircles)
+                  // Zone 3: Menu Utama (3 Distinct Solid Matte Pastel Cards)
                   Text(
                     'Menu Utama',
                     style: theme.typography.body.md.copyWith(
@@ -503,10 +507,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildQuickActionItem(
+                      _buildQuickActionCard(
                         context,
                         label: 'Isi Biodata',
                         icon: FLucideIcons.clipboardEdit,
@@ -514,7 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () => Navigator.of(context)
                             .pushNamed(AppRoutes.studentBiodataForm),
                       ),
-                      _buildQuickActionItem(
+                      const SizedBox(width: 10),
+                      _buildQuickActionCard(
                         context,
                         label: 'Input Nilai',
                         icon: FLucideIcons.award,
@@ -522,7 +525,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () =>
                             MainScreenScope.of(context)?.switchToTab(2),
                       ),
-                      _buildQuickActionItem(
+                      const SizedBox(width: 10),
+                      _buildQuickActionCard(
                         context,
                         label: 'Mahasiswa',
                         icon: FLucideIcons.users,
@@ -533,9 +537,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
 
-                  // Zone 5: Pengumuman Kampus Section (Solid Matte Pastel Category Badges)
+                  // Zone 4: Pengumuman Kampus Section (Solid Matte Pastel Category Badges)
                   Text(
                     'Pengumuman Kampus',
                     style: theme.typography.body.md.copyWith(
@@ -543,7 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: theme.colors.foreground,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
                   ...Announcement.demoAnnouncements.map((item) {
                     final isAkademik =

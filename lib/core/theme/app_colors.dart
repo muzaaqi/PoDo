@@ -20,6 +20,11 @@ class ColorToken {
 class AppColors {
   final Brightness brightness;
 
+  final Color brandPrimary;
+  final Color brandPrimaryForeground;
+  final Color canvas;
+
+  final ColorToken indigo;
   final ColorToken amber;
   final ColorToken violet;
   final ColorToken emerald;
@@ -28,6 +33,10 @@ class AppColors {
 
   const AppColors._({
     required this.brightness,
+    required this.brandPrimary,
+    required this.brandPrimaryForeground,
+    required this.canvas,
+    required this.indigo,
     required this.amber,
     required this.violet,
     required this.emerald,
@@ -39,6 +48,14 @@ class AppColors {
 
   static const light = AppColors._(
     brightness: Brightness.light,
+    brandPrimary: Color(0xFF4338CA),
+    brandPrimaryForeground: Color(0xFFFFFFFF),
+    canvas: Color(0xFFF8FAFC),
+    indigo: ColorToken(
+      background: Color(0xFFEEF2FF),
+      foreground: Color(0xFF4338CA),
+      card: Color(0xFFF8FAFC),
+    ),
     amber: ColorToken(
       background: Color(0xFFFEF3C7),
       foreground: Color(0xFF92400E),
@@ -68,6 +85,14 @@ class AppColors {
 
   static const dark = AppColors._(
     brightness: Brightness.dark,
+    brandPrimary: Color(0xFF6366F1),
+    brandPrimaryForeground: Color(0xFF0F172A),
+    canvas: Color(0xFF090A0F),
+    indigo: ColorToken(
+      background: Color(0xFF1E1B4B),
+      foreground: Color(0xFFC7D2FE),
+      card: Color(0xFF13151D),
+    ),
     amber: ColorToken(
       background: Color(0xFF2E2417),
       foreground: Color(0xFFFDE68A),
