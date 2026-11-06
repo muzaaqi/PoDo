@@ -496,68 +496,86 @@ class _CourseListScreenState extends State<CourseListScreen> {
               )
             : const SizedBox.shrink(),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Mata Kuliah',
-                        style: theme.typography.display.lg.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    Text(
+                      'Mata Kuliah',
+                      style: theme.typography.display.lg.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    FButton(
-                      size: FButtonSizeVariant.sm,
-                      prefix: const Icon(FLucideIcons.plus),
-                      onPress: _showAddOfferingSheet,
-                      child: const Text('Kuliah'),
+                    const SizedBox(height: 14),
+                    _buildHeroBanner(context),
+                    const SizedBox(height: 12),
+                    FTextField(
+                      hint: 'Cari mata kuliah atau kelas...',
+                      clearable: (value) => value.text.isNotEmpty,
+                      prefixBuilder: (context, style, variants) =>
+                          FTextField.prefixIconBuilder(
+                        context,
+                        style,
+                        variants,
+                        const Icon(FLucideIcons.search),
+                      ),
+                      control: FTextFieldControl.managed(
+                        controller: _searchController,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                _buildHeroBanner(context),
-                const SizedBox(height: 12),
-                FTextField(
-                  hint: 'Cari mata kuliah atau kelas...',
-                  clearable: (value) => value.text.isNotEmpty,
-                  prefixBuilder: (context, style, variants) =>
-                      FTextField.prefixIconBuilder(
-                    context,
-                    style,
-                    variants,
-                    const Icon(FLucideIcons.search),
-                  ),
-                  control: FTextFieldControl.managed(
-                    controller: _searchController,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: Text('Memuat mata kuliah...'))
+                    : _offerings.isEmpty
+                        ? _buildEmptyState(context)
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
+                            itemCount: _offerings.length,
+                            itemBuilder: (context, index) => _buildCourseCard(
+                              context,
+                              _offerings[index],
+                              index,
+                            ),
+                          ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: Text('Memuat mata kuliah...'))
-                : _offerings.isEmpty
-                    ? _buildEmptyState(context)
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                        itemCount: _offerings.length,
-                        itemBuilder: (context, index) => _buildCourseCard(
-                          context,
-                          _offerings[index],
-                          index,
-                        ),
-                      ),
+          Positioned(
+            right: 20,
+            bottom: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colors.primary.withValues(alpha: 0.35),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: FButton.icon(
+                  variant: FButtonVariant.primary,
+                  size: FButtonSizeVariant.lg,
+                  semanticsLabel: 'Tambah Kelas Kuliah',
+                  onPress: _showAddOfferingSheet,
+                  child: const Icon(FLucideIcons.plus),
+                ),
+              ),
+            ),
           ),
         ],
       ),
