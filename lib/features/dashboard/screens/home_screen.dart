@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           SizedBox(
-            width: 72,
+            width: 90,
             child: Text(
               label,
               textAlign: TextAlign.center,
@@ -219,12 +219,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         FTappable(
                           onPress: () =>
                               MainScreenScope.of(context)?.switchToTab(1),
-                          child: Text(
-                            'Lihat Semua',
-                            style: theme.typography.body.xs.copyWith(
-                              color: theme.colors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Lihat Semua',
+                                style: theme.typography.body.xs.copyWith(
+                                  color: theme.colors.mutedForeground,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                FLucideIcons.arrowRight,
+                                size: 14,
+                                color: theme.colors.mutedForeground,
+                              ),
+                            ],
                           ),
                         ),
                       ],

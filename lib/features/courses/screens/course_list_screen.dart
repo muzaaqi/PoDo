@@ -257,13 +257,6 @@ class _CourseListScreenState extends State<CourseListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Semester Ganjil 2024/2025',
-                  style: theme.typography.body.xs.copyWith(
-                    color: theme.colors.mutedForeground,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
                   'Mata Kuliah',
                   style: theme.typography.display.lg.copyWith(
                     fontWeight: FontWeight.bold,

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:podo/app/routes.dart';
 import 'package:podo/core/database/database_helper.dart';
 import 'package:podo/core/theme/app_theme.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
+import 'package:podo/features/courses/screens/course_detail_screen.dart';
 import 'package:podo/features/schedule/screens/schedule_screen.dart';
 
 void main() {
@@ -121,5 +123,37 @@ void main() {
     expect(find.text('Pemrograman Mobile'), findsOneWidget);
     expect(find.textContaining('KU3.02'), findsOneWidget);
     expect(find.textContaining('13:00 - 15:30'), findsOneWidget);
+  });
+
+  testWidgets('Tapping schedule card navigates to CourseDetailScreen', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(MaterialApp(
+        initialRoute: '/schedule_test',
+        routes: {
+          ...AppRoutes.routes,
+          '/schedule_test': (context) => const ScheduleScreen(),
+        },
+        builder: (context, child) => FTheme(
+          data: AppTheme.lightTheme,
+          child: FToaster(
+            child: FTooltipGroup(
+              child: child ?? const SizedBox.shrink(),
+            ),
+          ),
+        ),
+      ));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pumpAndSettle();
+
+    final card = find.text('Pemrograman Mobile');
+    expect(card, findsOneWidget);
+    await tester.tap(card);
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CourseDetailScreen), findsOneWidget);
   });
 }

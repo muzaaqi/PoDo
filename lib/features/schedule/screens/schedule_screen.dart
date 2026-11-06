@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
+import 'package:podo/app/routes.dart';
 import 'package:podo/features/auth/repositories/auth_repository.dart';
+import 'package:podo/features/courses/models/course_offering.dart';
+import 'package:podo/features/courses/repositories/course_repository.dart';
 import 'package:podo/features/schedule/models/teaching_schedule.dart';
 import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 
@@ -71,6 +74,27 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _navigateToCourseDetail(TeachingSchedule schedule) async {
+    final offering =
+        await CourseRepository.instance.getOfferingById(schedule.offeringId) ??
+            CourseOffering(
+              offeringId: schedule.offeringId,
+              courseCode: schedule.courseCode,
+              lecturerId: AuthRepository.instance.activeLecturerId ?? '',
+              className: schedule.className,
+              academicYear: schedule.academicYear,
+              term: schedule.term,
+              courseName: schedule.courseName,
+              credits: schedule.credits,
+            );
+    if (mounted) {
+      Navigator.of(context).pushNamed(
+        AppRoutes.courseDetail,
+        arguments: offering,
+      );
     }
   }
 
@@ -185,82 +209,91 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 14),
-              child: FCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              schedule.courseName,
-                              style: theme.typography.body.md.copyWith(
-                                fontWeight: FontWeight.bold,
+              child: FTappable(
+                onPress: () => _navigateToCourseDetail(schedule),
+                child: FCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                schedule.courseName,
+                                style: theme.typography.body.md.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          FBadge(
-                            variant: FBadgeVariant.secondary,
-                            child: Text('${schedule.credits} SKS'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Icon(
-                            FLucideIcons.users,
-                            size: 14,
-                            color: theme.colors.mutedForeground,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Kelas ${schedule.className}',
-                            style: theme.typography.body.xs.copyWith(
+                            const SizedBox(width: 8),
+                            FBadge(
+                              variant: FBadgeVariant.secondary,
+                              child: Text('${schedule.credits} SKS'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(
+                              FLucideIcons.users,
+                              size: 14,
                               color: theme.colors.mutedForeground,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            FLucideIcons.mapPin,
-                            size: 14,
-                            color: theme.colors.mutedForeground,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Ruang ${schedule.room}',
-                            style: theme.typography.body.xs.copyWith(
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(width: 6),
+                            Text(
+                              'Kelas ${schedule.className}',
+                              style: theme.typography.body.xs.copyWith(
+                                color: theme.colors.mutedForeground,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            FLucideIcons.clock,
-                            size: 14,
-                            color: theme.colors.mutedForeground,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${schedule.startTime} - ${schedule.endTime}',
-                            style: theme.typography.body.xs.copyWith(
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              FLucideIcons.mapPin,
+                              size: 14,
                               color: theme.colors.mutedForeground,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 6),
+                            Text(
+                              'Ruang ${schedule.room}',
+                              style: theme.typography.body.xs.copyWith(
+                                color: theme.colors.mutedForeground,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              FLucideIcons.clock,
+                              size: 14,
+                              color: theme.colors.mutedForeground,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${schedule.startTime} - ${schedule.endTime}',
+                              style: theme.typography.body.xs.copyWith(
+                                color: theme.colors.mutedForeground,
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(
+                              FLucideIcons.chevronRight,
+                              size: 16,
+                              color: theme.colors.mutedForeground,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -343,14 +376,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Zone 1: Subtitle & Large Title Header (matching jadwal.jpg)
-                  Text(
-                    'Semester Ganjil 2024/2025',
-                    style: theme.typography.body.xs.copyWith(
-                      color: theme.colors.mutedForeground,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
                   Text(
                     'Jadwal Mengajar',
                     style: theme.typography.display.lg.copyWith(
