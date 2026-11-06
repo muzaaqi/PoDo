@@ -33,6 +33,26 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showAppbarTitle = false;
   Timer? _liveTicker;
 
+  ColorToken _getCategoryToken(String category, AppColors colors) {
+    final lower = category.toLowerCase();
+    if (lower.contains('akademik')) return colors.violet;
+    if (lower.contains('kegiatan') || lower.contains('workshop')) {
+      return colors.amber;
+    }
+    if (lower.contains('fakultas')) return colors.emerald;
+    return colors.sky;
+  }
+
+  IconData _getCategoryIcon(String category) {
+    final lower = category.toLowerCase();
+    if (lower.contains('akademik')) return FLucideIcons.graduationCap;
+    if (lower.contains('kegiatan') || lower.contains('workshop')) {
+      return FLucideIcons.calendar;
+    }
+    if (lower.contains('fakultas')) return FLucideIcons.building2;
+    return FLucideIcons.megaphone;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -209,159 +229,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (_) {}
     return null;
-  }
-
-  void _showNotificationSheet(BuildContext context) {
-    final theme = context.theme;
-    final colors = context.appColors;
-
-    showFSheet(
-      context: context,
-      side: FLayout.btt,
-      builder: (sheetContext) {
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colors.background,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colors.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(FLucideIcons.bell, size: 20, color: theme.colors.foreground),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Notifikasi & Pengumuman',
-                        style: theme.typography.body.md.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colors.foreground,
-                        ),
-                      ),
-                    ],
-                  ),
-                  FTappable(
-                    onPress: () => Navigator.of(sheetContext).pop(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(FLucideIcons.x, size: 18, color: theme.colors.mutedForeground),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: Announcement.demoAnnouncements.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final item = Announcement.demoAnnouncements[index];
-                    final isAkademik = item.category.toLowerCase().contains('akademik');
-                    final isMahasiswa = item.category.toLowerCase().contains('mahasiswa');
-                    final catToken = isAkademik
-                        ? colors.violet
-                        : (isMahasiswa ? colors.sky : colors.amber);
-                    final catIcon = isAkademik
-                        ? FLucideIcons.graduationCap
-                        : (isMahasiswa ? FLucideIcons.users : FLucideIcons.building2);
-
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: theme.colors.card,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: theme.colors.border, width: 1),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: catToken.background,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              catIcon,
-                              size: 18,
-                              color: catToken.foreground,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      item.category,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: catToken.foreground,
-                                      ),
-                                    ),
-                                    Text(
-                                      item.date,
-                                      style: theme.typography.body.xs.copyWith(
-                                        color: theme.colors.mutedForeground,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  item.title,
-                                  style: theme.typography.body.sm.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colors.foreground,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item.summary,
-                                  style: theme.typography.body.xs.copyWith(
-                                    color: theme.colors.mutedForeground,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   Widget _buildErrorView(BuildContext context) {
@@ -628,46 +495,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Semantics(
-                            button: true,
-                            label: 'Notifikasi kampus',
-                            child: FTappable(
-                              onPress: () => _showNotificationSheet(context),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Container(
-                                    width: 42,
-                                    height: 42,
-                                    decoration: BoxDecoration(
-                                      color: theme.colors.card,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: theme.colors.border),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      FLucideIcons.bell,
-                                      size: 18,
-                                      color: theme.colors.mutedForeground,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 2,
-                                    right: 2,
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: theme.colors.primary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                         ],
                       ),
 
@@ -778,18 +605,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
 
                   ...Announcement.demoAnnouncements.map((item) {
-                    final isAkademik =
-                        item.category.toLowerCase().contains('akademik');
-                    final isMahasiswa =
-                        item.category.toLowerCase().contains('mahasiswa');
-                    final catToken = isAkademik
-                        ? colors.violet
-                        : (isMahasiswa ? colors.sky : colors.amber);
-                    final catIcon = isAkademik
-                        ? FLucideIcons.graduationCap
-                        : (isMahasiswa
-                            ? FLucideIcons.users
-                            : FLucideIcons.building2);
+                    final catToken = _getCategoryToken(item.category, colors);
+                    final catIcon = _getCategoryIcon(item.category);
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -797,7 +614,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                           color: theme.colors.card,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: theme.colors.border, width: 1.5),
+                          border: Border.all(
+                            color: theme.colors.border,
+                            width: 1.5,
+                          ),
                         ),
                         padding: const EdgeInsets.all(16),
                         child: Row(

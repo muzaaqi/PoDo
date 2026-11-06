@@ -117,28 +117,15 @@ void main() {
     expect(find.text('Tambah Mahasiswa'), findsOneWidget);
   });
 
-  testWidgets('Tapping notification bell opens notification sheet and can be closed', (tester) async {
+  testWidgets('Top bar does not render notification icon', (tester) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(buildTestableWidget());
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
 
-    final bellButton = find.bySemanticsLabel('Notifikasi kampus');
-    expect(bellButton, findsOneWidget);
-    await tester.tap(bellButton);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Notifikasi & Pengumuman'), findsOneWidget);
-    expect(find.text('Batas Akhir Penginputan Nilai CPMK Semester Ganjil'), findsWidgets);
-
-    // Tap close
-    final closeIcon = find.byIcon(FLucideIcons.x);
-    expect(closeIcon, findsOneWidget);
-    await tester.tap(closeIcon);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Notifikasi & Pengumuman'), findsNothing);
+    expect(find.bySemanticsLabel('Notifikasi kampus'), findsNothing);
+    expect(find.byIcon(FLucideIcons.bell), findsNothing);
   });
 
   testWidgets('Hero schedule card displays ongoing class when within scheduled time', (tester) async {
