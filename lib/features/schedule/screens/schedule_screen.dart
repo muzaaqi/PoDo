@@ -650,27 +650,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ),
                         const SizedBox(height: 8),
                         SizedBox(
-                          height: 10,
+                          height: 20,
                           child: Stack(
                             clipBehavior: Clip.none,
                             alignment: Alignment.centerLeft,
                             children: [
-                              Container(
-                                width: double.infinity,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: token.background,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                              FractionallySizedBox(
-                                widthFactor: progress,
-                                alignment: Alignment.centerLeft,
-                                child: Container(
-                                  height: 6,
-                                  decoration: BoxDecoration(
+                              FDeterminateProgress(
+                                value: progress,
+                                style: FDeterminateProgressStyle(
+                                  constraints:
+                                      const BoxConstraints.tightFor(height: 6),
+                                  trackDecoration: BoxDecoration(
+                                    color: token.background,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  fillDecoration: BoxDecoration(
                                     color: token.foreground,
-                                    borderRadius: BorderRadius.circular(3),
+                                    borderRadius: BorderRadius.circular(100),
                                   ),
                                 ),
                               ),
@@ -680,14 +676,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   0.0,
                                 ),
                                 child: Container(
-                                  width: 8,
-                                  height: 8,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: colors.emerald.foreground,
-                                    shape: BoxShape.circle,
+                                    color: token.foreground,
+                                    borderRadius: BorderRadius.circular(100),
                                     border: Border.all(
                                       color: theme.colors.card,
                                       width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '${(progress * 100).toInt()}%',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFFFFFFFF),
+                                      height: 1.0,
                                     ),
                                   ),
                                 ),

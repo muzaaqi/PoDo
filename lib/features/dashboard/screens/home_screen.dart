@@ -507,38 +507,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colors.card,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: colors.emerald.foreground,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Berlangsung',
-                                  style: TextStyle(
-                                    color: colors.amber.foreground,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
                     ],
@@ -621,27 +589,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            FLucideIcons.timer,
-                            size: 13,
-                            color: colors.amber.foreground,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Waktu Berjalan (${(progress * 100).toInt()}%)',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: colors.amber.foreground,
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        FLucideIcons.timer,
+                        size: 13,
+                        color: remainingMinutes <= 15
+                            ? colors.coral.foreground
+                            : colors.amber.foreground,
                       ),
+                      const SizedBox(width: 5),
                       Text(
                         remainingMinutes > 0
                             ? 'Tersisa $remainingMinutes mnt'
@@ -658,47 +615,53 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 10,
+                    height: 20,
                     child: Stack(
                       clipBehavior: Clip.none,
                       alignment: Alignment.centerLeft,
                       children: [
-                        // Base timeline track
-                        Container(
-                          width: double.infinity,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: colors.amber.background,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        // Elapsed filled timeline
-                        FractionallySizedBox(
-                          widthFactor: progress,
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            height: 6,
-                            decoration: BoxDecoration(
+                        // Forui Determinate Progress
+                        FDeterminateProgress(
+                          value: progress,
+                          style: FDeterminateProgressStyle(
+                            constraints:
+                                const BoxConstraints.tightFor(height: 6),
+                            trackDecoration: BoxDecoration(
+                              color: colors.amber.background,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            fillDecoration: BoxDecoration(
                               color: colors.amber.foreground,
-                              borderRadius: BorderRadius.circular(3),
+                              borderRadius: BorderRadius.circular(100),
                             ),
                           ),
                         ),
-                        // Live clock head indicator
+                        // Real-time current position dot showing percentage
                         Align(
                           alignment: Alignment(
                             (-1.0 + 2.0 * progress).clamp(-1.0, 1.0),
                             0.0,
                           ),
                           child: Container(
-                            width: 8,
-                            height: 8,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: colors.emerald.foreground,
-                              shape: BoxShape.circle,
+                              color: colors.amber.foreground,
+                              borderRadius: BorderRadius.circular(100),
                               border: Border.all(
                                 color: theme.colors.card,
                                 width: 1.5,
+                              ),
+                            ),
+                            child: Text(
+                              '${(progress * 100).toInt()}%',
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFFFFFFF),
+                                height: 1.0,
                               ),
                             ),
                           ),
