@@ -6,6 +6,8 @@ import 'package:podo/features/courses/models/course.dart';
 import 'package:podo/features/courses/models/course_offering.dart';
 import 'package:podo/features/courses/repositories/course_repository.dart';
 import 'package:podo/features/courses/widgets/add_course_sheet.dart';
+import 'package:podo/features/schedule/models/teaching_schedule.dart';
+import 'package:podo/features/schedule/repositories/schedule_repository.dart';
 
 /// Modal bottom sheet for adding a new course offering (kelas perkuliahan)
 /// with a searchable dropdown select for picking the master course.
@@ -23,6 +25,12 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
 
   late final TextEditingController _classNameController;
   late final TextEditingController _academicYearController;
+  late final TextEditingController _roomController;
+  late final TextEditingController _startTimeController;
+  late final TextEditingController _endTimeController;
+
+  String _selectedDay = 'Senin';
+  int? _existingScheduleId;
 
   List<Course> _availableCourses = [];
   Course? _selectedCourse;
@@ -39,8 +47,13 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
     final initial = widget.initialOffering;
     _classNameController = TextEditingController(text: initial?.className ?? '');
     _academicYearController = TextEditingController(text: initial?.academicYear ?? '2024/2025');
+    _roomController = TextEditingController();
+    _startTimeController = TextEditingController(text: '08:00');
+    _endTimeController = TextEditingController(text: '10:30');
+
     if (initial != null) {
       _selectedTerm = initial.term;
+      _loadExistingSchedule(initial.offeringId);
     }
     _loadMasterCourses();
   }
@@ -49,7 +62,25 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
   void dispose() {
     _classNameController.dispose();
     _academicYearController.dispose();
+    _roomController.dispose();
+    _startTimeController.dispose();
+    _endTimeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadExistingSchedule(String offeringId) async {
+    try {
+      final schedule = await ScheduleRepository.instance.getPrimaryScheduleForOffering(offeringId);
+      if (schedule != null && mounted) {
+        setState(() {
+          _existingScheduleId = schedule.id;
+          _selectedDay = schedule.dayOfWeek;
+          _roomController.text = schedule.room;
+          _startTimeController.text = schedule.startTime;
+          _endTimeController.text = schedule.endTime;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadMasterCourses() async {
@@ -94,6 +125,9 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
   Future<void> _saveOffering() async {
     final className = _classNameController.text.trim();
     final academicYear = _academicYearController.text.trim();
+    final room = _roomController.text.trim();
+    final startTime = _startTimeController.text.trim();
+    final endTime = _endTimeController.text.trim();
 
     if (_selectedCourse == null) {
       setState(() => _errorMessage = 'Silakan pilih mata kuliah.');
@@ -107,6 +141,22 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
 
     if (academicYear.isEmpty) {
       setState(() => _errorMessage = 'Tahun akademik wajib diisi.');
+      return;
+    }
+
+    if (room.isEmpty) {
+      setState(() => _errorMessage = 'Ruangan perkuliahan wajib diisi (contoh: KU3.01 / LAB-02).');
+      return;
+    }
+
+    if (startTime.isEmpty || endTime.isEmpty) {
+      setState(() => _errorMessage = 'Jam mulai dan jam selesai perkuliahan wajib diisi.');
+      return;
+    }
+
+    final timeRegex = RegExp(r'^\d{1,2}:\d{2}$');
+    if (!timeRegex.hasMatch(startTime) || !timeRegex.hasMatch(endTime)) {
+      setState(() => _errorMessage = 'Format jam harus HH:MM (contoh: 08:00 atau 13:30).');
       return;
     }
 
@@ -132,6 +182,33 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
           credits: _selectedCourse!.credits,
         );
         await CourseRepository.instance.updateOffering(updatedOffering);
+
+        if (_existingScheduleId != null) {
+          await ScheduleRepository.instance.updateSchedule(
+            TeachingSchedule(
+              id: _existingScheduleId!,
+              offeringId: widget.initialOffering!.offeringId,
+              dayOfWeek: _selectedDay,
+              room: room,
+              startTime: startTime,
+              endTime: endTime,
+              courseCode: _selectedCourse!.courseCode,
+              courseName: _selectedCourse!.courseName,
+              credits: _selectedCourse!.credits,
+              className: className,
+              academicYear: academicYear,
+              term: _selectedTerm,
+            ),
+          );
+        } else {
+          await ScheduleRepository.instance.createSchedule(
+            offeringId: widget.initialOffering!.offeringId,
+            dayOfWeek: _selectedDay,
+            room: room,
+            startTime: startTime,
+            endTime: endTime,
+          );
+        }
       } else {
         final offeringId =
             'OFF_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}';
@@ -147,12 +224,20 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
             credits: _selectedCourse!.credits,
           ),
         );
+        await ScheduleRepository.instance.createSchedule(
+          offeringId: offeringId,
+          dayOfWeek: _selectedDay,
+          room: room,
+          startTime: startTime,
+          endTime: endTime,
+        );
       }
 
       if (mounted) {
         Navigator.of(context).pop(true);
       }
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('Error saving offering in AddClassOfferingSheet: $e\n$stack');
       if (mounted) {
         setState(() {
           _isSaving = false;
@@ -480,6 +565,163 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                                     ),
                                   );
                                 }).toList(),
+                              ),
+                              const SizedBox(height: 20),
+
+                              // Section: Jadwal Perkuliahan
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.violet.background,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      FLucideIcons.calendarClock,
+                                      size: 16,
+                                      color: colors.violet.foreground,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Jadwal Perkuliahan',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: colors.violet.foreground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Hari Perkuliahan (FSelect)
+                              FSelect<String>(
+                                items: const {
+                                  'Senin': 'Senin',
+                                  'Selasa': 'Selasa',
+                                  'Rabu': 'Rabu',
+                                  'Kamis': 'Kamis',
+                                  'Jumat': 'Jumat',
+                                  'Sabtu': 'Sabtu',
+                                },
+                                control: FSelectControl.managed(
+                                  initial: _selectedDay,
+                                  onChange: (day) {
+                                    if (day != null) {
+                                      setState(() => _selectedDay = day);
+                                    }
+                                  },
+                                ),
+                                label: Text(
+                                  'Hari Perkuliahan',
+                                  style: theme.typography.body.xs.copyWith(
+                                    color: theme.colors.mutedForeground,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                hint: 'Pilih hari...',
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Ruangan Field
+                              Text(
+                                'Ruangan',
+                                style: theme.typography.body.xs.copyWith(
+                                  color: theme.colors.mutedForeground,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              FTextField(
+                                hint: 'Contoh: KU3.01 / LAB-02',
+                                prefixBuilder: (context, style, variants) =>
+                                    FTextField.prefixIconBuilder(
+                                  context,
+                                  style,
+                                  variants,
+                                  const Icon(FLucideIcons.mapPin),
+                                ),
+                                control: FTextFieldControl.managed(
+                                  controller: _roomController,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Times row: Jam Mulai & Jam Selesai
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Jam Mulai',
+                                          style: theme.typography.body.xs
+                                              .copyWith(
+                                            color:
+                                                theme.colors.mutedForeground,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        FTextField(
+                                          hint: '08:00',
+                                          prefixBuilder:
+                                              (context, style, variants) =>
+                                                  FTextField.prefixIconBuilder(
+                                            context,
+                                            style,
+                                            variants,
+                                            const Icon(FLucideIcons.clock),
+                                          ),
+                                          control: FTextFieldControl.managed(
+                                            controller: _startTimeController,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Jam Selesai',
+                                          style: theme.typography.body.xs
+                                              .copyWith(
+                                            color:
+                                                theme.colors.mutedForeground,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        FTextField(
+                                          hint: '10:30',
+                                          prefixBuilder:
+                                              (context, style, variants) =>
+                                                  FTextField.prefixIconBuilder(
+                                            context,
+                                            style,
+                                            variants,
+                                            const Icon(FLucideIcons.clock),
+                                          ),
+                                          control: FTextFieldControl.managed(
+                                            controller: _endTimeController,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 24),
 

@@ -278,23 +278,38 @@ void main() {
 
       // Enter class name IF-44-04
       final classField = find.widgetWithText(FTextField, 'Contoh: IF-44-01');
-      await tester.enterText(classField, 'IF-44-04');
-      await tester.pump();
-
-      // Scroll to Simpan Kelas if needed and tap
-      await tester.ensureVisible(find.text('Simpan Kelas'));
+      await tester.ensureVisible(classField);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Simpan Kelas'));
+      await tester.enterText(classField, 'IF-44-04');
+      await tester.pumpAndSettle();
+
+      // Enter room
+      final roomField = find.widgetWithText(FTextField, 'Contoh: KU3.01 / LAB-02');
+      await tester.ensureVisible(roomField);
+      await tester.pumpAndSettle();
+      await tester.enterText(roomField, 'KU3.01');
+      await tester.pumpAndSettle();
+
+      // Scroll down to submit button
+      await tester.drag(find.byType(SingleChildScrollView).last, const Offset(0, -300));
+      await tester.pumpAndSettle();
+
+      final submitButton = find.widgetWithText(FButton, 'Simpan Kelas');
+      final button = tester.widget<FButton>(submitButton);
+      await tester.runAsync(() async {
+        button.onPress!();
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      });
 
       // Let SQLite persist and refresh
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
       });
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
       });
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Sheet should be dismissed
       expect(find.byType(AddClassOfferingSheet), findsNothing);
