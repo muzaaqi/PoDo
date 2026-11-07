@@ -97,14 +97,17 @@ void main() {
     await tester.enterText(find.byType(FTextField).at(0), '2101088');
     // Full Name
     await tester.enterText(find.byType(FTextField).at(1), 'Rian Hidayat');
-    // Study Program
-    await tester.enterText(find.byType(FTextField).at(2), 'Sistem Informasi');
+    // Select Study Program: Sistem Informasi
+    await tester.tap(find.byWidgetPredicate((widget) => widget is FSelect));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sistem Informasi').last);
+    await tester.pumpAndSettle();
     // Department
-    await tester.enterText(find.byType(FTextField).at(3), 'Teknologi Informasi');
+    await tester.enterText(find.byType(FTextField).at(2), 'Sistem Informasi');
     // Phone
-    await tester.enterText(find.byType(FTextField).at(4), '081234567888');
+    await tester.enterText(find.byType(FTextField).at(3), '081234567888');
     // Address
-    await tester.enterText(find.byType(FTextField).at(5), 'Jl. Buah Batu No. 5');
+    await tester.enterText(find.byType(FTextField).at(4), 'Jl. Buah Batu No. 5');
 
     final saveButton = find.text('Simpan Mahasiswa');
     await tester.ensureVisible(saveButton);
@@ -243,5 +246,149 @@ void main() {
       final data = textWidget.data ?? textWidget.textSpan?.toPlainText() ?? '';
       expect(data.contains('•'), isFalse, reason: 'Text contains banned bullet: "$data"');
     }
+  });
+
+  testWidgets('Dirty form triggers discard dialog when back button is pressed, and can cancel or discard', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => FTheme(
+          data: AppTheme.lightTheme,
+          child: FToaster(
+            child: FTooltipGroup(
+              child: child ?? const SizedBox.shrink(),
+            ),
+          ),
+        ),
+        home: Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const StudentBiodataFormScreen(),
+              ),
+            ),
+            child: const Text('Open Form'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Open form
+    await tester.tap(find.text('Open Form'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tambah Mahasiswa'), findsOneWidget);
+
+    // Modify a field to make the form dirty
+    await tester.enterText(find.byType(FTextField).at(0), '2101099');
+    await tester.pumpAndSettle();
+
+    // Tap back button
+    final backButton = find.byType(FHeaderAction);
+    await tester.tap(backButton);
+    await tester.pumpAndSettle();
+
+    // Dialog appears
+    expect(find.text('Buang Perubahan?'), findsOneWidget);
+    expect(find.text('Data biodata mahasiswa yang sudah Anda isi belum disimpan dan akan hilang jika Anda keluar.'), findsOneWidget);
+
+    // Tap "Lanjut Mengisi" to stay
+    await tester.tap(find.text('Lanjut Mengisi'));
+    await tester.pumpAndSettle();
+    expect(find.text('Buang Perubahan?'), findsNothing);
+    expect(find.text('Tambah Mahasiswa'), findsOneWidget);
+
+    // Tap back again and choose "Buang Perubahan"
+    await tester.tap(backButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buang Perubahan'));
+    await tester.pumpAndSettle();
+
+    // Screen is popped back to Open Form
+    expect(find.text('Open Form'), findsOneWidget);
+    expect(find.text('Tambah Mahasiswa'), findsNothing);
+  });
+
+  testWidgets('Selecting "Lainnya" shows custom study program field and saves custom value', (tester) async {
+    await tester.pumpWidget(buildTestableWidget());
+    await tester.pumpAndSettle();
+
+    // NIM & Name
+    await tester.enterText(find.byType(FTextField).at(0), '2101095');
+    await tester.enterText(find.byType(FTextField).at(1), 'Siti Aminah');
+
+    // Select "Lainnya" in FSelect
+    await tester.tap(find.byWidgetPredicate((widget) => widget is FSelect));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lainnya (Kustom)').last);
+    await tester.pumpAndSettle();
+
+    // Custom study program field should now be visible
+    expect(find.text('Nama Program Studi Kustom'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nama Program Studi Kustom'),
+      'Teknologi Sains Data',
+    );
+
+    // Save
+    final saveButton = find.text('Simpan Mahasiswa');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pump();
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    Student? student;
+    await tester.runAsync(() async {
+      student = await StudentRepository.instance.getStudentByNim('2101095');
+    });
+    expect(student, isNotNull);
+    expect(student!.studyProgram, 'Teknologi Sains Data');
+  });
+
+  testWidgets('Shows error banner when save operation fails and dismisses when close icon tapped', (tester) async {
+    await tester.pumpWidget(buildTestableWidget());
+    await tester.pumpAndSettle();
+
+    // Fill valid data
+    await tester.enterText(find.byType(FTextField).at(0), '2101096');
+    await tester.enterText(find.byType(FTextField).at(1), 'Dewi Sartika');
+
+    // Drop table students to simulate database error
+    await tester.runAsync(() async {
+      final db = await DatabaseHelper.instance.database;
+      await db.execute('DROP TABLE students;');
+    });
+
+    final saveButton = find.text('Simpan Mahasiswa');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pump();
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    // Error banner should be displayed
+    expect(find.textContaining('Gagal menyimpan biodata mahasiswa'), findsAtLeast(1));
+
+    // Tap dismiss icon on error banner
+    final dismissIcon = find.byIcon(FLucideIcons.x);
+    expect(dismissIcon, findsOneWidget);
+    await tester.ensureVisible(dismissIcon);
+    await tester.tap(dismissIcon);
+    await tester.pumpAndSettle();
+
+    // Banner is dismissed
+    expect(find.byIcon(FLucideIcons.circleAlert), findsNothing);
   });
 }
