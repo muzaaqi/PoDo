@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/core/theme/app_colors.dart';
@@ -21,6 +22,9 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
 
   bool _isSaving = false;
   String? _errorMessage;
+  String? _codeError;
+  String? _nameError;
+  String? _creditsError;
 
   @override
   void initState() {
@@ -41,20 +45,46 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
   Future<void> _saveCourse() async {
     final code = _codeController.text.trim().toUpperCase();
     final name = _nameController.text.trim();
-    final credits = int.tryParse(_creditsController.text.trim()) ?? 0;
+    final creditsText = _creditsController.text.trim();
+    final credits = int.tryParse(creditsText);
 
-    if (code.isEmpty || name.isEmpty) {
-      setState(() => _errorMessage = 'Kode dan nama mata kuliah wajib diisi.');
-      return;
+    String? codeErr;
+    String? nameErr;
+    String? creditsErr;
+
+    if (code.isEmpty) {
+      codeErr = 'Kode mata kuliah wajib diisi';
+    } else if (!RegExp(r'^[A-Z0-9_\-]{2,15}$').hasMatch(code)) {
+      codeErr = 'Kode harus 2-15 karakter alfanumerik (contoh: IF104)';
     }
 
-    if (credits <= 0 || credits > 6) {
-      setState(() => _errorMessage = 'Bobot SKS harus berupa angka antara 1 sampai 6.');
+    if (name.isEmpty) {
+      nameErr = 'Nama mata kuliah wajib diisi';
+    } else if (name.length < 3) {
+      nameErr = 'Nama mata kuliah minimal 3 karakter';
+    }
+
+    if (creditsText.isEmpty) {
+      creditsErr = 'Bobot SKS wajib diisi';
+    } else if (credits == null || credits < 1 || credits > 6) {
+      creditsErr = 'Bobot SKS harus angka antara 1 sampai 6';
+    }
+
+    if (codeErr != null || nameErr != null || creditsErr != null) {
+      setState(() {
+        _codeError = codeErr;
+        _nameError = nameErr;
+        _creditsError = creditsErr;
+        _errorMessage = codeErr ?? nameErr ?? creditsErr;
+      });
       return;
     }
 
     setState(() {
       _isSaving = true;
+      _codeError = null;
+      _nameError = null;
+      _creditsError = null;
       _errorMessage = null;
     });
 
@@ -63,7 +93,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         Course(
           courseCode: code,
           courseName: name,
-          credits: credits,
+          credits: credits!,
         ),
       );
 
@@ -214,6 +244,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         const SizedBox(height: 6),
                         FTextField(
                           hint: 'Contoh: IF104',
+                          textInputAction: TextInputAction.next,
+                          error: _codeError != null ? Text(_codeError!) : null,
                           control: FTextFieldControl.managed(
                             controller: _codeController,
                           ),
@@ -231,6 +263,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         const SizedBox(height: 6),
                         FTextField(
                           hint: 'Contoh: Kecerdasan Buatan',
+                          textInputAction: TextInputAction.next,
+                          error: _nameError != null ? Text(_nameError!) : null,
                           control: FTextFieldControl.managed(
                             controller: _nameController,
                           ),
@@ -249,6 +283,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         FTextField(
                           hint: '3',
                           keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          error: _creditsError != null ? Text(_creditsError!) : null,
                           control: FTextFieldControl.managed(
                             controller: _creditsController,
                           ),

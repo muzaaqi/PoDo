@@ -35,6 +35,8 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
   String? _selectedStudyProgram;
   String? _nimError;
   String? _nameError;
+  String? _customStudyProgramError;
+  String? _phoneError;
   String? _errorMessage;
   bool _isLoading = false;
 
@@ -195,22 +197,41 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
   Future<void> _saveStudent() async {
     final nim = _nimController.text.trim();
     final name = _nameController.text.trim();
+    final customProdi = _customStudyProgramController.text.trim();
+    final phone = _phoneController.text.trim();
 
     String? nimErr;
     String? nameErr;
+    String? customProdiErr;
+    String? phoneErr;
 
     if (nim.isEmpty) {
       nimErr = 'NIM wajib diisi';
+    } else if (!RegExp(r'^\d{4,15}$').hasMatch(nim)) {
+      nimErr = 'NIM harus berupa 4-15 digit angka';
     }
 
     if (name.isEmpty) {
       nameErr = 'Nama lengkap wajib diisi';
     }
 
-    if (nimErr != null || nameErr != null) {
+    if (_selectedStudyProgram == 'Lainnya' && customProdi.isEmpty) {
+      customProdiErr = 'Program studi kustom wajib diisi jika memilih Lainnya';
+    }
+
+    if (phone.isNotEmpty && !RegExp(r'^[0-9+\-\s]{8,20}$').hasMatch(phone)) {
+      phoneErr = 'Nomor telepon tidak valid (minimal 8 angka)';
+    }
+
+    if (nimErr != null ||
+        nameErr != null ||
+        customProdiErr != null ||
+        phoneErr != null) {
       setState(() {
         _nimError = nimErr;
         _nameError = nameErr;
+        _customStudyProgramError = customProdiErr;
+        _phoneError = phoneErr;
       });
       return;
     }
@@ -218,6 +239,8 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
     setState(() {
       _nimError = null;
       _nameError = null;
+      _customStudyProgramError = null;
+      _phoneError = null;
       _errorMessage = null;
       _isLoading = true;
     });
@@ -512,6 +535,9 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
                 hint: 'Contoh: Manajemen Informatika',
                 focusNode: _customStudyProgramFocusNode,
                 textInputAction: TextInputAction.next,
+                error: _customStudyProgramError != null
+                    ? Text(_customStudyProgramError!)
+                    : null,
                 prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
                   context,
                   style,
@@ -565,6 +591,7 @@ class _StudentBiodataFormScreenState extends State<StudentBiodataFormScreen> {
               keyboardType: TextInputType.phone,
               focusNode: _phoneFocusNode,
               textInputAction: TextInputAction.next,
+              error: _phoneError != null ? Text(_phoneError!) : null,
               prefixBuilder: (context, style, variants) => FTextField.prefixIconBuilder(
                 context,
                 style,

@@ -94,20 +94,35 @@ void main() {
     await tester.pumpAndSettle();
 
     // NIM
-    await tester.enterText(find.byType(FTextField).at(0), '2101088');
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nomor Induk Mahasiswa (NIM)'),
+      '2101088',
+    );
     // Full Name
-    await tester.enterText(find.byType(FTextField).at(1), 'Rian Hidayat');
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nama Lengkap'),
+      'Rian Hidayat',
+    );
     // Select Study Program: Sistem Informasi
     await tester.tap(find.byWidgetPredicate((widget) => widget is FSelect));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sistem Informasi').last);
     await tester.pumpAndSettle();
     // Department
-    await tester.enterText(find.byType(FTextField).at(2), 'Sistem Informasi');
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Jurusan / Departemen'),
+      'Sistem Informasi',
+    );
     // Phone
-    await tester.enterText(find.byType(FTextField).at(3), '081234567888');
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nomor Telepon'),
+      '081234567888',
+    );
     // Address
-    await tester.enterText(find.byType(FTextField).at(4), 'Jl. Buah Batu No. 5');
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Alamat Lengkap'),
+      'Jl. Buah Batu No. 5',
+    );
 
     final saveButton = find.text('Simpan Mahasiswa');
     await tester.ensureVisible(saveButton);
@@ -390,5 +405,59 @@ void main() {
 
     // Banner is dismissed
     expect(find.byIcon(FLucideIcons.circleAlert), findsNothing);
+  });
+
+  testWidgets('validates custom study program when "Lainnya" is selected and empty', (tester) async {
+    await tester.pumpWidget(buildTestableWidget());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nomor Induk Mahasiswa (NIM)'),
+      '2101097',
+    );
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nama Lengkap'),
+      'Rina Melati',
+    );
+
+    // Select Lainnya but leave custom field empty
+    await tester.tap(find.byWidgetPredicate((widget) => widget is FSelect));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lainnya (Kustom)').last);
+    await tester.pumpAndSettle();
+
+    final saveButton = find.text('Simpan Mahasiswa');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    // Verify validation error
+    expect(find.text('Program studi kustom wajib diisi jika memilih Lainnya'), findsAtLeast(1));
+  });
+
+  testWidgets('validates phone number format when filled with invalid value', (tester) async {
+    await tester.pumpWidget(buildTestableWidget());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nomor Induk Mahasiswa (NIM)'),
+      '2101098',
+    );
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nama Lengkap'),
+      'Farhan Pratama',
+    );
+    await tester.enterText(
+      find.widgetWithText(FTextField, 'Nomor Telepon'),
+      '123',
+    );
+
+    final saveButton = find.text('Simpan Mahasiswa');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    // Verify phone validation error
+    expect(find.text('Nomor telepon tidak valid (minimal 8 angka)'), findsAtLeast(1));
   });
 }

@@ -284,5 +284,40 @@ void main() {
       });
       expect(deletedGrade, isNull);
     });
+
+    testWidgets('shows error banner when save operation fails due to database error', (tester) async {
+      const student = EnrolledStudent(
+        enrollmentId: 1,
+        offeringId: 'OFF001',
+        studentNim: '2101001',
+        studentName: 'Ahmad Fauzi',
+      );
+
+      await tester.pumpWidget(buildTestableWidget(student));
+      await tester.pumpAndSettle();
+
+      // Enter valid CPMK values
+      await tester.enterText(find.byType(FTextField).at(0), '80');
+      await tester.enterText(find.byType(FTextField).at(1), '85');
+      await tester.enterText(find.byType(FTextField).at(2), '90');
+      await tester.enterText(find.byType(FTextField).at(3), '95');
+
+      // Drop grades table to simulate SQLite failure
+      await tester.runAsync(() async {
+        final db = await DatabaseHelper.instance.database;
+        await db.execute('DROP TABLE grades;');
+      });
+
+      // Tap Simpan Nilai
+      await tester.ensureVisible(find.text('Simpan Nilai'));
+      await tester.tap(find.text('Simpan Nilai'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Error banner should be displayed
+      expect(find.textContaining('Gagal menyimpan nilai mahasiswa'), findsAtLeast(1));
+    });
   });
 }

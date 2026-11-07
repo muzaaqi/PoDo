@@ -153,4 +153,71 @@ void main() {
       expect(schedule!.room, 'LAB-MULTIMEDIA');
     });
   });
+
+  testWidgets('validates and rejects end time earlier than start time', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    });
+    await tester.pumpAndSettle();
+
+    // Fill valid class name & room
+    final classNameField = find.byWidgetPredicate(
+      (w) => w is FTextField && w.hint == 'Contoh: IF-44-01',
+    );
+    await tester.enterText(classNameField, 'IF-44-99');
+
+    final roomField = find.byWidgetPredicate(
+      (w) => w is FTextField && w.hint == 'Contoh: KU3.01 / LAB-02',
+    );
+    await tester.enterText(roomField, 'LAB-01');
+
+    // Invert times: Start 14:00, End 08:00
+    final startField = find.widgetWithText(FTextField, '08:00');
+    final endField = find.widgetWithText(FTextField, '10:30');
+    await tester.enterText(startField, '14:00');
+    await tester.enterText(endField, '08:00');
+    await tester.pumpAndSettle();
+
+    // Submit
+    final submitButton = find.widgetWithText(FButton, 'Simpan Kelas');
+    await tester.ensureVisible(submitButton);
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    // Verify error is displayed in both top banner and inline field
+    expect(find.text('Jam selesai harus lebih akhir daripada jam mulai.'), findsAtLeast(1));
+    expect(find.byType(AddClassOfferingSheet), findsOneWidget);
+  });
+
+  testWidgets('validates and rejects invalid academic year format', (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(buildTestableWidget());
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    });
+    await tester.pumpAndSettle();
+
+    final classNameField = find.byWidgetPredicate(
+      (w) => w is FTextField && w.hint == 'Contoh: IF-44-01',
+    );
+    await tester.enterText(classNameField, 'IF-44-98');
+
+    final yearField = find.byWidgetPredicate(
+      (w) => w is FTextField && w.hint == '2024/2025',
+    );
+    await tester.enterText(yearField, 'TAHUN-INI');
+
+    final roomField = find.byWidgetPredicate(
+      (w) => w is FTextField && w.hint == 'Contoh: KU3.01 / LAB-02',
+    );
+    await tester.enterText(roomField, 'LAB-02');
+
+    final submitButton = find.widgetWithText(FButton, 'Simpan Kelas');
+    await tester.ensureVisible(submitButton);
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Format tahun akademik harus YYYY/YYYY (contoh: 2024/2025).'), findsAtLeast(1));
+    expect(find.byType(AddClassOfferingSheet), findsOneWidget);
+  });
 }

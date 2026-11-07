@@ -42,8 +42,21 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
   bool _isLoading = true;
   bool _isSaving = false;
   String? _errorMessage;
+  String? _roomError;
+  String? _startTimeError;
+  String? _endTimeError;
 
   bool get _isEdit => widget.initialSchedule != null;
+
+  int? _parseTimeToMinutes(String time) {
+    final parts = time.trim().split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+    return hour * 60 + minute;
+  }
 
   @override
   void initState() {
@@ -110,29 +123,58 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
   Future<void> _saveSchedule() async {
     if (_isSaving) return;
 
+    String? generalErr;
+    String? roomErr;
+    String? startTimeErr;
+    String? endTimeErr;
+
     if (_selectedOffering == null) {
-      setState(() => _errorMessage = 'Pilih kelas perkuliahan terlebih dahulu.');
-      return;
+      generalErr = 'Pilih kelas perkuliahan terlebih dahulu.';
     }
 
     final room = _roomController.text.trim();
     if (room.isEmpty) {
-      setState(() => _errorMessage = 'Ruangan kuliah wajib diisi.');
-      return;
+      roomErr = 'Ruangan kuliah wajib diisi.';
     }
 
     final startTime = _startTimeController.text.trim();
     final endTime = _endTimeController.text.trim();
-    final timeRegex = RegExp(r'^\d{1,2}:\d{2}$');
 
-    if (!timeRegex.hasMatch(startTime) || !timeRegex.hasMatch(endTime)) {
-      setState(
-          () => _errorMessage = 'Format jam harus HH:mm (contoh: 08:00).');
+    final startMinutes = _parseTimeToMinutes(startTime);
+    final endMinutes = _parseTimeToMinutes(endTime);
+
+    if (startTime.isEmpty) {
+      startTimeErr = 'Jam mulai wajib diisi.';
+    } else if (startMinutes == null) {
+      startTimeErr = 'Format jam harus HH:MM (contoh: 08:00).';
+    }
+
+    if (endTime.isEmpty) {
+      endTimeErr = 'Jam selesai wajib diisi.';
+    } else if (endMinutes == null) {
+      endTimeErr = 'Format jam harus HH:MM (contoh: 10:30).';
+    } else if (startMinutes != null && endMinutes <= startMinutes) {
+      endTimeErr = 'Jam selesai harus lebih akhir daripada jam mulai.';
+    }
+
+    if (generalErr != null ||
+        roomErr != null ||
+        startTimeErr != null ||
+        endTimeErr != null) {
+      setState(() {
+        _roomError = roomErr;
+        _startTimeError = startTimeErr;
+        _endTimeError = endTimeErr;
+        _errorMessage = generalErr ?? roomErr ?? startTimeErr ?? endTimeErr;
+      });
       return;
     }
 
     setState(() {
       _isSaving = true;
+      _roomError = null;
+      _startTimeError = null;
+      _endTimeError = null;
       _errorMessage = null;
     });
 
@@ -404,6 +446,7 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
                       const SizedBox(height: 6),
                       FTextField(
                         hint: 'Contoh: KU3.01 / LAB-02',
+                        error: _roomError != null ? Text(_roomError!) : null,
                         prefixBuilder: (context, style, variants) =>
                             FTextField.prefixIconBuilder(
                           context,
@@ -435,6 +478,9 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
                                 const SizedBox(height: 6),
                                 FTextField(
                                   hint: '07:00',
+                                  error: _startTimeError != null
+                                      ? Text(_startTimeError!)
+                                      : null,
                                   prefixBuilder: (context, style, variants) =>
                                       FTextField.prefixIconBuilder(
                                     context,
@@ -464,6 +510,9 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
                                 const SizedBox(height: 6),
                                 FTextField(
                                   hint: '09:30',
+                                  error: _endTimeError != null
+                                      ? Text(_endTimeError!)
+                                      : null,
                                   prefixBuilder: (context, style, variants) =>
                                       FTextField.prefixIconBuilder(
                                     context,

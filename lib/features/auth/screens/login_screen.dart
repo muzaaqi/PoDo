@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/app/routes.dart';
@@ -15,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _errorMessage;
+  String? _emailError;
+  String? _passwordError;
   bool _isLoading = false;
 
   @override
@@ -28,6 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _emailController.text = 'dosen@kampus.id';
       _passwordController.text = 'password123';
+      _emailError = null;
+      _passwordError = null;
       _errorMessage = null;
     });
   }
@@ -36,8 +41,21 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
+    String? emailErr;
+    String? passwordErr;
+
+    if (email.isEmpty) {
+      emailErr = 'Email tidak boleh kosong';
+    }
+
+    if (password.isEmpty) {
+      passwordErr = 'Password tidak boleh kosong';
+    }
+
+    if (emailErr != null || passwordErr != null) {
       setState(() {
+        _emailError = emailErr;
+        _passwordError = passwordErr;
         _errorMessage = 'Email dan password tidak boleh kosong.';
       });
       return;
@@ -45,6 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {
       _isLoading = true;
+      _emailError = null;
+      _passwordError = null;
       _errorMessage = null;
     });
 
@@ -136,7 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             label: const Text('Email / Username'),
                             hint: 'Contoh: dosen@kampus.id',
                             keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
                             autocorrect: false,
+                            error: _emailError != null ? Text(_emailError!) : null,
                             prefixBuilder: (context, style, variants) =>
                                 FTextField.prefixIconBuilder(
                               context,
@@ -152,6 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           FTextField.password(
                             label: const Text('Password'),
                             hint: 'Masukkan password',
+                            textInputAction: TextInputAction.done,
+                            error: _passwordError != null ? Text(_passwordError!) : null,
                             prefixBuilder: (context, style, obscure, variants) =>
                                 FTextField.prefixIconBuilder(
                               context,

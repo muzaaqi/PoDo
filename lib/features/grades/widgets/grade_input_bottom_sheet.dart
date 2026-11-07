@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 import 'package:podo/core/theme/app_colors.dart';
@@ -27,6 +28,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
   String? _cpmk2Error;
   String? _cpmk3Error;
   String? _cpmk4Error;
+  String? _errorMessage;
 
   bool _isSaving = false;
 
@@ -83,6 +85,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
       _cpmk2Error = err2;
       _cpmk3Error = err3;
       _cpmk4Error = err4;
+      _errorMessage = null;
     });
 
     if (err1 != null || err2 != null || err3 != null || err4 != null) {
@@ -106,9 +109,17 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
       if (mounted) {
         Navigator.of(context).pop(true);
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(() => _isSaving = false);
+        setState(() {
+          _isSaving = false;
+          _errorMessage =
+              'Gagal menyimpan nilai mahasiswa: ${e.toString().replaceFirst('Exception: ', '')}';
+        });
+        showFToast(
+          context: context,
+          title: const Text('Gagal menyimpan nilai mahasiswa'),
+        );
       }
     }
   }
@@ -161,18 +172,72 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _isSaving = true);
+      setState(() {
+        _isSaving = true;
+        _errorMessage = null;
+      });
       try {
         await GradeRepository.instance.deleteGrade(widget.student.enrollmentId);
         if (mounted) {
           Navigator.of(context).pop(true);
         }
-      } catch (_) {
+      } catch (e) {
         if (mounted) {
-          setState(() => _isSaving = false);
+          setState(() {
+            _isSaving = false;
+            _errorMessage =
+                'Gagal mereset nilai mahasiswa: ${e.toString().replaceFirst('Exception: ', '')}';
+          });
+          showFToast(
+            context: context,
+            title: const Text('Gagal mereset nilai mahasiswa'),
+          );
         }
       }
     }
+  }
+
+  Widget _buildErrorBanner(BuildContext context) {
+    final colors = context.appColors;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: colors.coral.background,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            FLucideIcons.circleAlert,
+            size: 16,
+            color: colors.coral.foreground,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: colors.coral.foreground,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FTappable(
+            onPress: () => setState(() => _errorMessage = null),
+            child: Icon(
+              FLucideIcons.x,
+              size: 14,
+              color: colors.coral.foreground,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -269,10 +334,12 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
                 ],
               ),
               const SizedBox(height: 18),
+              if (_errorMessage != null) _buildErrorBanner(context),
               FTextField(
                 label: const Text('CPMK 1'),
                 hint: '0 - 100',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.next,
                 error: _cpmk1Error != null ? Text(_cpmk1Error!) : null,
                 control: FTextFieldControl.managed(controller: _cpmk1Controller),
               ),
@@ -281,6 +348,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
                 label: const Text('CPMK 2'),
                 hint: '0 - 100',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.next,
                 error: _cpmk2Error != null ? Text(_cpmk2Error!) : null,
                 control: FTextFieldControl.managed(controller: _cpmk2Controller),
               ),
@@ -289,6 +357,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
                 label: const Text('CPMK 3'),
                 hint: '0 - 100',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.next,
                 error: _cpmk3Error != null ? Text(_cpmk3Error!) : null,
                 control: FTextFieldControl.managed(controller: _cpmk3Controller),
               ),
@@ -297,6 +366,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
                 label: const Text('CPMK 4'),
                 hint: '0 - 100',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.done,
                 error: _cpmk4Error != null ? Text(_cpmk4Error!) : null,
                 control: FTextFieldControl.managed(controller: _cpmk4Controller),
               ),

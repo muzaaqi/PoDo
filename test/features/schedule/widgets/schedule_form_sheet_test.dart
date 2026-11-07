@@ -112,4 +112,40 @@ void main() {
     });
     expect(rabuSchedules.any((s) => s.room == 'LAB-ROBOTIK'), isTrue);
   });
+
+  testWidgets('validates and rejects empty room and inverted time range', (tester) async {
+    await tester.pumpWidget(buildTestableWidget(initialDay: 'Kamis'));
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+
+    // Leave room empty and tap save
+    final saveButton = find.text('Simpan Jadwal');
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    // Verify room error is shown
+    expect(find.text('Ruangan kuliah wajib diisi.'), findsAtLeast(1));
+
+    // Fill room and invert times
+    final roomField = find.byWidgetPredicate(
+      (w) => w is FTextField && w.hint == 'Contoh: KU3.01 / LAB-02',
+    );
+    await tester.enterText(roomField, 'KU3.05');
+
+    final startField = find.widgetWithText(FTextField, '08:00');
+    final endField = find.widgetWithText(FTextField, '10:30');
+    await tester.enterText(startField, '15:00');
+    await tester.enterText(endField, '13:00');
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    // Verify time validation error is shown
+    expect(find.text('Jam selesai harus lebih akhir daripada jam mulai.'), findsAtLeast(1));
+    expect(find.byType(ScheduleFormSheet), findsOneWidget);
+  });
 }

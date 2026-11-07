@@ -362,6 +362,32 @@ void main() {
       expect(find.byType(AddCourseSheet), findsNothing);
     });
 
+    testWidgets('AddCourseSheet validates and displays error when required fields are empty', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Open AddCourseSheet
+      await tester.tap(find.byIcon(FLucideIcons.plus));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tambah Mata Kuliah'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
+
+      // Tap Simpan Mata Kuliah without entering code or name
+      await tester.ensureVisible(find.text('Simpan Mata Kuliah'));
+      await tester.tap(find.text('Simpan Mata Kuliah'));
+      await tester.pumpAndSettle();
+
+      // Error message is displayed in top banner and field
+      expect(find.text('Kode mata kuliah wajib diisi'), findsAtLeast(1));
+      expect(find.byType(AddCourseSheet), findsOneWidget);
+    });
+
     testWidgets('ListView has keyboardDismissBehavior set to onDrag', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.runAsync(() async {

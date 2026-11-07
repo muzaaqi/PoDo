@@ -38,8 +38,23 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
   bool _isLoading = true;
   bool _isSaving = false;
   String? _errorMessage;
+  String? _classNameError;
+  String? _academicYearError;
+  String? _roomError;
+  String? _startTimeError;
+  String? _endTimeError;
 
   bool get _isEdit => widget.initialOffering != null;
+
+  int? _parseTimeToMinutes(String time) {
+    final parts = time.trim().split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+    return hour * 60 + minute;
+  }
 
   @override
   void initState() {
@@ -129,45 +144,82 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
     final startTime = _startTimeController.text.trim();
     final endTime = _endTimeController.text.trim();
 
+    String? classNameErr;
+    String? academicYearErr;
+    String? roomErr;
+    String? startTimeErr;
+    String? endTimeErr;
+    String? generalErr;
+
     if (_selectedCourse == null) {
-      setState(() => _errorMessage = 'Silakan pilih mata kuliah.');
-      return;
+      generalErr = 'Silakan pilih mata kuliah.';
     }
 
     if (className.isEmpty) {
-      setState(() => _errorMessage = 'Nama kelas wajib diisi (contoh: IF-44-01).');
-      return;
+      classNameErr = 'Nama kelas wajib diisi (contoh: IF-44-01).';
     }
 
     if (academicYear.isEmpty) {
-      setState(() => _errorMessage = 'Tahun akademik wajib diisi.');
-      return;
+      academicYearErr = 'Tahun akademik wajib diisi.';
+    } else if (!RegExp(r'^\d{4}/\d{4}$').hasMatch(academicYear)) {
+      academicYearErr = 'Format tahun akademik harus YYYY/YYYY (contoh: 2024/2025).';
     }
 
     if (room.isEmpty) {
-      setState(() => _errorMessage = 'Ruangan perkuliahan wajib diisi (contoh: KU3.01 / LAB-02).');
-      return;
+      roomErr = 'Ruangan perkuliahan wajib diisi (contoh: KU3.01 / LAB-02).';
     }
 
-    if (startTime.isEmpty || endTime.isEmpty) {
-      setState(() => _errorMessage = 'Jam mulai dan jam selesai perkuliahan wajib diisi.');
-      return;
+    final startMinutes = _parseTimeToMinutes(startTime);
+    final endMinutes = _parseTimeToMinutes(endTime);
+
+    if (startTime.isEmpty) {
+      startTimeErr = 'Jam mulai wajib diisi.';
+    } else if (startMinutes == null) {
+      startTimeErr = 'Format jam harus HH:MM (contoh: 08:00).';
     }
 
-    final timeRegex = RegExp(r'^\d{1,2}:\d{2}$');
-    if (!timeRegex.hasMatch(startTime) || !timeRegex.hasMatch(endTime)) {
-      setState(() => _errorMessage = 'Format jam harus HH:MM (contoh: 08:00 atau 13:30).');
-      return;
+    if (endTime.isEmpty) {
+      endTimeErr = 'Jam selesai wajib diisi.';
+    } else if (endMinutes == null) {
+      endTimeErr = 'Format jam harus HH:MM (contoh: 10:30).';
+    } else if (startMinutes != null && endMinutes <= startMinutes) {
+      endTimeErr = 'Jam selesai harus lebih akhir daripada jam mulai.';
     }
 
     final lecturerId = AuthRepository.instance.activeLecturerId;
     if (lecturerId == null) {
-      setState(() => _errorMessage = 'Sesi dosen tidak valid. Silakan login kembali.');
+      generalErr = 'Sesi dosen tidak valid. Silakan login kembali.';
+    }
+
+    if (classNameErr != null ||
+        academicYearErr != null ||
+        roomErr != null ||
+        startTimeErr != null ||
+        endTimeErr != null ||
+        generalErr != null) {
+      setState(() {
+        _classNameError = classNameErr;
+        _academicYearError = academicYearErr;
+        _roomError = roomErr;
+        _startTimeError = startTimeErr;
+        _endTimeError = endTimeErr;
+        _errorMessage = generalErr ??
+            classNameErr ??
+            academicYearErr ??
+            roomErr ??
+            startTimeErr ??
+            endTimeErr;
+      });
       return;
     }
 
     setState(() {
       _isSaving = true;
+      _classNameError = null;
+      _academicYearError = null;
+      _roomError = null;
+      _startTimeError = null;
+      _endTimeError = null;
       _errorMessage = null;
     });
 
@@ -216,7 +268,7 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
           CourseOffering(
             offeringId: offeringId,
             courseCode: _selectedCourse!.courseCode,
-            lecturerId: lecturerId,
+            lecturerId: lecturerId!,
             className: className,
             academicYear: academicYear,
             term: _selectedTerm,
@@ -474,6 +526,9 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                                         const SizedBox(height: 6),
                                         FTextField(
                                           hint: 'Contoh: IF-44-01',
+                                          error: _classNameError != null
+                                              ? Text(_classNameError!)
+                                              : null,
                                           control: FTextFieldControl.managed(
                                             controller: _classNameController,
                                           ),
@@ -498,6 +553,9 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                                         const SizedBox(height: 6),
                                         FTextField(
                                           hint: '2024/2025',
+                                          error: _academicYearError != null
+                                              ? Text(_academicYearError!)
+                                              : null,
                                           control: FTextFieldControl.managed(
                                             controller:
                                                 _academicYearController,
@@ -639,6 +697,9 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                               const SizedBox(height: 6),
                               FTextField(
                                 hint: 'Contoh: KU3.01 / LAB-02',
+                                error: _roomError != null
+                                    ? Text(_roomError!)
+                                    : null,
                                 prefixBuilder: (context, style, variants) =>
                                     FTextField.prefixIconBuilder(
                                   context,
@@ -673,6 +734,9 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                                         const SizedBox(height: 6),
                                         FTextField(
                                           hint: '08:00',
+                                          error: _startTimeError != null
+                                              ? Text(_startTimeError!)
+                                              : null,
                                           prefixBuilder:
                                               (context, style, variants) =>
                                                   FTextField.prefixIconBuilder(
@@ -706,6 +770,9 @@ class _AddClassOfferingSheetState extends State<AddClassOfferingSheet> {
                                         const SizedBox(height: 6),
                                         FTextField(
                                           hint: '10:30',
+                                          error: _endTimeError != null
+                                              ? Text(_endTimeError!)
+                                              : null,
                                           prefixBuilder:
                                               (context, style, variants) =>
                                                   FTextField.prefixIconBuilder(
