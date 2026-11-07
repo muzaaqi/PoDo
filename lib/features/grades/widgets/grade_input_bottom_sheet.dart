@@ -62,7 +62,8 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
   String? _validateScore(String text) {
     final trimmed = text.trim().replaceAll(',', '.');
     if (trimmed.isEmpty) {
-      return 'Nilai CPMK harus diisi';
+      // Nilai CPMK bersifat opsional
+      return null;
     }
     final value = double.tryParse(trimmed);
     if (value == null) {
@@ -72,6 +73,12 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
       return 'Nilai harus antara 0 - 100';
     }
     return null;
+  }
+
+  double? _parseScore(String text) {
+    final trimmed = text.trim().replaceAll(',', '.');
+    if (trimmed.isEmpty) return null;
+    return double.tryParse(trimmed);
   }
 
   Future<void> _saveGrade() async {
@@ -92,16 +99,29 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
       return;
     }
 
+    final val1 = _parseScore(_cpmk1Controller.text);
+    final val2 = _parseScore(_cpmk2Controller.text);
+    final val3 = _parseScore(_cpmk3Controller.text);
+    final val4 = _parseScore(_cpmk4Controller.text);
+
+    if (val1 == null && val2 == null && val3 == null && val4 == null) {
+      setState(() {
+        _errorMessage =
+            'Isi minimal satu nilai CPMK untuk menyimpan penilaian.';
+      });
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     try {
       final grade = Grade(
         id: widget.student.grade?.id,
         enrollmentId: widget.student.enrollmentId,
-        cpmk1: double.parse(_cpmk1Controller.text.trim().replaceAll(',', '.')),
-        cpmk2: double.parse(_cpmk2Controller.text.trim().replaceAll(',', '.')),
-        cpmk3: double.parse(_cpmk3Controller.text.trim().replaceAll(',', '.')),
-        cpmk4: double.parse(_cpmk4Controller.text.trim().replaceAll(',', '.')),
+        cpmk1: val1,
+        cpmk2: val2,
+        cpmk3: val3,
+        cpmk4: val4,
       );
 
       await GradeRepository.instance.upsertGrade(grade);
@@ -337,7 +357,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
               if (_errorMessage != null) _buildErrorBanner(context),
               FTextField(
                 label: const Text('CPMK 1'),
-                hint: '0 - 100',
+                hint: '0 - 100 (opsional)',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textInputAction: TextInputAction.next,
                 error: _cpmk1Error != null ? Text(_cpmk1Error!) : null,
@@ -346,7 +366,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
               const SizedBox(height: 14),
               FTextField(
                 label: const Text('CPMK 2'),
-                hint: '0 - 100',
+                hint: '0 - 100 (opsional)',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textInputAction: TextInputAction.next,
                 error: _cpmk2Error != null ? Text(_cpmk2Error!) : null,
@@ -355,7 +375,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
               const SizedBox(height: 14),
               FTextField(
                 label: const Text('CPMK 3'),
-                hint: '0 - 100',
+                hint: '0 - 100 (opsional)',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textInputAction: TextInputAction.next,
                 error: _cpmk3Error != null ? Text(_cpmk3Error!) : null,
@@ -364,7 +384,7 @@ class _GradeInputBottomSheetState extends State<GradeInputBottomSheet> {
               const SizedBox(height: 14),
               FTextField(
                 label: const Text('CPMK 4'),
-                hint: '0 - 100',
+                hint: '0 - 100 (opsional)',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textInputAction: TextInputAction.done,
                 error: _cpmk4Error != null ? Text(_cpmk4Error!) : null,

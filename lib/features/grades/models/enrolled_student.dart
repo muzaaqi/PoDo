@@ -19,7 +19,11 @@ class EnrolledStudent {
     this.grade,
   });
 
-  bool get isGraded => grade?.isFullyGraded ?? false;
+  bool get isGraded => grade?.hasAnyGrade ?? false;
+
+  bool get isFullyGraded => grade?.isFullyGraded ?? false;
+
+  int get gradedCpmkCount => grade?.gradedCpmkCount ?? 0;
 
   double? get averageScore => grade?.averageScore;
 

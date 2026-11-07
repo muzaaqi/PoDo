@@ -21,6 +21,12 @@ class Grade {
   bool get isFullyGraded =>
       cpmk1 != null && cpmk2 != null && cpmk3 != null && cpmk4 != null;
 
+  bool get hasAnyGrade =>
+      cpmk1 != null || cpmk2 != null || cpmk3 != null || cpmk4 != null;
+
+  int get gradedCpmkCount =>
+      [cpmk1, cpmk2, cpmk3, cpmk4].whereType<double>().length;
+
   double? get averageScore {
     final scores = [cpmk1, cpmk2, cpmk3, cpmk4].whereType<double>().toList();
     if (scores.isEmpty) return null;

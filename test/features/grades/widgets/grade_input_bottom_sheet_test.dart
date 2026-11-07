@@ -93,7 +93,7 @@ void main() {
       expect(find.text('88'), findsOneWidget);
     });
 
-    testWidgets('shows validation errors when fields are empty or out of 0-100 range', (tester) async {
+    testWidgets('shows validation errors when fields are all empty or out of 0-100 range', (tester) async {
       const student = EnrolledStudent(
         enrollmentId: 1,
         offeringId: 'OFF001',
@@ -104,11 +104,11 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(student));
       await tester.pumpAndSettle();
 
-      // Submit with empty fields
+      // Submit with all empty fields
       await tester.tap(find.text('Simpan Nilai'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Nilai CPMK harus diisi'), findsNWidgets(4));
+      expect(find.text('Isi minimal satu nilai CPMK untuk menyimpan penilaian.'), findsOneWidget);
 
       // Enter invalid range (< 0 and > 100)
       final fields = find.byType(FTextField);
@@ -122,6 +122,41 @@ void main() {
 
       expect(find.text('Nilai harus antara 0 - 100'), findsNWidgets(2));
       expect(find.text('Nilai harus berupa angka valid'), findsOneWidget);
+    });
+
+    testWidgets('allows partial grade submission (e.g. only CPMK 1 and CPMK 2)', (tester) async {
+      const student = EnrolledStudent(
+        enrollmentId: 1,
+        offeringId: 'OFF001',
+        studentNim: '2101001',
+        studentName: 'Ahmad Fauzi',
+      );
+
+      await tester.pumpWidget(buildTestableWidget(student));
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(FTextField);
+      await tester.enterText(fields.at(0), '80');
+      await tester.enterText(fields.at(1), '90');
+      // leave CPMK 3 and 4 empty
+
+      await tester.tap(find.text('Simpan Nilai'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pumpAndSettle();
+
+      // Verify in SQLite
+      Grade? savedGrade;
+      await tester.runAsync(() async {
+        savedGrade = await GradeRepository.instance.getGradeByEnrollmentId(1);
+      });
+      expect(savedGrade, isNotNull);
+      expect(savedGrade!.cpmk1, 80.0);
+      expect(savedGrade!.cpmk2, 90.0);
+      expect(savedGrade!.cpmk3, isNull);
+      expect(savedGrade!.cpmk4, isNull);
+      expect(savedGrade!.averageScore, 85.0);
     });
 
     testWidgets('submits valid grades to GradeRepository and pops route', (tester) async {
